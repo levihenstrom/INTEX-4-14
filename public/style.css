@@ -1,0 +1,205 @@
+/* =========================================
+   SlopeSense Aesthetic UI Redesign (2025)
+   Clean • Modern • Alpine Blue Theme
+========================================= */
+
+/* -------- GLOBAL -------- */
+body {
+    font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(to bottom, #f8fbff, #eef3f8);
+    min-height: 100vh;
+    padding-bottom: 80px;
+    color: #2e3a4e;
+}
+
+* {
+    border-radius: 6px;
+}
+
+/* -------- NAVBAR -------- */
+nav.navbar.navbar-expand-lg {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    min-height: 80px !important;
+    background: #ffffff !important;
+}
+
+.navbar-brand {
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.navbar .navbar-brand img.brand-logo {
+    height: 130px !important;
+    width: auto !important;
+    display: block !important;
+    object-fit: contain !important;
+    max-height: none !important;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+}
+
+/* -------- HERO BANNER -------- */
+.hero-banner {
+    background-image: url('/images/mountains.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: 90px 40px;
+    color: white;
+    text-align: center;
+    border-radius: 14px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+    position: relative;
+}
+
+.hero-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(13, 69, 122, 0.35);
+    border-radius: 14px;
+}
+
+.hero-banner > * {
+    position: relative;
+}
+
+.hero-banner h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+    text-shadow: 0px 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+.hero-banner p {
+    font-size: 1.2rem;
+    text-shadow: 0px 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* -------- BUTTONS -------- */
+.btn-primary,
+.btn-success,
+.btn-light {
+    font-weight: 600;
+    padding: 10px 22px;
+    border-radius: 8px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    transform: translateY(-2px);
+}
+
+.btn-success {
+    background-color: #0b5ed7;
+    border-color: #0b5ed7;
+}
+
+.btn-success:hover {
+    background-color: #094db3;
+    transform: translateY(-2px);
+}
+
+.btn-light:hover {
+    background-color: #e2e6ea;
+    transform: translateY(-2px);
+}
+
+/* -------- LIST ITEMS -------- */
+.list-group-item {
+    background: #ffffff;
+    border: none;
+    margin-bottom: 10px;
+    padding: 18px 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.list-group-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* -------- FOOTER -------- */
+footer {
+    background: #ffffff;
+    border-top: 1px solid #e4e9f1;
+    color: #4a5568;
+    padding: 16px;
+    text-align: center;
+}
+
+/* =======================================
+   FEATURE IMAGE CARDS (Hawaiian Style)
+======================================= */
+.feature-image-card {
+    display: block;
+    position: relative;
+    height: 380px;
+    border-radius: 18px;
+    overflow: hidden;
+    background-image: var(--image);
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+}
+
+.feature-image-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 16px 32px rgba(0,0,0,0.25);
+}
+
+/* Gradient overlay */
+.feature-image-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top,
+        rgba(0,0,0,0.6),
+        rgba(0,0,0,0.15)
+    );
+    z-index: 1;
+}
+
+/* Text overlay */
+.feature-text-overlay {
+    position: absolute;
+    bottom: 18px;
+    left: 18px;
+    right: 18px;
+    color: white;
+    z-index: 2;
+    text-align: left;
+}
+
+/* Text default state */
+.feature-text-overlay h3,
+.feature-text-overlay p {
+    position: relative;
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background-color: transparent;
+    transition: background-color 0.35s ease, padding 0.35s ease;
+}
+
+/* Solid gold highlight on hover */
+.feature-image-card:hover .feature-text-overlay h3,
+.feature-image-card:hover .feature-text-overlay p {
+    background-color: #E7A53A; /* exact gold from logo */
+    padding: 6px 14px;
+}
