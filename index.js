@@ -200,7 +200,41 @@ try {
 }
 });
 
-    
+app.get('/surveys', async (req, res) => {
+    try {
+        // Show ALL surveys newest → oldest
+        const surveys = await knex('Surveys')
+        .join('Registration', 'Surveys.RegistrationID', 'Registration.RegistrationID')
+        .join('Participants', 'Registration.ParticipantID', 'Participants.ParticipantID')
+        .join('Event_Occurrence', 'Registration.OccurrenceID', 'Event_Occurrence.OccurrenceID')
+        .join('Event_Templates', 'Event_Occurrence.EventID', 'Event_Templates.EventID')
+        .select(
+            'Surveys.SurveyID',
+            'Surveys.SurveySatisfactionScore',
+            'Surveys.SurveyUsefulnessScore',
+            'Surveys.SurveyInstructorScore',
+            'Surveys.SurveyRecommendationScore',
+            'Surveys.SurveyOverallScore',
+            'Surveys.SurveyNPSBucket',
+            'Surveys.SurveyComments',
+            'Surveys.SurveySubmissionDate',
+            'Participants.ParticipantEmail',
+            'Participants.ParticipantFirstName',
+            'Participants.ParticipantLastName',
+            'Event_Templates.EventName',
+            'Event_Occurrence.EventDateTimeStart'
+        )
+        .orderBy('Surveys.SurveyID', 'desc');
+
+        res.render('surveys', {
+        pageTitle: 'Surveys',
+        surveys,
+        });
+    } catch (err) {
+        console.error('Error loading surveys:', err);
+        res.status(500).send('Error loading surveys');
+    }
+});
     
 // GET /logout
 app.get('/logout', (req, res) => {
