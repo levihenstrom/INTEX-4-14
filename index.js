@@ -242,7 +242,161 @@ try {
 }
 });
 
-    
+app.get('/donations', async (req, res) => {
+    try {
+        if (req.session.isAdmin) {
+            // Show ALL donations newest → oldest
+            const donations = await knex('Participant_Donation')
+            .join('Participants', 'Participant_Donation.ParticipantID', 'Participants.ParticipantID')
+            .select(
+                'Participant_Donation.DonationDate',
+                'Participant_Donation.DonationAmount',
+                'Participants.ParticipantEmail',
+                'Participants.ParticipantFirstName',
+                'Participants.ParticipantLastName'
+            )
+            .orderBy('Participant_Donation.DonationDate', 'desc');
+
+            res.render('donations', {
+            pageTitle: 'Donations',
+            donations,
+            });
+        } else {
+            // Show user donations newest → oldest
+            const donations = await knex('Participant_Donation')
+            .join('Participants', 'Participant_Donation.ParticipantID', 'Participants.ParticipantID')
+            .select(
+                'Participant_Donation.DonationDate',
+                'Participant_Donation.DonationAmount',
+                'Participants.ParticipantEmail',
+                'Participants.ParticipantFirstName',
+                'Participants.ParticipantLastName'
+            )
+            .where('Participants.ParticipantID', req.session.user.ParticipantID)
+            .orderBy('Participant_Donation.DonationDate', 'desc');
+
+            res.render('donations', {
+            pageTitle: 'Donations',
+            donations,
+            });
+        }
+    } catch (err) {
+        console.error('Error loading donations:', err);
+        res.status(500).send('Error loading donations');
+    }
+});
+
+app.get('/milestones', async (req, res) => {
+    try {
+        if (req.session.isAdmin) {
+            // Show ALL milestones newest → oldest
+            const milestones = await knex('Participant_Milestone')
+            .join('Participants', 'Participant_Milestone.ParticipantID', 'Participants.ParticipantID')
+            .select(
+                'Participant_Milestone.MilestoneTitle',
+                'Participant_Milestone.MilestoneDate',
+                'Participants.ParticipantEmail',
+                'Participants.ParticipantFirstName',
+                'Participants.ParticipantLastName'
+            )
+            .orderBy('Participant_Milestone.MilestoneDate', 'desc');
+
+            res.render('milestones', {
+            pageTitle: 'Milestones',
+            milestones,
+            });
+        } else {
+            // Show user milestones newest → oldest
+            const milestones = await knex('Participant_Milestone')
+            .join('Participants', 'Participant_Milestone.ParticipantID', 'Participants.ParticipantID')
+            .select(
+                'Participant_Milestone.MilestoneTitle',
+                'Participant_Milestone.MilestoneDate',
+                'Participants.ParticipantEmail',
+                'Participants.ParticipantFirstName',
+                'Participants.ParticipantLastName'
+            )
+            .where('Participants.ParticipantID', req.session.user.ParticipantID)
+            .orderBy('Participant_Milestone.MilestoneDate', 'desc');
+
+            res.render('milestones', {
+            pageTitle: 'Milestones',
+            milestones,
+            });
+        }
+    } catch (err) {
+        console.error('Error loading milestones:', err);
+        res.status(500).send('Error loading milestones');
+    }
+});
+
+app.get('/surveys', async (req, res) => {
+    try {
+        if (req.session.isAdmin) {
+            // Show ALL surveys newest → oldest
+            const surveys = await knex('Surveys')
+            .join('Registration', 'Surveys.RegistrationID', 'Registration.RegistrationID')
+            .join('Participants', 'Registration.ParticipantID', 'Participants.ParticipantID')
+            .join('Event_Occurrence', 'Registration.OccurrenceID', 'Event_Occurrence.OccurrenceID')
+            .join('Event_Templates', 'Event_Occurrence.EventID', 'Event_Templates.EventID')
+            .select(
+                'Surveys.SurveyID',
+                'Surveys.SurveySatisfactionScore',
+                'Surveys.SurveyUsefulnessScore',
+                'Surveys.SurveyInstructorScore',
+                'Surveys.SurveyRecommendationScore',
+                'Surveys.SurveyOverallScore',
+                'Surveys.SurveyNPSBucket',
+                'Surveys.SurveyComments',
+                'Surveys.SurveySubmissionDate',
+                'Participants.ParticipantEmail',
+                'Participants.ParticipantFirstName',
+                'Participants.ParticipantLastName',
+                'Event_Templates.EventName',
+                'Event_Occurrence.EventDateTimeStart'
+            )
+            .orderBy('Surveys.SurveySubmissionDate', 'desc');
+
+            res.render('surveys', {
+            pageTitle: 'Surveys',
+            surveys,
+            });
+        } else {
+            // Show user surveys newest → oldest
+            const surveys = await knex('Surveys')
+            .join('Registration', 'Surveys.RegistrationID', 'Registration.RegistrationID')
+            .join('Participants', 'Registration.ParticipantID', 'Participants.ParticipantID')
+            .join('Event_Occurrence', 'Registration.OccurrenceID', 'Event_Occurrence.OccurrenceID')
+            .join('Event_Templates', 'Event_Occurrence.EventID', 'Event_Templates.EventID')
+            .select(
+                'Surveys.SurveyID',
+                'Surveys.SurveySatisfactionScore',
+                'Surveys.SurveyUsefulnessScore',
+                'Surveys.SurveyInstructorScore',
+                'Surveys.SurveyRecommendationScore',
+                'Surveys.SurveyOverallScore',
+                'Surveys.SurveyNPSBucket',
+                'Surveys.SurveyComments',
+                'Surveys.SurveySubmissionDate',
+                'Participants.ParticipantEmail',
+                'Participants.ParticipantFirstName',
+                'Participants.ParticipantLastName',
+                'Event_Templates.EventName',
+                'Event_Occurrence.EventDateTimeStart'
+            )
+            .where('Participants.ParticipantID', req.session.user.ParticipantID)
+            .orderBy('Surveys.SurveySubmissionDate', 'desc');
+
+            res.render('surveys', {
+            pageTitle: 'Surveys',
+            surveys,
+            });
+        }
+    } catch (err) {
+        console.error('Error loading surveys:', err);
+        res.status(500).send('Error loading surveys');
+    }
+});
     
 // GET /logout
 app.get('/logout', (req, res) => {
