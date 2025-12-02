@@ -34,11 +34,13 @@ app.set('layout', 'public'); // Sets 'public.ejs' as the default layout
 
 // Middleware to expose user to all EJS views
 app.use((req, res, next) => {
-    // This is a placeholder for actual session/auth data
+    // Expose user and role information to all views
     res.locals.user = req.session.user || null;
+    res.locals.userRole = req.session.userRole || null;
+    res.locals.isAdmin = req.session.isAdmin || false;
 
      // Skip auth for public routes
-    if (req.path === '/'|| req.path === '/login' || req.path === '/register' || req.path === '/logout') {
+    if (req.path === '/donations' || req.path === '/'|| req.path === '/login' || req.path === '/register' || req.path === '/logout') {
         return next();
     }
 
@@ -48,15 +50,18 @@ app.use((req, res, next) => {
     }
 
     // Not logged in → show login (ONE response, then stop)
-    return res.render("login", { layout: 'public', pageTitle: 'Login', error_message: "Please log in to access this page" });
+    return res.status(418).render("login", { layout: 'public', pageTitle: 'Login', error_message: "Please log in to access this page" });
 });
 
 
-// Simple Auth Check Middleware
-// const requireLogin = (req, res, next) => {
-//     if (!req.session.user) {
-//         // Redirect unauthenticated users
-//         return res.redirect('/login');
+// // Helper middleware to require admin access
+// const requireAdmin = (req, res, next) => {
+//     if (!req.session.isLoggedIn || !req.session.isAdmin) {
+//         return res.status(403).render('login', { 
+//             layout: 'public', 
+//             pageTitle: 'Access Denied',
+//             error: 'Admin access required' 
+//         });
 //     }
 //     next();
 // };
@@ -93,6 +98,9 @@ app.post('/login', async (req, res) => {
     
         req.session.isLoggedIn = true;
         req.session.user = user;
+        // Store user role: 'a' = admin, anything else = common user
+        req.session.userRole = user.ParticipantRole || 'p';
+        req.session.isAdmin = user.ParticipantRole === 'a';
     
         return res.redirect('/');
         } catch (err) {
@@ -161,7 +169,7 @@ try {
         ParticipantPhone,
         ParticipantCity,
         ParticipantState,
-        ParticipantZip,                  // <-- added ZIP
+        ParticipantZip,                 
         ParticipantSchoolOrEmployer,
         ParticipantFieldOfInterest,
         ParticipantRole: roleToUse       // <-- apply default
@@ -179,7 +187,7 @@ try {
         ParticipantPhone,
         ParticipantCity,
         ParticipantState,
-        ParticipantZip,                    // <-- added ZIP
+        ParticipantZip,                   
         ParticipantSchoolOrEmployer,
         ParticipantFieldOfInterest,
         ParticipantRole: roleToUse         // <-- default to 'p'
@@ -212,6 +220,252 @@ app.get('/logout', (req, res) => {
         res.redirect('/');
     });
 });
+
+
+// GET /users
+app.get('/users', async (req, res) => {
+    if(req.session.isAdmin){
+        try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = 50;
+            const offset = (page - 1) * limit;
+            const searchTerm = req.query.search || '';
+            const sortColumn = req.query.sort || 'ParticipantID';
+            const sortDir = req.query.sortDir || 'asc';
+
+            // Validate sort column and direction
+            const validColumns = ['ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 
+                                 'ParticipantSchoolOrEmployer', 'ParticipantRole'];
+            const validSortDir = ['asc', 'desc'];
+            const safeSortColumn = validColumns.includes(sortColumn) ? sortColumn : 'ParticipantID';
+            const safeSortDir = validSortDir.includes(sortDir.toLowerCase()) ? sortDir.toLowerCase() : 'asc';
+
+            // Build query with optional search
+            let query = knex('Participants')
+                .select('ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 
+                        'ParticipantSchoolOrEmployer', 'ParticipantRole');
+
+            // Add search conditions if search term exists
+            if (searchTerm) {
+                const searchPattern = `%${searchTerm}%`;
+                query = query.where(function() {
+                    this.whereRaw('CAST("ParticipantID" AS TEXT) ILIKE ?', [searchPattern])
+                        .orWhere('ParticipantFirstName', 'ilike', searchPattern)
+                        .orWhere('ParticipantLastName', 'ilike', searchPattern)
+                        .orWhere('ParticipantSchoolOrEmployer', 'ilike', searchPattern)
+                        .orWhereRaw('("ParticipantFirstName" || \' \' || "ParticipantLastName") ILIKE ?', [searchPattern]);
+                });
+            }
+
+            // Get total count for pagination (with search filter)
+            const countQuery = knex('Participants');
+            if (searchTerm) {
+                const searchPattern = `%${searchTerm}%`;
+                countQuery.where(function() {
+                    this.whereRaw('CAST("ParticipantID" AS TEXT) ILIKE ?', [searchPattern])
+                        .orWhere('ParticipantFirstName', 'ilike', searchPattern)
+                        .orWhere('ParticipantLastName', 'ilike', searchPattern)
+                        .orWhere('ParticipantSchoolOrEmployer', 'ilike', searchPattern)
+                        .orWhereRaw('("ParticipantFirstName" || \' \' || "ParticipantLastName") ILIKE ?', [searchPattern]);
+                });
+            }
+            const totalCount = await countQuery.count('* as count').first();
+            const totalUsers = parseInt(totalCount.count);
+            const totalPages = Math.ceil(totalUsers / limit);
+
+            // Pull user data from database with pagination, search, and sorting
+            const users = await query
+                .orderBy(safeSortColumn, safeSortDir)
+                .limit(limit)
+                .offset(offset);
+            
+            res.render('users', { 
+                layout: 'public', 
+                pageTitle: 'Users',
+                users: users,
+                currentPage: page,
+                totalPages: totalPages,
+                totalUsers: totalUsers,
+                hasNextPage: page < totalPages,
+                searchTerm: searchTerm,
+                sortColumn: safeSortColumn,
+                sortDir: safeSortDir,
+                error: req.query.error || null
+            });
+        } catch (err) {
+            console.error('Error fetching users:', err);
+            return res.render('users', { 
+                layout: 'public', 
+                pageTitle: 'Users',
+                users: [],
+                error: 'Error loading users. Please try again.' 
+            });
+        }
+    }
+    else{
+        // Return 418 status code for non-admin access attempt
+        return res.status(418).render('landing', { 
+            layout: 'public', 
+            pageTitle: 'Welcome',
+            error: 'You do not have admin access' 
+        });
+    }
+});
+
+
+// POST /users: Handle role updates
+app.post('/users', async (req, res) => {
+    if(!req.session.isAdmin){
+        return res.status(418).render('landing', { 
+            layout: 'public', 
+            pageTitle: 'Welcome',
+            error: 'You do not have admin access' 
+        });
+    }
+
+    try {
+        const { participantId, newRole, preserveSearch, preserveSort, preserveSortDir, preservePage } = req.body;
+        
+        // Validate role
+        if (newRole !== 'a' && newRole !== 'p') {
+            return res.status(400).json({ error: 'Invalid role' });
+        }
+
+        // Update participant role
+        await knex('Participants')
+            .where('ParticipantID', participantId)
+            .update({ ParticipantRole: newRole });
+
+        // Build redirect URL with preserved parameters
+        let redirectUrl = '/users?';
+        const params = [];
+        if (preserveSearch) params.push('search=' + encodeURIComponent(preserveSearch));
+        if (preserveSort) params.push('sort=' + encodeURIComponent(preserveSort));
+        if (preserveSortDir) params.push('sortDir=' + encodeURIComponent(preserveSortDir));
+        if (preservePage) params.push('page=' + encodeURIComponent(preservePage));
+        
+        if (params.length > 0) {
+            redirectUrl += params.join('&');
+        } else {
+            redirectUrl = '/users';
+        }
+
+        return res.redirect(redirectUrl);
+    } catch (err) {
+        console.error('Error updating user role:', err);
+        return res.status(500).json({ error: 'Error updating user role' });
+    }
+});
+
+// POST /users/delete: Handle user deletion
+app.post('/users/delete', async (req, res) => {
+    if(!req.session.isAdmin){
+        return res.status(418).render('landing', { 
+            layout: 'public', 
+            pageTitle: 'Welcome',
+            error: 'You do not have admin access' 
+        });
+    }
+
+    try {
+        const { participantId, preserveSearch, preserveSort, preserveSortDir, preservePage } = req.body;
+        
+        if (!participantId) {
+            return res.status(400).json({ error: 'Participant ID required' });
+        }
+
+        // Delete participant
+        await knex('Participants')
+            .where('ParticipantID', participantId)
+            .del();
+
+        // Build redirect URL with preserved parameters
+        let redirectUrl = '/users?';
+        const params = [];
+        if (preserveSearch) params.push('search=' + encodeURIComponent(preserveSearch));
+        if (preserveSort) params.push('sort=' + encodeURIComponent(preserveSort));
+        if (preserveSortDir) params.push('sortDir=' + encodeURIComponent(preserveSortDir));
+        if (preservePage) params.push('page=' + encodeURIComponent(preservePage));
+        
+        if (params.length > 0) {
+            redirectUrl += params.join('&');
+        } else {
+            redirectUrl = '/users';
+        }
+
+        return res.redirect(redirectUrl);
+    } catch (err) {
+        console.error('Error deleting user:', err);
+        return res.status(500).json({ error: 'Error deleting user' });
+    }
+});
+
+// POST /users/add: Handle new user creation by admin
+app.post('/users/add', async (req, res) => {
+    if(!req.session.isAdmin){
+        return res.status(418).render('landing', { 
+            layout: 'public', 
+            pageTitle: 'Welcome',
+            error: 'You do not have admin access' 
+        });
+    }
+
+    try {
+        const { 
+            ParticipantEmail, 
+            ParticipantPassword, 
+            ParticipantFirstName, 
+            ParticipantLastName, 
+            ParticipantDOB, 
+            ParticipantPhone, 
+            ParticipantCity, 
+            ParticipantState, 
+            ParticipantZip,
+            ParticipantSchoolOrEmployer,
+            ParticipantFieldOfInterest,
+            ParticipantRole
+        } = req.body;
+
+        // Validate required fields
+        if (!ParticipantEmail || !ParticipantPassword || !ParticipantFirstName || !ParticipantLastName || !ParticipantDOB) {
+            return res.redirect('/users?error=' + encodeURIComponent('All required fields must be filled'));
+        }
+
+        // Validate role
+        const roleToUse = (ParticipantRole === 'a') ? 'a' : 'p';
+
+        // Check if email already exists
+        const existingParticipant = await knex('Participants')
+            .where('ParticipantEmail', ParticipantEmail)
+            .first();
+
+        if (existingParticipant) {
+            return res.redirect('/users?error=' + encodeURIComponent('An account with that email already exists'));
+        }
+
+        // Insert new participant
+        await knex('Participants').insert({
+            ParticipantEmail,
+            ParticipantPassword,
+            ParticipantFirstName,
+            ParticipantLastName,
+            ParticipantDOB,
+            ParticipantPhone: ParticipantPhone || null,
+            ParticipantCity: ParticipantCity || null,
+            ParticipantState: ParticipantState || null,
+            ParticipantZip: ParticipantZip || null,
+            ParticipantSchoolOrEmployer: ParticipantSchoolOrEmployer || null,
+            ParticipantFieldOfInterest: ParticipantFieldOfInterest || null,
+            ParticipantRole: roleToUse
+        });
+
+        return res.redirect('/users');
+    } catch (err) {
+        console.error('Error creating user:', err);
+        return res.redirect('/users?error=' + encodeURIComponent('Error creating user. Please try again.'));
+    }
+});
+
 
 
 
