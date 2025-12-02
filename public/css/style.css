@@ -141,6 +141,27 @@ footer {
     text-align: center;
 }
 
+/* -------- TABLE STYLING -------- */
+table, 
+table th, 
+table td {
+    border-radius: 0 !important;
+}
+
+.table thead th {
+    border-radius: 0 !important;
+    vertical-align: middle !important;
+}
+
+.table tbody tr {
+    border-radius: 0 !important;
+}
+
+.table tbody td {
+    border-radius: 0 !important;
+    vertical-align: middle !important;
+}
+
 /* =======================================
    FEATURE IMAGE CARDS (Hawaiian Style)
 ======================================= */
