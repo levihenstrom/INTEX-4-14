@@ -17,11 +17,19 @@
                     <% } %>
                 </div>
             </form>
+            <button type="button" class="btn btn-success" style="background-color: #28a745; border-color: #28a745;" data-bs-toggle="modal" data-bs-target="#addUserModal">
+            + Add New Participant
+        </button>
         </div>
         
         <% if (typeof error !== 'undefined' && error) { %>
             <div class="alert alert-danger" role="alert">
                 <%= error %>
+            </div>
+        <% } %>
+        <% if (typeof success !== 'undefined' && success) { %>
+            <div class="alert alert-success" role="alert">
+                <%= success %>
             </div>
         <% } %>
     
@@ -47,9 +55,21 @@
                                 <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
                             <% } %>
                         </th>
+                        <th style="cursor: pointer;" onclick="sortTable('ParticipantDOB')">
+                            Age
+                            <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantDOB') { %>
+                                <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
+                            <% } %>
+                        </th>
                         <th style="cursor: pointer;" onclick="sortTable('ParticipantEmail')">
                             Email
                             <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantEmail') { %>
+                                <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
+                            <% } %>
+                        </th>
+                        <th style="cursor: pointer;" onclick="sortTable('ParticipantPhone')">
+                            Phone
+                            <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantPhone') { %>
                                 <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
                             <% } %>
                         </th>
@@ -65,6 +85,13 @@
                                 <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
                             <% } %>
                         </th>
+                        
+                        <th style="cursor: pointer;" onclick="sortTable('ParticipantFieldOfInterest')">
+                            Interest
+                            <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantFieldOfInterest') { %>
+                                <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
+                            <% } %>
+                        </th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -75,36 +102,22 @@
                                 <td><%= participant.ParticipantID %></td>
                                 <td><%= participant.ParticipantFirstName || 'N/A' %></td>
                                 <td><%= participant.ParticipantLastName || 'N/A' %></td>
+                                <td><%= typeof participant.ParticipantAge === 'number' ? participant.ParticipantAge : 'N/A' %></td>
                                 <td><%= participant.ParticipantEmail || 'N/A' %></td>
+                                <td><%= participant.ParticipantPhone || 'N/A' %></td>
                                 <td><%= participant.ParticipantSchoolOrEmployer || 'N/A' %></td>
                                 <td><%= participant.ParticipantCity || 'N/A' %></td>
+                                <td><%= participant.ParticipantFieldOfInterest || 'N/A' %></td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-primary edit-participant-btn" 
-                                            data-participant-id="<%= participant.ParticipantID %>"
-                                            data-first-name="<%= participant.ParticipantFirstName || '' %>"
-                                            data-last-name="<%= participant.ParticipantLastName || '' %>"
-                                            data-dob="<%= participant.ParticipantDOB || '' %>"
-                                            data-phone="<%= participant.ParticipantPhone || '' %>"
-                                            data-city="<%= participant.ParticipantCity || '' %>"
-                                            data-state="<%= participant.ParticipantState || '' %>"
-                                            data-zip="<%= participant.ParticipantZip || '' %>"
-                                            data-school="<%= participant.ParticipantSchoolOrEmployer || '' %>"
-                                            data-interest="<%= participant.ParticipantFieldOfInterest || '' %>"
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#editParticipantModal"
-                                            style="min-width: 80px;">
-                                        Edit
+                                    <!--View Milestones -->
+                                    <button 
+                                    
+                                    >
+
+
+                                    View Milestones
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-danger ms-2 delete-participant-btn" 
-                                            data-participant-id="<%= participant.ParticipantID %>"
-                                            data-participant-name="<%= participant.ParticipantFirstName %> <%= participant.ParticipantLastName %>"
-                                            data-preserve-search="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>"
-                                            data-preserve-sort="<%= typeof sortColumn !== 'undefined' ? sortColumn : 'ParticipantID' %>"
-                                            data-preserve-sort-dir="<%= typeof sortDir !== 'undefined' ? sortDir : 'asc' %>"
-                                            data-preserve-page="<%= typeof currentPage !== 'undefined' ? currentPage : 1 %>"
-                                            style="min-width: 80px;">
-                                        Delete
-                                    </button>
+                                    
                                 </td>
                             </tr>
                         <% }); %>
@@ -142,101 +155,115 @@
         </div>
     </div>
 
-    <!-- Edit Participant Modal -->
-    <div class="modal fade" id="editParticipantModal" tabindex="-1" aria-labelledby="editParticipantModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editParticipantModalLabel">Edit Participant</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editParticipantForm" action="/participants" method="POST">
-                        <input type="hidden" name="participantId" id="editParticipantId">
-                        <input type="hidden" name="preserveSearch" value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
-                        <input type="hidden" name="preserveSort" value="<%= typeof sortColumn !== 'undefined' ? sortColumn : 'ParticipantID' %>">
-                        <input type="hidden" name="preserveSortDir" value="<%= typeof sortDir !== 'undefined' ? sortDir : 'asc' %>">
-                        <input type="hidden" name="preservePage" value="<%= typeof currentPage !== 'undefined' ? currentPage : 1 %>">
+    <!-- Add Participant Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addUserModalLabel">Add New Participant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addUserForm" action="/participants/add" method="POST">
+                    <!-- Name -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modalParticipantFirstName" class="form-label">First Name *</label>
+                            <input type="text" class="form-control" id="modalParticipantFirstName" 
+                                name="ParticipantFirstName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modalParticipantLastName" class="form-label">Last Name *</label>
+                            <input type="text" class="form-control" id="modalParticipantLastName" 
+                                name="ParticipantLastName" required>
+                        </div>
+                    </div>
+
+                    <!-- Email & Password -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modalParticipantEmail" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="modalParticipantEmail" 
+                                   name="ParticipantEmail" required
+                                   pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
+                                   oninvalid="this.setCustomValidity('Please input a valid email')"
+                                   oninput="this.setCustomValidity('')">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modalParticipantPhone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="modalParticipantPhone" 
+                                   name="ParticipantPhone" inputmode="numeric" maxlength="12"
+                                   pattern="\d{3}-\d{3}-\d{4}"
+                                   title="Phone must be in the format 111-111-1111">
+                        </div>
+                    </div>
+
+                    <!-- DOB & Phone -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modalParticipantDOB" class="form-label">Date of Birth *</label>
+                            <input type="date" class="form-control" id="modalParticipantDOB" 
+                                   name="ParticipantDOB" required>
+                        </div>
                         
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="editParticipantFirstName" class="form-label">First Name *</label>
-                                <input type="text" class="form-control" id="editParticipantFirstName" 
-                                       name="ParticipantFirstName" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="editParticipantLastName" class="form-label">Last Name *</label>
-                                <input type="text" class="form-control" id="editParticipantLastName" 
-                                       name="ParticipantLastName" required>
-                            </div>
-                        </div>
+                    </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="editParticipantDOB" class="form-label">Date of Birth</label>
-                                <input type="date" class="form-control" id="editParticipantDOB" 
-                                       name="ParticipantDOB">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="editParticipantPhone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="editParticipantPhone" 
-                                       name="ParticipantPhone" inputmode="numeric" maxlength="12"
-                                       pattern="\d{3}-\d{3}-\d{4}"
-                                       title="Phone must be in the format 111-111-1111">
-                            </div>
+                    <!-- Location -->
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="modalParticipantCity" class="form-label">City</label>
+                            <input type="text" class="form-control" id="modalParticipantCity" 
+                                   name="ParticipantCity">
                         </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="modalParticipantState" class="form-label">State</label>
+                            <input type="text" class="form-control" id="modalParticipantState" 
+                                   name="ParticipantState">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="modalParticipantZip" class="form-label">ZIP Code</label>
+                            <input type="text" class="form-control" id="modalParticipantZip" 
+                                   name="ParticipantZip">
+                        </div>
+                    </div>
 
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="editParticipantCity" class="form-label">City</label>
-                                <input type="text" class="form-control" id="editParticipantCity" 
-                                       name="ParticipantCity">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="editParticipantState" class="form-label">State</label>
-                                <input type="text" class="form-control" id="editParticipantState" 
-                                       name="ParticipantState">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="editParticipantZip" class="form-label">ZIP Code</label>
-                                <input type="text" class="form-control" id="editParticipantZip" 
-                                       name="ParticipantZip">
-                            </div>
-                        </div>
+                    <!-- School/Employer -->
+                    <div class="mb-3">
+                        <label for="modalParticipantSchoolOrEmployer" class="form-label">School or Employer</label>
+                        <input type="text" class="form-control" id="modalParticipantSchoolOrEmployer" 
+                               name="ParticipantSchoolOrEmployer">
+                    </div>
 
-                        <div class="mb-3">
-                            <label for="editParticipantSchoolOrEmployer" class="form-label">School or Employer</label>
-                            <input type="text" class="form-control" id="editParticipantSchoolOrEmployer" 
-                                   name="ParticipantSchoolOrEmployer">
+                    <!-- Field of Interest -->
+                    <div class="mb-3">
+                        <label class="form-label">Field of Interest</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
+                                   id="modal_interest_stem" value="STEM">
+                            <label class="form-check-label" for="modal_interest_stem">STEM</label>
                         </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
+                                   id="modal_interest_arts" value="Arts">
+                            <label class="form-check-label" for="modal_interest_arts">Arts</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
+                                   id="modal_interest_both" value="Both">
+                            <label class="form-check-label" for="modal_interest_both">Both</label>
+                        </div>
+                    </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Field of Interest</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
-                                       id="edit_interest_stem" value="STEM">
-                                <label class="form-check-label" for="edit_interest_stem">STEM</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
-                                       id="edit_interest_arts" value="Arts">
-                                <label class="form-check-label" for="edit_interest_arts">Arts</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
-                                       id="edit_interest_both" value="Both">
-                                <label class="form-check-label" for="edit_interest_both">Both</label>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="editParticipantForm" class="btn btn-primary">Save Changes</button>
-                </div>
+                    <input type="hidden" name="ParticipantRole" value="p">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="addUserForm" class="btn btn-success">Create Participant</button>
             </div>
         </div>
     </div>
+</div>
     
     <script>
     function sortTable(column) {
@@ -338,147 +365,6 @@
                     formatted += '-' + digits.substring(6, 10);
                 }
                 editPhoneInput.value = formatted;
-            });
-        }
-    });
-    </script>
-    
-<% } else if (user) { %>
-    <!-- Regular User View: Show their own profile -->
-    <div class="participants-page">
-        <h1 class="mb-4">My Profile</h1>
-        
-        <% if (typeof error !== 'undefined' && error) { %>
-            <div class="alert alert-danger" role="alert">
-                <%= error %>
-            </div>
-        <% } %>
-
-        <div class="row">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-body">
-                        <form action="/participants" method="POST">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="userParticipantFirstName" class="form-label">First Name *</label>
-                                    <input type="text" class="form-control" id="userParticipantFirstName" 
-                                           name="ParticipantFirstName" 
-                                           value="<%= participant.ParticipantFirstName || '' %>" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="userParticipantLastName" class="form-label">Last Name *</label>
-                                    <input type="text" class="form-control" id="userParticipantLastName" 
-                                           name="ParticipantLastName" 
-                                           value="<%= participant.ParticipantLastName || '' %>" required>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="userParticipantEmail" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="userParticipantEmail" 
-                                       value="<%= participant.ParticipantEmail || '' %>" disabled>
-                                <small class="form-text text-muted">Email cannot be changed</small>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="userParticipantDOB" class="form-label">Date of Birth</label>
-                                    <input type="date" class="form-control" id="userParticipantDOB" 
-                                           name="ParticipantDOB" 
-                                           value="<%= participant.ParticipantDOB || '' %>">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="userParticipantPhone" class="form-label">Phone Number</label>
-                                    <input type="tel" class="form-control" id="userParticipantPhone" 
-                                           name="ParticipantPhone" inputmode="numeric" maxlength="12"
-                                           pattern="\d{3}-\d{3}-\d{4}"
-                                           title="Phone must be in the format 111-111-1111"
-                                           value="<%= participant.ParticipantPhone || '' %>">
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label for="userParticipantCity" class="form-label">City</label>
-                                    <input type="text" class="form-control" id="userParticipantCity" 
-                                           name="ParticipantCity" 
-                                           value="<%= participant.ParticipantCity || '' %>">
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="userParticipantState" class="form-label">State</label>
-                                    <input type="text" class="form-control" id="userParticipantState" 
-                                           name="ParticipantState" 
-                                           value="<%= participant.ParticipantState || '' %>">
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="userParticipantZip" class="form-label">ZIP Code</label>
-                                    <input type="text" class="form-control" id="userParticipantZip" 
-                                           name="ParticipantZip" 
-                                           value="<%= participant.ParticipantZip || '' %>">
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="userParticipantSchoolOrEmployer" class="form-label">School or Employer</label>
-                                <input type="text" class="form-control" id="userParticipantSchoolOrEmployer" 
-                                       name="ParticipantSchoolOrEmployer" 
-                                       value="<%= participant.ParticipantSchoolOrEmployer || '' %>">
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Field of Interest</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
-                                           id="user_interest_stem" value="STEM"
-                                           <%= participant.ParticipantFieldOfInterest === 'STEM' ? 'checked' : '' %>>
-                                    <label class="form-check-label" for="user_interest_stem">STEM</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
-                                           id="user_interest_arts" value="Arts"
-                                           <%= participant.ParticipantFieldOfInterest === 'Arts' ? 'checked' : '' %>>
-                                    <label class="form-check-label" for="user_interest_arts">Arts</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
-                                           id="user_interest_both" value="Both"
-                                           <%= participant.ParticipantFieldOfInterest === 'Both' ? 'checked' : '' %>>
-                                    <label class="form-check-label" for="user_interest_both">Both</label>
-                                </div>
-                            </div>
-
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary">Update Profile</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Phone formatting
-        const userPhoneInput = document.getElementById('userParticipantPhone');
-        if (userPhoneInput) {
-            userPhoneInput.addEventListener('input', function () {
-                let digits = userPhoneInput.value.replace(/\D/g, '');
-                if (digits.length > 10) {
-                    digits = digits.slice(0, 10);
-                }
-                let formatted = '';
-                if (digits.length > 0) {
-                    formatted = digits.substring(0, 3);
-                }
-                if (digits.length >= 4) {
-                    formatted += '-' + digits.substring(3, 6);
-                }
-                if (digits.length >= 7) {
-                    formatted += '-' + digits.substring(6, 10);
-                }
-                userPhoneInput.value = formatted;
             });
         }
     });

@@ -13,6 +13,40 @@ const knexConfig = require("./knexfile");
 const environment = process.env.NODE_ENV || "development";
 const knex = require("knex")(knexConfig[environment]);
 
+// Simple date format helpers for profile views
+const formatDateForDisplay = (dateValue) => {
+    if (!dateValue) return null;
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime())) return null;
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
+};
+
+const formatDateForInput = (dateValue) => {
+    if (!dateValue) return null;
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime())) return null;
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${year}-${month}-${day}`;
+};
+
+const calculateAge = (dateValue) => {
+    if (!dateValue) return null;
+    const birthDate = new Date(dateValue);
+    if (Number.isNaN(birthDate.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age;
+};
+
 // 4. Middleware Configuration
 app.use(express.urlencoded({ extended: true })); // Handle form submissions
 app.use(express.json()); // Handle JSON data
@@ -234,16 +268,36 @@ app.get('/users', async (req, res) => {
             const sortDir = req.query.sortDir || 'asc';
 
             // Validate sort column and direction
-            const validColumns = ['ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 
-                                 'ParticipantSchoolOrEmployer', 'ParticipantRole'];
+            const validColumns = [
+                'ParticipantID',
+                'ParticipantFirstName',
+                'ParticipantLastName',
+                'ParticipantEmail',
+                'ParticipantSchoolOrEmployer',
+                'ParticipantCity',
+                'ParticipantState',
+                'ParticipantRole'
+            ];
             const validSortDir = ['asc', 'desc'];
             const safeSortColumn = validColumns.includes(sortColumn) ? sortColumn : 'ParticipantID';
             const safeSortDir = validSortDir.includes(sortDir.toLowerCase()) ? sortDir.toLowerCase() : 'asc';
 
             // Build query with optional search
             let query = knex('Participants')
-                .select('ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 
-                        'ParticipantSchoolOrEmployer', 'ParticipantRole');
+                .select(
+                    'ParticipantID',
+                    'ParticipantFirstName',
+                    'ParticipantLastName',
+                    'ParticipantEmail',
+                    'ParticipantDOB',
+                    'ParticipantPhone',
+                    'ParticipantCity',
+                    'ParticipantState',
+                    'ParticipantZip',
+                    'ParticipantSchoolOrEmployer',
+                    'ParticipantFieldOfInterest',
+                    'ParticipantRole'
+                );
 
             // Add search conditions if search term exists
             if (searchTerm) {
@@ -252,7 +306,10 @@ app.get('/users', async (req, res) => {
                     this.whereRaw('CAST("ParticipantID" AS TEXT) ILIKE ?', [searchPattern])
                         .orWhere('ParticipantFirstName', 'ilike', searchPattern)
                         .orWhere('ParticipantLastName', 'ilike', searchPattern)
+                        .orWhere('ParticipantEmail', 'ilike', searchPattern)
                         .orWhere('ParticipantSchoolOrEmployer', 'ilike', searchPattern)
+                        .orWhere('ParticipantCity', 'ilike', searchPattern)
+                        .orWhere('ParticipantState', 'ilike', searchPattern)
                         .orWhereRaw('("ParticipantFirstName" || \' \' || "ParticipantLastName") ILIKE ?', [searchPattern]);
                 });
             }
@@ -265,7 +322,10 @@ app.get('/users', async (req, res) => {
                     this.whereRaw('CAST("ParticipantID" AS TEXT) ILIKE ?', [searchPattern])
                         .orWhere('ParticipantFirstName', 'ilike', searchPattern)
                         .orWhere('ParticipantLastName', 'ilike', searchPattern)
+                        .orWhere('ParticipantEmail', 'ilike', searchPattern)
                         .orWhere('ParticipantSchoolOrEmployer', 'ilike', searchPattern)
+                        .orWhere('ParticipantCity', 'ilike', searchPattern)
+                        .orWhere('ParticipantState', 'ilike', searchPattern)
                         .orWhereRaw('("ParticipantFirstName" || \' \' || "ParticipantLastName") ILIKE ?', [searchPattern]);
                 });
             }
@@ -290,7 +350,8 @@ app.get('/users', async (req, res) => {
                 searchTerm: searchTerm,
                 sortColumn: safeSortColumn,
                 sortDir: safeSortDir,
-                error: req.query.error || null
+                error: req.query.error || null,
+                success: req.query.success || null
             });
         } catch (err) {
             console.error('Error fetching users:', err);
@@ -298,7 +359,8 @@ app.get('/users', async (req, res) => {
                 layout: 'public', 
                 pageTitle: 'Users',
                 users: [],
-                error: 'Error loading users. Please try again.' 
+                error: 'Error loading users. Please try again.',
+                success: null
             });
         }
     }
@@ -459,11 +521,84 @@ app.post('/users/add', async (req, res) => {
             ParticipantRole: roleToUse
         });
 
-        return res.redirect('/users');
+        return res.redirect('/users?success=' + encodeURIComponent('User successfully added.'));
     } catch (err) {
         console.error('Error creating user:', err);
         return res.redirect('/users?error=' + encodeURIComponent('Error creating user. Please try again.'));
     }
+});
+
+//GET /profile
+app.get('/profile', async (req, res) => {
+        // Regular user view: show only their own data
+        try {
+            const participantId = req.session.user.ParticipantID;
+            const participantPromise = knex('Participants')
+                .where('ParticipantID', participantId)
+                .first();
+            const totalEventsPromise = knex('Registration')
+                .where('ParticipantID', participantId)
+                .andWhere('RegistrationAttendedFlag', true)
+                .count('RegistrationID as count')
+                .first();
+            const recentMilestonePromise = knex('Participant_Milestone')
+                .where('ParticipantID', participantId)
+                .orderBy('MilestoneDate', 'desc')
+                .orderBy('MilestoneID', 'desc')
+                .first();
+            const donationSumPromise = knex('Participant_Donation')
+                .where('ParticipantID', participantId)
+                .sum('DonationAmount as total')
+                .first();
+
+            const [participant, totalEventsRow, recentMilestone, donationSumRow] = await Promise.all([
+                participantPromise,
+                totalEventsPromise,
+                recentMilestonePromise,
+                donationSumPromise
+            ]);
+            
+            if (!participant) {
+                return res.render('profile', { 
+                    layout: 'public', 
+                    pageTitle: 'Profile',
+                    participant: null,
+                    error: 'Profile not found.',
+                    profileDOBDisplay: null,
+                    profileDOBInput: null
+                });
+            }
+
+            const totalEventsAttended = parseInt(totalEventsRow?.count, 10) || 0;
+            const totalDonations = parseFloat(donationSumRow?.total) || 0;
+            const totalDonationsDisplay = totalDonations.toFixed(2);
+            const profileDOBDisplay = formatDateForDisplay(participant.ParticipantDOB);
+            const profileDOBInput = formatDateForInput(participant.ParticipantDOB);
+
+            res.render('profile', { 
+                layout: 'public', 
+                pageTitle: 'My Profile',
+                participant,
+                metrics: {
+                    totalEventsAttended,
+                    recentMilestone,
+                    totalDonations,
+                    totalDonationsDisplay
+                },
+                profileDOBDisplay,
+                profileDOBInput
+            });
+        } catch (err) {
+            console.error('Error fetching profile:', err);
+            return res.render('/', { 
+                layout: 'public', 
+                pageTitle: 'Home',
+                participant: null,
+                error: 'Error loading your profile. Please try again.',
+                profileDOBDisplay: null,
+                profileDOBInput: null
+            });
+        }
 });
 
 
@@ -481,9 +616,9 @@ app.get('/participants', async (req, res) => {
             const sortDir = req.query.sortDir || 'asc';
 
             // Validate sort column and direction
-            const validColumns = ['ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 
+            const validColumns = ['ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 'ParticipantDOB',
                                  'ParticipantSchoolOrEmployer', 'ParticipantRole', 'ParticipantEmail', 
-                                 'ParticipantCity', 'ParticipantState'];
+                                 'ParticipantCity', 'ParticipantState', 'ParticipantPhone', 'ParticipantFieldOfInterest'];
             const validSortDir = ['asc', 'desc'];
             const safeSortColumn = validColumns.includes(sortColumn) ? sortColumn : 'ParticipantID';
             const safeSortDir = validSortDir.includes(sortDir.toLowerCase()) ? sortDir.toLowerCase() : 'asc';
@@ -505,6 +640,7 @@ app.get('/participants', async (req, res) => {
                         .orWhere('ParticipantEmail', 'ilike', searchPattern)
                         .orWhere('ParticipantSchoolOrEmployer', 'ilike', searchPattern)
                         .orWhere('ParticipantCity', 'ilike', searchPattern)
+                        .orWhere('ParticipantPhone', 'ilike', searchPattern)
                         .orWhereRaw('("ParticipantFirstName" || \' \' || "ParticipantLastName") ILIKE ?', [searchPattern]);
                 });
             }
@@ -520,6 +656,7 @@ app.get('/participants', async (req, res) => {
                         .orWhere('ParticipantEmail', 'ilike', searchPattern)
                         .orWhere('ParticipantSchoolOrEmployer', 'ilike', searchPattern)
                         .orWhere('ParticipantCity', 'ilike', searchPattern)
+                        .orWhere('ParticipantPhone', 'ilike', searchPattern)
                         .orWhereRaw('("ParticipantFirstName" || \' \' || "ParticipantLastName") ILIKE ?', [searchPattern]);
                 });
             }
@@ -532,11 +669,16 @@ app.get('/participants', async (req, res) => {
                 .orderBy(safeSortColumn, safeSortDir)
                 .limit(limit)
                 .offset(offset);
+
+            const participantsWithAge = participants.map(participant => ({
+                ...participant,
+                ParticipantAge: calculateAge(participant.ParticipantDOB)
+            }));
             
             res.render('participants', { 
                 layout: 'public', 
                 pageTitle: 'Participants',
-                participants: participants,
+                participants: participantsWithAge,
                 currentPage: page,
                 totalPages: totalPages,
                 totalUsers: totalUsers,
@@ -544,7 +686,10 @@ app.get('/participants', async (req, res) => {
                 searchTerm: searchTerm,
                 sortColumn: safeSortColumn,
                 sortDir: safeSortDir,
-                error: req.query.error || null
+                error: req.query.error || null,
+                success: req.query.success || null,
+                profileDOBDisplay: null,
+                profileDOBInput: null
             });
         } catch (err) {
             console.error('Error fetching participants:', err);
@@ -552,40 +697,13 @@ app.get('/participants', async (req, res) => {
                 layout: 'public', 
                 pageTitle: 'Participants',
                 participants: [],
-                error: 'Error loading participants. Please try again.' 
+                error: 'Error loading participants. Please try again.',
+                success: null,
+                profileDOBDisplay: null,
+                profileDOBInput: null
             });
         }
-    } else {
-        // Regular user view: show only their own data
-        try {
-            const participant = await knex('Participants')
-                .where('ParticipantID', req.session.user.ParticipantID)
-                .first();
-            
-            if (!participant) {
-                return res.render('participants', { 
-                    layout: 'public', 
-                    pageTitle: 'Participants',
-                    participant: null,
-                    error: 'Participant not found.' 
-                });
-            }
-
-            res.render('participants', { 
-                layout: 'public', 
-                pageTitle: 'My Profile',
-                participant: participant
-            });
-        } catch (err) {
-            console.error('Error fetching participant:', err);
-            return res.render('participants', { 
-                layout: 'public', 
-                pageTitle: 'Participants',
-                participant: null,
-                error: 'Error loading your profile. Please try again.' 
-            });
-        }
-    }
+    } 
 });
 
 // POST /participants: Handle participant updates
@@ -605,7 +723,8 @@ app.post('/participants', async (req, res) => {
             preserveSearch,
             preserveSort,
             preserveSortDir,
-            preservePage
+            preservePage,
+            redirectTo
         } = req.body;
 
         // Determine which participant to update
@@ -638,6 +757,9 @@ app.post('/participants', async (req, res) => {
 
         // Build redirect URL
         if (req.session.isAdmin) {
+            if (redirectTo) {
+                return res.redirect(redirectTo);
+            }
             let redirectUrl = '/participants?';
             const params = [];
             if (preserveSearch) params.push('search=' + encodeURIComponent(preserveSearch));
@@ -704,6 +826,68 @@ app.post('/participants/delete', async (req, res) => {
     } catch (err) {
         console.error('Error deleting participant:', err);
         return res.status(500).json({ error: 'Error deleting participant' });
+    }
+});
+
+// POST /participants/add: Handle new participant creation by admin
+app.post('/participants/add', async (req, res) => {
+    if(!req.session.isAdmin){
+        return res.status(418).render('landing', { 
+            layout: 'public', 
+            pageTitle: 'Welcome',
+            error: 'You do not have admin access' 
+        });
+    }
+
+    try {
+        const { 
+            ParticipantEmail, 
+            ParticipantPassword, 
+            ParticipantFirstName, 
+            ParticipantLastName, 
+            ParticipantDOB, 
+            ParticipantPhone, 
+            ParticipantCity, 
+            ParticipantState, 
+            ParticipantZip,
+            ParticipantSchoolOrEmployer,
+            ParticipantFieldOfInterest,
+            ParticipantRole
+        } = req.body;
+
+        if (!ParticipantEmail || !ParticipantFirstName || !ParticipantLastName || !ParticipantDOB) {
+            return res.redirect('/participants?error=' + encodeURIComponent('All required fields must be filled.'));
+        }
+
+        const roleToUse = ParticipantRole === 'a' ? 'a' : 'p';
+
+        const existingParticipant = await knex('Participants')
+            .where('ParticipantEmail', ParticipantEmail)
+            .first();
+
+        if (existingParticipant) {
+            return res.redirect('/participants?error=' + encodeURIComponent('An account with that email already exists'));
+        }
+
+        await knex('Participants').insert({
+            ParticipantEmail,
+            ParticipantPassword: ParticipantPassword || null,
+            ParticipantFirstName,
+            ParticipantLastName,
+            ParticipantDOB,
+            ParticipantPhone: ParticipantPhone || null,
+            ParticipantCity: ParticipantCity || null,
+            ParticipantState: ParticipantState || null,
+            ParticipantZip: ParticipantZip || null,
+            ParticipantSchoolOrEmployer: ParticipantSchoolOrEmployer || null,
+            ParticipantFieldOfInterest: ParticipantFieldOfInterest || null,
+            ParticipantRole: roleToUse
+        });
+
+        return res.redirect('/participants?success=' + encodeURIComponent('Participant successfully added.'));
+    } catch (err) {
+        console.error('Error creating participant:', err);
+        return res.redirect('/participants?error=' + encodeURIComponent('Error creating participant. Please try again.'));
     }
 });
 
