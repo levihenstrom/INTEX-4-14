@@ -467,7 +467,245 @@ app.post('/users/add', async (req, res) => {
 });
 
 
+// GET /participants
+app.get('/participants', async (req, res) => {
+    // Already checked for login by middleware
+    if(req.session.isAdmin){
+        // Admin view: show all participants with management
+        try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = 50;
+            const offset = (page - 1) * limit;
+            const searchTerm = req.query.search || '';
+            const sortColumn = req.query.sort || 'ParticipantID';
+            const sortDir = req.query.sortDir || 'asc';
 
+            // Validate sort column and direction
+            const validColumns = ['ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 
+                                 'ParticipantSchoolOrEmployer', 'ParticipantRole', 'ParticipantEmail', 
+                                 'ParticipantCity', 'ParticipantState'];
+            const validSortDir = ['asc', 'desc'];
+            const safeSortColumn = validColumns.includes(sortColumn) ? sortColumn : 'ParticipantID';
+            const safeSortDir = validSortDir.includes(sortDir.toLowerCase()) ? sortDir.toLowerCase() : 'asc';
+
+            // Build query with optional search
+            let query = knex('Participants')
+                .select('ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 
+                        'ParticipantEmail', 'ParticipantDOB', 'ParticipantPhone',
+                        'ParticipantCity', 'ParticipantState', 'ParticipantZip',
+                        'ParticipantSchoolOrEmployer', 'ParticipantFieldOfInterest', 'ParticipantRole');
+
+            // Add search conditions if search term exists
+            if (searchTerm) {
+                const searchPattern = `%${searchTerm}%`;
+                query = query.where(function() {
+                    this.whereRaw('CAST("ParticipantID" AS TEXT) ILIKE ?', [searchPattern])
+                        .orWhere('ParticipantFirstName', 'ilike', searchPattern)
+                        .orWhere('ParticipantLastName', 'ilike', searchPattern)
+                        .orWhere('ParticipantEmail', 'ilike', searchPattern)
+                        .orWhere('ParticipantSchoolOrEmployer', 'ilike', searchPattern)
+                        .orWhere('ParticipantCity', 'ilike', searchPattern)
+                        .orWhereRaw('("ParticipantFirstName" || \' \' || "ParticipantLastName") ILIKE ?', [searchPattern]);
+                });
+            }
+
+            // Get total count for pagination (with search filter)
+            const countQuery = knex('Participants');
+            if (searchTerm) {
+                const searchPattern = `%${searchTerm}%`;
+                countQuery.where(function() {
+                    this.whereRaw('CAST("ParticipantID" AS TEXT) ILIKE ?', [searchPattern])
+                        .orWhere('ParticipantFirstName', 'ilike', searchPattern)
+                        .orWhere('ParticipantLastName', 'ilike', searchPattern)
+                        .orWhere('ParticipantEmail', 'ilike', searchPattern)
+                        .orWhere('ParticipantSchoolOrEmployer', 'ilike', searchPattern)
+                        .orWhere('ParticipantCity', 'ilike', searchPattern)
+                        .orWhereRaw('("ParticipantFirstName" || \' \' || "ParticipantLastName") ILIKE ?', [searchPattern]);
+                });
+            }
+            const totalCount = await countQuery.count('* as count').first();
+            const totalUsers = parseInt(totalCount.count);
+            const totalPages = Math.ceil(totalUsers / limit);
+
+            // Pull participant data from database with pagination, search, and sorting
+            const participants = await query
+                .orderBy(safeSortColumn, safeSortDir)
+                .limit(limit)
+                .offset(offset);
+            
+            res.render('participants', { 
+                layout: 'public', 
+                pageTitle: 'Participants',
+                participants: participants,
+                currentPage: page,
+                totalPages: totalPages,
+                totalUsers: totalUsers,
+                hasNextPage: page < totalPages,
+                searchTerm: searchTerm,
+                sortColumn: safeSortColumn,
+                sortDir: safeSortDir,
+                error: req.query.error || null
+            });
+        } catch (err) {
+            console.error('Error fetching participants:', err);
+            return res.render('participants', { 
+                layout: 'public', 
+                pageTitle: 'Participants',
+                participants: [],
+                error: 'Error loading participants. Please try again.' 
+            });
+        }
+    } else {
+        // Regular user view: show only their own data
+        try {
+            const participant = await knex('Participants')
+                .where('ParticipantID', req.session.user.ParticipantID)
+                .first();
+            
+            if (!participant) {
+                return res.render('participants', { 
+                    layout: 'public', 
+                    pageTitle: 'Participants',
+                    participant: null,
+                    error: 'Participant not found.' 
+                });
+            }
+
+            res.render('participants', { 
+                layout: 'public', 
+                pageTitle: 'My Profile',
+                participant: participant
+            });
+        } catch (err) {
+            console.error('Error fetching participant:', err);
+            return res.render('participants', { 
+                layout: 'public', 
+                pageTitle: 'Participants',
+                participant: null,
+                error: 'Error loading your profile. Please try again.' 
+            });
+        }
+    }
+});
+
+// POST /participants: Handle participant updates
+app.post('/participants', async (req, res) => {
+    try {
+        const { 
+            participantId,
+            ParticipantFirstName, 
+            ParticipantLastName, 
+            ParticipantDOB, 
+            ParticipantPhone, 
+            ParticipantCity, 
+            ParticipantState, 
+            ParticipantZip,
+            ParticipantSchoolOrEmployer,
+            ParticipantFieldOfInterest,
+            preserveSearch,
+            preserveSort,
+            preserveSortDir,
+            preservePage
+        } = req.body;
+
+        // Determine which participant to update
+        let targetParticipantId;
+        if (req.session.isAdmin) {
+            // Admin can update any participant
+            if (!participantId) {
+                return res.status(400).json({ error: 'Participant ID required' });
+            }
+            targetParticipantId = participantId;
+        } else {
+            // Regular user can only update their own profile
+            targetParticipantId = req.session.user.ParticipantID;
+        }
+
+        // Update participant
+        await knex('Participants')
+            .where('ParticipantID', targetParticipantId)
+            .update({
+                ParticipantFirstName,
+                ParticipantLastName,
+                ParticipantDOB: ParticipantDOB || null,
+                ParticipantPhone: ParticipantPhone || null,
+                ParticipantCity: ParticipantCity || null,
+                ParticipantState: ParticipantState || null,
+                ParticipantZip: ParticipantZip || null,
+                ParticipantSchoolOrEmployer: ParticipantSchoolOrEmployer || null,
+                ParticipantFieldOfInterest: ParticipantFieldOfInterest || null
+            });
+
+        // Build redirect URL
+        if (req.session.isAdmin) {
+            let redirectUrl = '/participants?';
+            const params = [];
+            if (preserveSearch) params.push('search=' + encodeURIComponent(preserveSearch));
+            if (preserveSort) params.push('sort=' + encodeURIComponent(preserveSort));
+            if (preserveSortDir) params.push('sortDir=' + encodeURIComponent(preserveSortDir));
+            if (preservePage) params.push('page=' + encodeURIComponent(preservePage));
+            
+            if (params.length > 0) {
+                redirectUrl += params.join('&');
+            } else {
+                redirectUrl = '/participants';
+            }
+            return res.redirect(redirectUrl);
+        } else {
+            return res.redirect('/participants');
+        }
+    } catch (err) {
+        console.error('Error updating participant:', err);
+        if (req.session.isAdmin) {
+            return res.redirect('/participants?error=' + encodeURIComponent('Error updating participant. Please try again.'));
+        } else {
+            return res.redirect('/participants?error=' + encodeURIComponent('Error updating your profile. Please try again.'));
+        }
+    }
+});
+
+// POST /participants/delete: Handle participant deletion (admin only)
+app.post('/participants/delete', async (req, res) => {
+    if(!req.session.isAdmin){
+        return res.status(418).render('landing', { 
+            layout: 'public', 
+            pageTitle: 'Welcome',
+            error: 'You do not have admin access' 
+        });
+    }
+
+    try {
+        const { participantId, preserveSearch, preserveSort, preserveSortDir, preservePage } = req.body;
+        
+        if (!participantId) {
+            return res.status(400).json({ error: 'Participant ID required' });
+        }
+
+        // Delete participant
+        await knex('Participants')
+            .where('ParticipantID', participantId)
+            .del();
+
+        // Build redirect URL with preserved parameters
+        let redirectUrl = '/participants?';
+        const params = [];
+        if (preserveSearch) params.push('search=' + encodeURIComponent(preserveSearch));
+        if (preserveSort) params.push('sort=' + encodeURIComponent(preserveSort));
+        if (preserveSortDir) params.push('sortDir=' + encodeURIComponent(preserveSortDir));
+        if (preservePage) params.push('page=' + encodeURIComponent(preservePage));
+        
+        if (params.length > 0) {
+            redirectUrl += params.join('&');
+        } else {
+            redirectUrl = '/participants';
+        }
+
+        return res.redirect(redirectUrl);
+    } catch (err) {
+        console.error('Error deleting participant:', err);
+        return res.status(500).json({ error: 'Error deleting participant' });
+    }
+});
 
 // 6. Start Server
 app.listen(port, () => {
