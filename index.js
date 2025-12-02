@@ -23,7 +23,7 @@ app.use(session({
     secret: 'a_very_secret_key_for_intex', // CHANGE THIS IN PRODUCTION
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: true } // Set to true in production with HTTPS
+    cookie: { secure: false } // Set to true in production with HTTPS
 }));
 
 // EJS View Engine Setup
@@ -36,7 +36,19 @@ app.set('layout', 'public'); // Sets 'public.ejs' as the default layout
 app.use((req, res, next) => {
     // This is a placeholder for actual session/auth data
     res.locals.user = req.session.user || null;
-    next();
+
+     // Skip auth for public routes
+    if (req.path === '/'|| req.path === '/login' || req.path === '/register' || req.path === '/logout') {
+        return next();
+    }
+
+    // If logged in, continufe
+    if (req.session.isLoggedIn) {
+        return next();
+    }
+
+    // Not logged in → show login (ONE response, then stop)
+    return res.render("login", { layout: 'public', pageTitle: 'Login', error_message: "Please log in to access this page" });
 });
 
 
@@ -54,58 +66,57 @@ app.use((req, res, next) => {
 // Public Routes (Handles landing, login, register)
 // GET /: Landing page
 app.get('/', (req, res) => {
-    // If user is logged in, redirect to dashboard
-    // if (req.session.user) {
-    //     return res.redirect('/dashboard');
-    // }
-    // Renders the public landing page
-    res.render('landing', { layout: 'public' });
+    res.render('landing', { layout: 'public', pageTitle: 'Welcome' });
 });
 
 // GET /login: Show login form
 app.get('/login', (req, res) => {
-    res.render('login', { layout: 'public' });
+    res.render('login', { layout: 'public', pageTitle: 'Login' });
 });
 
 app.post('/login', async (req, res) => {
-    const { ParticipantEmail, ParticipantPassword} = req.body;
-  
-    try {
-      // Get full user row so session has everything
-      const user = await knex('participants')
-        .where({ParticipantEmail, ParticipantPassword})
-        .first();
-  
-      if (!user) {
+        const { ParticipantEmail, ParticipantPassword} = req.body;
+    
+        try {
+        // Get full user row so session has everything
+        const user = await knex('Participants')
+            .where({ParticipantEmail, ParticipantPassword})
+            .first();
+    
+        if (!user) {
+            return res.render('login', { 
+            layout: 'public', 
+            pageTitle: 'Login',
+            error: 'Invalid login' 
+            });
+        }
+    
+        req.session.isLoggedIn = true;
+        req.session.user = user;
+    
+        return res.redirect('/');
+        } catch (err) {
+        console.error('Login error:', err);
         return res.render('login', { 
-          layout: 'public', 
-          error: 'Invalid login' 
+            layout: 'public', 
+            pageTitle: 'Login',
+            error: 'Something went wrong. Please try again.' 
         });
-      }
-  
-      req.session.isLoggedIn = true;
-      req.session.user = user;
-  
-      return res.redirect('/');
-    } catch (err) {
-      console.error('Login error:', err);
-      return res.render('login', { 
-        layout: 'public', 
-        error: 'Something went wrong. Please try again.' 
-    });
-    }
+        }
 });
     
   // GET /register: Show registration form
 app.get('/register', (req, res) => {
     res.render('register', { 
     layout: 'public',
+    pageTitle: 'Register',
     error: null
     });
 });
-    
- // POST /register: Handle registration attempt 
+
+// POST /register: Handle registration attempt 
 app.post('/register', async (req, res) => {
+try {
     const { 
     ParticipantEmail, 
     ParticipantPassword, 
@@ -113,69 +124,85 @@ app.post('/register', async (req, res) => {
     ParticipantLastName, 
     ParticipantDOB, 
     ParticipantPhone, 
-    fav_resort 
+    ParticipantCity, 
+    ParticipantState, 
+    ParticipantZip,
+    ParticipantSchoolOrEmployer,
+    ParticipantFieldOfInterest
     } = req.body;
 
-    try {
-    const favResortId = parseInt(fav_resort, 10);
+    // 1. Look for existing participant by email
+    const existingParticipant = await knex('Participants')
+    .where('ParticipantEmail', ParticipantEmail)
+    .first();
 
-    // 1. Validate required fields
-    if (
-        !username || 
-        !email || 
-        !password || 
-        !first_name || 
-        !last_name || 
-        !birthday || 
-        Number.isNaN(favResortId)
-    ) {
-        return res.render('register', { 
-        layout: 'public', 
-        error: 'All fields are required.'
-        // resorts come from res.locals.resorts automatically
-        });
-    }
-
-    // 2. Check if username or email already exists
-    const existingUser = await knex('participants')
-        .where('username', username)
-        .orWhere('email', email)
-        .first();
-
-    if (existingUser) {
-        return res.render('register', { 
-        layout: 'public', 
-        error: 'That username or email is already taken.'
-        });
-    }
-
-    // 3. Insert the user
-    await knex('users').insert({
-        first_name,
-        last_name,
-        username,
-        email,
-        password,          // plaintext is fine for class
-        birthday,
-        fav_resort: favResortId,
-        date_created: knex.fn.now()
+    // 2. If email exists & password is already set → block registration
+    if (existingParticipant && existingParticipant.ParticipantPassword) {
+    return res.render('register', {
+        layout: 'public',
+        pageTitle: 'Register',
+        error: 'An account with that email already exists. Please log in.'
     });
+    }
 
-    // 4. Redirect to login
+    // --- ROLE DEFAULT LOGIC ---
+    // Keep their role if they already have one. Otherwise default to 'p'.
+    const roleToUse = existingParticipant?.ParticipantRole || 'p';
+
+    // 3. Upgrade a visitor row (email exists but password is NULL)
+    if (existingParticipant && !existingParticipant.ParticipantPassword) {
+    await knex('Participants')
+        .where('ParticipantID', existingParticipant.ParticipantID)
+        .update({
+        ParticipantPassword,
+        ParticipantFirstName,
+        ParticipantLastName,
+        ParticipantDOB,
+        ParticipantPhone,
+        ParticipantCity,
+        ParticipantState,
+        ParticipantZip,                  // <-- added ZIP
+        ParticipantSchoolOrEmployer,
+        ParticipantFieldOfInterest,
+        ParticipantRole: roleToUse       // <-- apply default
+        });
+    }
+
+    // 4. Insert a brand new participant row
+    else if (!existingParticipant) {
+    await knex('Participants').insert({
+        ParticipantEmail,
+        ParticipantPassword,
+        ParticipantFirstName,
+        ParticipantLastName,
+        ParticipantDOB,
+        ParticipantPhone,
+        ParticipantCity,
+        ParticipantState,
+        ParticipantZip,                    // <-- added ZIP
+        ParticipantSchoolOrEmployer,
+        ParticipantFieldOfInterest,
+        ParticipantRole: roleToUse         // <-- default to 'p'
+    });
+}
+
+    // 5. Redirect on success
     return res.redirect('/login');
 
-    } catch (err) {
+} catch (err) {
     console.error('Registration error:', err);
 
     return res.render('register', {
-        layout: 'public',
-        error: 'Something went wrong. Please try again.'
+    layout: 'public',
+    pageTitle: 'Register',
+    error: 'Something went wrong. Please try again.'
     });
 }
 });
+
     
     
-  // GET /logout
+// GET /logout
 app.get('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {

@@ -1,57 +1,214 @@
-<% pageTitle = 'Register' %>
-<div class="register-page">
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
+    <div class="register-page">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
         <div class="card shadow-sm">
             <div class="card-body">
-                <h2 class="card-title text-center mb-4">Create Your SlopeSense Account</h2>
-                <% if (locals.error) { %>
-                    <div class="alert alert-danger"><%= error %></div>
-                <% } %>
-                <form action="/register" method="POST">
-                    <div class="mb-3">
-                        <label for="first_name" class="form-label">First Name</label>
-                        <input type="text" class="form-control" id="first_name" name="first_name" autofocus required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="last_name" class="form-label">Last Name</label>
-                        <input type="text" class="form-control" id="last_name" name="last_name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="birthday" class="form-label">Birthday</label>
-                        <input type="date" class="form-control" id="birthday" name="birthday" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="fav_resort" class="form-label">Favortie Resort</label>
-                        <select class="form-select" id="fav_resort" name="fav_resort" required>
-                            <option value="">-- Select and option --</option>
-                            <% resorts.forEach(resort => { %>
-                                <option value="<%= resort.resort_id %>">
-                                    <%= resort.resort_name %></option>
-                            <% }); %>
-                            </select>
-                    </div>
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Register Account</button>
-                    </div>
-                </form>
-                <p class="text-center mt-3">
-                    Already have an account? <a href="/login">Login</a>
-                </p>
+            <h2 class="card-title text-center mb-4">Create Your Account</h2>
+
+            <% if (error) { %>
+                <div class="alert alert-danger"><%= error %></div>
+            <% } %>
+
+            <form action="/register" method="POST">
+                <!-- Name -->
+                <div class="mb-3">
+                <label for="ParticipantFirstName" class="form-label">First Name</label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="ParticipantFirstName" 
+                    name="ParticipantFirstName" 
+                    autofocus 
+                    required
+                >
+                </div>
+                <div class="mb-3">
+                <label for="ParticipantLastName" class="form-label">Last Name</label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="ParticipantLastName" 
+                    name="ParticipantLastName" 
+                    required
+                >
+                </div>
+
+                <!-- Email & Password -->
+                <div class="mb-3">
+                <label for="ParticipantEmail" class="form-label">Email</label>
+                <input 
+                    type="email" 
+                    class="form-control" 
+                    id="ParticipantEmail" 
+                    name="ParticipantEmail" 
+                    required
+                    pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
+                    oninvalid="this.setCustomValidity('Please input a valid email')"
+                    oninput="this.setCustomValidity('')"
+                >
+                </div>
+                <div class="mb-3">
+                <label for="ParticipantPassword" class="form-label">Password</label>
+                <input 
+                    type="password" 
+                    class="form-control" 
+                    id="ParticipantPassword" 
+                    name="ParticipantPassword" 
+                    required
+                >
+                </div>
+
+                <!-- DOB -->
+                <div class="mb-3">
+                <label for="ParticipantDOB" class="form-label">Date of Birth</label>
+                <input 
+                    type="date" 
+                    class="form-control" 
+                    id="ParticipantDOB" 
+                    name="ParticipantDOB" 
+                    required
+                >
+                </div>
+
+                <!-- Contact -->
+                <div class="mb-3">
+                <label for="ParticipantPhone" class="form-label">Phone Number</label>
+                <input 
+                    type="tel" 
+                    class="form-control" 
+                    id="ParticipantPhone" 
+                    name="ParticipantPhone"
+                    inputmode="numeric"
+                    maxlength="12"
+                    pattern="\d{3}-\d{3}-\d{4}"
+                    title="Phone must be in the format 111-111-1111"
+                >
+                </div>
+
+                <!-- Location -->
+                <div class="mb-3">
+                <label for="ParticipantCity" class="form-label">City</label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="ParticipantCity" 
+                    name="ParticipantCity"
+                >
+                </div>
+                <div class="mb-3">
+                <label for="ParticipantState" class="form-label">State</label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="ParticipantState" 
+                    name="ParticipantState"
+                >
+                </div>
+                <div class="mb-3">
+                <label for="ParticipantZip" class="form-label">ZIP Code</label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="ParticipantZip" 
+                    name="ParticipantZip"
+                >
+                </div>
+
+                <!-- School/Employer -->
+                <div class="mb-3">
+                <label for="ParticipantSchoolOrEmployer" class="form-label">
+                    School or Employer
+                </label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="ParticipantSchoolOrEmployer" 
+                    name="ParticipantSchoolOrEmployer"
+                >
+                </div>
+
+                <!-- Field of Interest -->
+                <div class="mb-3">
+                <label class="form-label">Field of Interest</label>
+
+                <div class="form-check">
+                    <input 
+                    class="form-check-input" 
+                    type="radio" 
+                    name="ParticipantFieldOfInterest" 
+                    id="interest_stem" 
+                    value="STEM"
+                    required
+                    >
+                    <label class="form-check-label" for="interest_stem">STEM</label>
+                </div>
+
+                <div class="form-check">
+                    <input 
+                    class="form-check-input" 
+                    type="radio" 
+                    name="ParticipantFieldOfInterest" 
+                    id="interest_arts" 
+                    value="Arts"
+                    >
+                    <label class="form-check-label" for="interest_arts">Arts</label>
+                </div>
+
+                <div class="form-check">
+                    <input 
+                    class="form-check-input" 
+                    type="radio" 
+                    name="ParticipantFieldOfInterest" 
+                    id="interest_both" 
+                    value="Both"
+                    >
+                    <label class="form-check-label" for="interest_both">Both</label>
+                </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                    Register Account
+                </button>
+                </div>
+            </form>
+
+            <p class="text-center mt-3">
+                Already have an account? <a href="/login">Login</a>
+            </p>
             </div>
         </div>
+        </div>
     </div>
-</div>
-</div>
+    </div>
+
+<script>
+    // Live phone formatting: 111-111-1111
+    document.addEventListener('DOMContentLoaded', function () {
+        const phoneInput = document.getElementById('ParticipantPhone');
+        if (!phoneInput) return;
+
+        phoneInput.addEventListener('input', function () {
+        // Strip all non-digits
+        let digits = phoneInput.value.replace(/\D/g, '');
+
+        // Limit to 10 digits
+        if (digits.length > 10) {
+            digits = digits.slice(0, 10);
+        }
+
+        let formatted = '';
+        if (digits.length > 0) {
+            formatted = digits.substring(0, 3);
+        }
+        if (digits.length >= 4) {
+            formatted += '-' + digits.substring(3, 6);
+        }
+        if (digits.length >= 7) {
+            formatted += '-' + digits.substring(6, 10);
+        }
+
+        phoneInput.value = formatted;
+        });
+    });
+    </script>
