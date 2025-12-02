@@ -63,9 +63,130 @@ app.get('/', (req, res) => {
 });
 
 // GET /login: Show login form
-// app.get('/login', (req, res) => {
-//     res.render('login', { layout: 'public' });
-// });
+app.get('/login', (req, res) => {
+    res.render('login', { layout: 'public' });
+});
+
+app.post('/login', async (req, res) => {
+    const { ParticipantEmail, ParticipantPassword} = req.body;
+  
+    try {
+      // Get full user row so session has everything
+      const user = await knex('participants')
+        .where({ParticipantEmail, ParticipantPassword})
+        .first();
+  
+      if (!user) {
+        return res.render('login', { 
+          layout: 'public', 
+          error: 'Invalid login' 
+        });
+      }
+  
+      req.session.isLoggedIn = true;
+      req.session.user = user;
+  
+      return res.redirect('/');
+    } catch (err) {
+      console.error('Login error:', err);
+      return res.render('login', { 
+        layout: 'public', 
+        error: 'Something went wrong. Please try again.' 
+    });
+    }
+});
+    
+  // GET /register: Show registration form
+app.get('/register', (req, res) => {
+    res.render('register', { 
+    layout: 'public',
+    error: null
+    });
+});
+    
+ // POST /register: Handle registration attempt 
+app.post('/register', async (req, res) => {
+    const { 
+    ParticipantEmail, 
+    ParticipantPassword, 
+    ParticipantFirstName, 
+    ParticipantLastName, 
+    ParticipantDOB, 
+    ParticipantPhone, 
+    fav_resort 
+    } = req.body;
+
+    try {
+    const favResortId = parseInt(fav_resort, 10);
+
+    // 1. Validate required fields
+    if (
+        !username || 
+        !email || 
+        !password || 
+        !first_name || 
+        !last_name || 
+        !birthday || 
+        Number.isNaN(favResortId)
+    ) {
+        return res.render('register', { 
+        layout: 'public', 
+        error: 'All fields are required.'
+        // resorts come from res.locals.resorts automatically
+        });
+    }
+
+    // 2. Check if username or email already exists
+    const existingUser = await knex('participants')
+        .where('username', username)
+        .orWhere('email', email)
+        .first();
+
+    if (existingUser) {
+        return res.render('register', { 
+        layout: 'public', 
+        error: 'That username or email is already taken.'
+        });
+    }
+
+    // 3. Insert the user
+    await knex('users').insert({
+        first_name,
+        last_name,
+        username,
+        email,
+        password,          // plaintext is fine for class
+        birthday,
+        fav_resort: favResortId,
+        date_created: knex.fn.now()
+    });
+
+    // 4. Redirect to login
+    return res.redirect('/login');
+
+    } catch (err) {
+    console.error('Registration error:', err);
+
+    return res.render('register', {
+        layout: 'public',
+        error: 'Something went wrong. Please try again.'
+    });
+}
+});
+    
+    
+  // GET /logout
+app.get('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            return res.redirect('/dashboard'); // Fallback
+        }
+        res.clearCookie('connect.sid'); // Clear session cookie
+        res.redirect('/');
+    });
+});
+
+
 
 // 6. Start Server
 app.listen(port, () => {

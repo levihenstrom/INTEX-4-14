@@ -1,0 +1,31 @@
+<% pageTitle = 'Login' %>
+<div class="login-page">
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">User Login</h2>
+                <% if (locals.error) { %>
+                    <div class="alert alert-danger"><%= error %></div>
+                <% } %>
+                <form action="/login" method="POST">
+                    <div class="mb-3">
+                        <label for="ParticipantEmail" class="form-label">Email</label>
+                        <input type="text" class="form-control" id="ParticipantEmail" name="ParticipantEmail" required autofocus>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ParticipantPassword" class="form-label">Password</label>
+                        <input type="ParticipantPassword" class="form-control" id="ParticipantPassword" name="ParticipantPassword" required>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">Log In</button>
+                    </div>
+                </form>
+                <p class="text-center mt-3">
+                    Don't have an account? <a href="/register">Sign Up</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
