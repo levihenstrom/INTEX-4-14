@@ -290,6 +290,8 @@ app.get('/donations', async (req, res) => {
         const searchTerm = (req.query.search || '').trim();
         const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
         const limit = 50;
+        const filterParticipantID = req.query.filterParticipantID || '';
+        const filterDonationID = req.query.filterDonationID || '';
         const filterStartDate = req.query.filterStartDate || '';
         const filterEndDate = req.query.filterEndDate || '';
         const filterMinAge = req.query.filterMinAge || '';
@@ -300,6 +302,8 @@ app.get('/donations', async (req, res) => {
         const filterInterest = req.query.filterInterest || '';
         const filterMinAmount = req.query.filterMinAmount || '';
         const filterMaxAmount = req.query.filterMaxAmount || '';
+        const sortColumn = req.query.sort || 'DonationDate';
+        const sortDir = (req.query.sortDir || 'desc').toLowerCase();
 
         const baseQuery = knex('Participant_Donation as pd')
             .join('Participants as p', 'pd.ParticipantID', 'p.ParticipantID');
@@ -322,6 +326,12 @@ app.get('/donations', async (req, res) => {
                     .orWhereRaw('CAST(pd."DonationDate" AS TEXT) ILIKE ?', [searchPattern]);
             });
         }
+        if (filterParticipantID) {
+            filteredQuery.andWhere('pd.ParticipantID', filterParticipantID);
+        }
+        if (filterDonationID) {
+            filteredQuery.andWhere('pd.DonationID', filterDonationID);
+        }
 
         if (filterStartDate) {
             filteredQuery.andWhere('pd.DonationDate', '>=', filterStartDate);
@@ -329,7 +339,6 @@ app.get('/donations', async (req, res) => {
         if (filterEndDate) {
             filteredQuery.andWhere('pd.DonationDate', '<=', filterEndDate);
         }
-
         if (filterMinAmount) {
             const minAmount = parseFloat(filterMinAmount);
             if (!Number.isNaN(minAmount)) {
@@ -380,6 +389,15 @@ app.get('/donations', async (req, res) => {
         const safePage = Math.min(page, totalPages);
         const offset = (safePage - 1) * limit;
 
+        const sortOptions = {
+            DonationDate: 'pd.DonationDate',
+            DonationAmount: 'pd.DonationAmount',
+            DonationID: 'pd.DonationID'
+        };
+        const normalizedSortColumn = sortOptions[sortColumn] ? sortColumn : 'DonationDate';
+        const safeSortColumn = sortOptions[normalizedSortColumn] || 'pd.DonationDate';
+        const safeSortDir = sortDir === 'asc' ? 'asc' : 'desc';
+
         const donationRows = await filteredQuery.clone()
             .select(
                 'pd.DonationID',
@@ -394,7 +412,7 @@ app.get('/donations', async (req, res) => {
                 'p.ParticipantFieldOfInterest',
                 'p.ParticipantDOB'
             )
-            .orderBy('pd.DonationDate', 'desc')
+            .orderBy(safeSortColumn, safeSortDir)
             .orderBy('pd.DonationID', 'desc')
             .limit(limit)
             .offset(offset);
@@ -436,6 +454,8 @@ app.get('/donations', async (req, res) => {
             participantOptions,
             searchTerm,
             filters: {
+                filterParticipantID,
+                filterDonationID,
                 filterStartDate,
                 filterEndDate,
                 filterMinAge,
@@ -447,6 +467,8 @@ app.get('/donations', async (req, res) => {
                 filterMinAmount,
                 filterMaxAmount
             },
+            sortColumn: normalizedSortColumn,
+            sortDir: safeSortDir,
             currentPage: safePage,
             totalPages,
             totalDonations,
