@@ -559,6 +559,9 @@ app.post('/donations/delete', async (req, res) => {
     } catch (err) {
         console.error('Error deleting donation:', err);
         return res.redirect('/donations?error=' + encodeURIComponent('Error deleting donation. Please try again.'));
+    }
+});
+
 app.get('/events', async (req, res) => {
     try {
         if (req.session.isAdmin) {
