@@ -103,7 +103,7 @@
     <% } %>
 
     <% if (Array.isArray(milestones) && milestones.length > 0) { %>
-        <div class="row row-cols-1 row-cols-md-2 g-4">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             <% milestones.forEach(function(milestone) { %>
                 <div class="col">
                     <div class="card h-100 shadow-sm">
@@ -121,8 +121,10 @@
                                                 data-bs-target="#editMilestoneModal"
                                                 data-milestone-id="<%= milestone.MilestoneID %>"
                                                 data-title="<%= milestone.MilestoneTitle %>"
+                                                data-category="<%= milestone.MilestoneCategory || '' %>"
                                                 data-date="<%= milestone.MilestoneDate ? new Date(milestone.MilestoneDate).toISOString().split('T')[0] : '' %>"
-                                                data-participant-id="<%= milestone.ParticipantID %>">
+                                                data-participant-id="<%= milestone.ParticipantID %>"
+                                                data-participant-display="<%= milestone.ParticipantFirstName %> <%= milestone.ParticipantLastName %> (#<%= milestone.ParticipantID %>) - <%= milestone.ParticipantEmail %>">
                                             Edit
                                         </button>
                                         <form action="/milestones/delete" method="POST" class="delete-milestone-form d-inline" data-title="<%= milestone.MilestoneTitle %>">
@@ -184,6 +186,15 @@
                             <input type="text" class="form-control" id="addMilestoneTitle" name="MilestoneTitle" required>
                         </div>
                         <div class="mb-3">
+                            <label for="addMilestoneCategory" class="form-label">Milestone Category</label>
+                            <select class="form-select" id="addMilestoneCategory" name="MilestoneCategory">
+                                <option value="">Select category</option>
+                                <% (milestoneCategories || []).forEach(function(cat) { %>
+                                    <option value="<%= cat %>"><%= cat %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="mb-3">
                             <label for="addMilestoneDate" class="form-label">Milestone Date *</label>
                             <input type="date" class="form-control" id="addMilestoneDate" name="MilestoneDate" required>
                         </div>
@@ -222,6 +233,15 @@
                         <div class="mb-3">
                             <label for="editMilestoneTitle" class="form-label">Milestone Title *</label>
                             <input type="text" class="form-control" id="editMilestoneTitle" name="MilestoneTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editMilestoneCategory" class="form-label">Milestone Category</label>
+                            <select class="form-select" id="editMilestoneCategory" name="MilestoneCategory">
+                                <option value="">Select category</option>
+                                <% (milestoneCategories || []).forEach(function(cat) { %>
+                                    <option value="<%= cat %>"><%= cat %></option>
+                                <% }); %>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label for="editMilestoneDate" class="form-label">Milestone Date *</label>
@@ -388,6 +408,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     const editIdInput = document.getElementById('editMilestoneId');
     const editTitleInput = document.getElementById('editMilestoneTitle');
+    const editCategorySelect = document.getElementById('editMilestoneCategory');
+    const addCategorySelect = document.getElementById('addMilestoneCategory');
     const editDateInput = document.getElementById('editMilestoneDate');
     const addParticipantSearch = document.getElementById('addParticipantSearch');
     const addParticipantSelect = document.getElementById('addParticipantSelect');
@@ -426,6 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (addMilestoneModal) {
         addMilestoneModal.addEventListener('show.bs.modal', function() {
             if (addParticipantSearch) addParticipantSearch.value = '';
+            if (addCategorySelect) addCategorySelect.value = '';
             resetSelectOptions(addParticipantSelect);
         });
     }
@@ -433,13 +456,25 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.edit-milestone-btn').forEach(function(button) {
         button.addEventListener('click', function() {
             if (!editIdInput || !editTitleInput || !editDateInput || !editParticipantSelect) return;
-            if (editParticipantSearch) editParticipantSearch.value = '';
-            resetSelectOptions(editParticipantSelect);
+            const participantDisplay = this.getAttribute('data-participant-display') || '';
+            if (editParticipantSearch) {
+                editParticipantSearch.value = participantDisplay;
+                // Trigger filter to narrow list to the selected participant
+                editParticipantSearch.dispatchEvent(new Event('input', { bubbles: true }));
+            } else {
+                resetSelectOptions(editParticipantSelect);
+            }
             editIdInput.value = this.getAttribute('data-milestone-id') || '';
             editTitleInput.value = this.getAttribute('data-title') || '';
+            if (editCategorySelect) {
+                editCategorySelect.value = this.getAttribute('data-category') || '';
+            }
             editDateInput.value = this.getAttribute('data-date') || '';
             const participantId = this.getAttribute('data-participant-id') || '';
-            editParticipantSelect.value = participantId;
+            // Explicitly select matching participant option
+            Array.from(editParticipantSelect.options).forEach(function(opt, idx) {
+                opt.selected = idx === 0 ? false : opt.value === String(participantId);
+            });
         });
     });
 

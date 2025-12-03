@@ -504,8 +504,12 @@ app.post('/donations/add', async (req, res) => {
         const { ParticipantID, DonationAmount, DonationDate } = req.body;
         const parsedAmount = parseFloat(DonationAmount);
 
-        if (!ParticipantID || !DonationDate || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
-            return res.redirect('/donations?error=' + encodeURIComponent('All fields are required and amount must be greater than zero.'));
+        // Only validate required fields + amount
+        if (!ParticipantID || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+            return res.redirect(
+                '/donations?error=' +
+                encodeURIComponent('Participant and amount are required, and amount must be greater than zero.')
+            );
         }
 
         const participant = await knex('Participants')
@@ -513,21 +517,39 @@ app.post('/donations/add', async (req, res) => {
             .first();
 
         if (!participant) {
-            return res.redirect('/donations?error=' + encodeURIComponent('Participant not found.'));
+            return res.redirect(
+                '/donations?error=' +
+                encodeURIComponent('Participant not found.')
+            );
         }
 
-        await knex('Participant_Donation').insert({
+        // Build insert object
+        const insertData = {
             ParticipantID,
-            DonationDate,
             DonationAmount: parsedAmount
-        });
+        };
 
-        return res.redirect('/donations?success=' + encodeURIComponent('Donation recorded successfully.'));
+        // Only include DonationDate if the user actually entered one
+        if (DonationDate && DonationDate.trim() !== '') {
+            insertData.DonationDate = DonationDate; // assuming 'YYYY-MM-DD'
+        }
+        // else: leave it off so DB can use NULL or DEFAULT
+
+        await knex('Participant_Donation').insert(insertData);
+
+        return res.redirect(
+            '/donations?success=' +
+            encodeURIComponent('Donation recorded successfully.')
+        );
     } catch (err) {
         console.error('Error adding donation:', err);
-        return res.redirect('/donations?error=' + encodeURIComponent('Error adding donation. Please try again.'));
+        return res.redirect(
+            '/donations?error=' +
+            encodeURIComponent('Error adding donation. Please try again.')
+        );
     }
 });
+
 
 app.post('/donations/add/user', async (req, res) => {
     try {
@@ -603,8 +625,12 @@ app.post('/donations/edit', async (req, res) => {
         const { DonationID, ParticipantID, DonationAmount, DonationDate } = req.body;
         const parsedAmount = parseFloat(DonationAmount);
 
-        if (!DonationID || !ParticipantID || !DonationDate || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
-            return res.redirect('/donations?error=' + encodeURIComponent('All fields are required and amount must be greater than zero.'));
+        // Make date optional now
+        if (!DonationID || !ParticipantID || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+            return res.redirect(
+                '/donations?error=' +
+                encodeURIComponent('Donation ID, participant, and a valid amount are required.')
+            );
         }
 
         const donation = await knex('Participant_Donation')
@@ -623,20 +649,35 @@ app.post('/donations/edit', async (req, res) => {
             return res.redirect('/donations?error=' + encodeURIComponent('Participant not found.'));
         }
 
+        // Build update object
+        const updateData = {
+            ParticipantID,
+            DonationAmount: parsedAmount
+        };
+
+        // Only update the date if provided (non-empty)
+        if (DonationDate && DonationDate.trim() !== '') {
+            updateData.DonationDate = DonationDate; // expecting 'YYYY-MM-DD'
+        }
+        // If blank, we leave DonationDate alone (keeps the existing value)
+
         await knex('Participant_Donation')
             .where('DonationID', DonationID)
-            .update({
-                ParticipantID,
-                DonationDate,
-                DonationAmount: parsedAmount
-            });
+            .update(updateData);
 
-        return res.redirect('/donations?success=' + encodeURIComponent('Donation updated successfully.'));
+        return res.redirect(
+            '/donations?success=' +
+            encodeURIComponent('Donation updated successfully.')
+        );
     } catch (err) {
         console.error('Error updating donation:', err);
-        return res.redirect('/donations?error=' + encodeURIComponent('Error updating donation. Please try again.'));
+        return res.redirect(
+            '/donations?error=' +
+            encodeURIComponent('Error updating donation. Please try again.')
+        );
     }
 });
+
 
 app.post('/donations/delete', async (req, res) => {
     if (!req.session.isAdmin) {
@@ -886,17 +927,25 @@ app.get('/milestones', async (req, res) => {
         }));
 
         let participantOptions = [];
+        let milestoneCategories = [];
         if (req.session.isAdmin) {
             participantOptions = await knex('Participants')
                 .select('ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 'ParticipantEmail')
                 .orderBy('ParticipantLastName', 'asc')
                 .orderBy('ParticipantFirstName', 'asc');
+
+            milestoneCategories = await knex('Participant_Milestone')
+                .distinct('MilestoneCategory')
+                .whereNotNull('MilestoneCategory')
+                .orderBy('MilestoneCategory', 'asc')
+                .pluck('MilestoneCategory');
         }
 
         res.render('milestones', {
             pageTitle: 'Milestones',
             milestones,
             participantOptions,
+            milestoneCategories,
             searchTerm,
             filters: {
                 filterParticipantID,
