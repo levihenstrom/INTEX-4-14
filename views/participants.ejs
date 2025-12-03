@@ -312,7 +312,7 @@
                         </div>
                     </div>
                     <div class="col-12 col-lg-4">
-                        <div class="card h-100">
+                        <div class="card h-100" id="donationSummaryCard" role="button" style="cursor: pointer;">
                             <div class="card-body">
                                 <h6 class="text-uppercase text-muted mb-2">Donations</h6>
                                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -467,6 +467,7 @@
         const eventsList = document.getElementById('eventsList');
         const milestoneList = document.getElementById('milestoneList');
         const milestoneSummaryCard = document.getElementById('milestoneSummaryCard');
+        const donationSummaryCard = document.getElementById('donationSummaryCard');
         const donationList = document.getElementById('donationList');
         const kpiEventsAttended = document.getElementById('kpiEventsAttended');
         const kpiSurveyRate = document.getElementById('kpiSurveyRate');
@@ -536,6 +537,11 @@
                 if (milestoneSummaryCard) {
                     milestoneSummaryCard.onclick = () => {
                         window.location.href = `/milestones?filterParticipantID=${encodeURIComponent(participantId)}`;
+                    };
+                }
+                if (donationSummaryCard) {
+                    donationSummaryCard.onclick = () => {
+                        window.location.href = `/donations?filterParticipantID=${encodeURIComponent(participantId)}`;
                     };
                 }
 
