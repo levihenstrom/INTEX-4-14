@@ -1,20 +1,62 @@
-<!-- Hero Banner  -->
-<div class="hero-banner mb-5">
-    <h1>Intex</h1>
-    <% if (typeof error !== 'undefined' && error) { %>
-        <div class="alert alert-danger mt-3" role="alert">
-            <%= error %>
-        </div>
-    <% } %>
-    <p>THIS IS A TEST.
-        test number four (4)
-    </p>
+<section class="hero-slideshow">
 
-    <div class="mt-4">
-        <a href="/register" class="btn btn-primary me-2">Get Started</a>
-        <a href="/login" class="btn btn-light text-dark">Login</a>
-    </div>
-</div>
+    <div class="slide slide1"></div>
+    <div class="slide slide2"></div>
+    <div class="slide slide3"></div>
+
+    <div class="hero-overlay"></div>
+
+    <div class="hero-text">
+        <h1>Ella Rises</h1>
+        <p>Empowering young women to pursue higher education through high-impact multicultural activities focused on mariachi and STEAM.</p>
+
+        <% if (!user) { %>
+                <a href="/register" class="hero-btn">Get Started</a>
+                <a href="/login" class="hero-btn-outline">Login</a>
+            <% } %>
+        </div>
+</section>
+
+
+
+
 
 <!-- Features Section -->
-<h1>Intex is here! Get to work!</h1>
+<section class="stats-section">
+    <div class="stat-card">
+        <i class="fa-solid fa-users"></i>
+        <h2>130</h2>
+        <p>Youth Participants</p>
+    </div>
+
+    <div class="stat-card">
+        <i class="fa-solid fa-hand-holding-heart"></i>
+        <h2>254</h2>
+        <p>Applications Received</p>
+    </div>
+
+    <div class="stat-card">
+        <i class="fa-solid fa-seedling"></i>
+        <h2>$49,600</h2>
+        <p>Funds Distributed</p>
+    </div>
+
+    <div class="stat-card">
+        <i class="fa-solid fa-people-line"></i>
+        <h2>6,051</h2>
+        <p>Youth Engaged</p>
+    </div>
+</section>
+
+<!-- Gallery Section -->
+<section class="gallery-section">
+    <h2>Our Community in Action</h2>
+    <div class="gallery-grid">
+        <img src="/images/ella_art.jpeg" />
+        <img src="/images/gallery2.jpg" />
+        <img src="/images/gallery3.jpg" />
+        <img src="/images/gallery4.jpg" />
+        <img src="/images/gallery5.jpg" />
+        <img src="/images/gallery6.jpg" />
+    </div>
+</section>
