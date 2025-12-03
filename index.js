@@ -47,6 +47,32 @@ const calculateAge = (dateValue) => {
     return age;
 };
 
+const determineNpsBucket = (recommendationScore) => {
+    const score = parseInt(recommendationScore, 10);
+    if (Number.isNaN(score)) return null;
+    if (score >= 4) return 'Promoter';
+    if (score === 3) return 'Passive';
+    return 'Detractor';
+};
+
+const clampSurveyScore = (value) => {
+    const score = parseInt(value, 10);
+    if (Number.isNaN(score)) {
+        return null;
+    }
+    if (score < 0) return 0;
+    if (score > 5) return 5;
+    return score;
+};
+
+const computeSurveyAverage = (scores) => {
+    if (!Array.isArray(scores) || scores.length === 0) return null;
+    const validScores = scores.filter((score) => typeof score === 'number');
+    if (!validScores.length) return null;
+    const sum = validScores.reduce((acc, val) => acc + val, 0);
+    return parseFloat((sum / validScores.length).toFixed(2));
+};
+
 // 4. Middleware Configuration
 app.use(express.urlencoded({ extended: true })); // Handle form submissions
 app.use(express.json()); // Handle JSON data
@@ -244,157 +270,995 @@ try {
 
 app.get('/donations', async (req, res) => {
     try {
-        if (req.session.isAdmin) {
-            // Show ALL donations newest → oldest
-            const donations = await knex('Participant_Donation')
-            .join('Participants', 'Participant_Donation.ParticipantID', 'Participants.ParticipantID')
-            .select(
-                'Participant_Donation.DonationDate',
-                'Participant_Donation.DonationAmount',
-                'Participants.ParticipantEmail',
-                'Participants.ParticipantFirstName',
-                'Participants.ParticipantLastName'
-            )
-            .orderBy('Participant_Donation.DonationDate', 'desc');
+        const searchTerm = (req.query.search || '').trim();
+        const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+        const limit = 50;
+        const filterStartDate = req.query.filterStartDate || '';
+        const filterEndDate = req.query.filterEndDate || '';
+        const filterMinAge = req.query.filterMinAge || '';
+        const filterMaxAge = req.query.filterMaxAge || '';
+        const filterCity = req.query.filterCity || '';
+        const filterState = req.query.filterState || '';
+        const filterRole = req.query.filterRole || '';
+        const filterInterest = req.query.filterInterest || '';
+        const filterMinAmount = req.query.filterMinAmount || '';
+        const filterMaxAmount = req.query.filterMaxAmount || '';
 
-            res.render('donations', {
-            pageTitle: 'Donations',
-            donations,
-            });
-        } else {
-            // Show user donations newest → oldest
-            const donations = await knex('Participant_Donation')
-            .join('Participants', 'Participant_Donation.ParticipantID', 'Participants.ParticipantID')
-            .select(
-                'Participant_Donation.DonationDate',
-                'Participant_Donation.DonationAmount',
-                'Participants.ParticipantEmail',
-                'Participants.ParticipantFirstName',
-                'Participants.ParticipantLastName'
-            )
-            .where('Participants.ParticipantID', req.session.user.ParticipantID)
-            .orderBy('Participant_Donation.DonationDate', 'desc');
+        const baseQuery = knex('Participant_Donation as pd')
+            .join('Participants as p', 'pd.ParticipantID', 'p.ParticipantID');
 
-            res.render('donations', {
-            pageTitle: 'Donations',
-            donations,
+        if (!req.session.isAdmin) {
+            baseQuery.where('p.ParticipantID', req.session.user.ParticipantID);
+        }
+
+        const filteredQuery = baseQuery.clone();
+
+        if (searchTerm) {
+            const searchPattern = `%${searchTerm}%`;
+            filteredQuery.andWhere(function () {
+                this.where('p.ParticipantFirstName', 'ilike', searchPattern)
+                    .orWhere('p.ParticipantLastName', 'ilike', searchPattern)
+                    .orWhere('p.ParticipantEmail', 'ilike', searchPattern)
+                    .orWhereRaw("(\"p\".\"ParticipantFirstName\" || ' ' || \"p\".\"ParticipantLastName\") ILIKE ?", [searchPattern])
+                    .orWhereRaw('CAST(pd."DonationID" AS TEXT) ILIKE ?', [searchPattern])
+                    .orWhereRaw('CAST(pd."DonationAmount" AS TEXT) ILIKE ?', [searchPattern])
+                    .orWhereRaw('CAST(pd."DonationDate" AS TEXT) ILIKE ?', [searchPattern]);
             });
         }
+
+        if (filterStartDate) {
+            filteredQuery.andWhere('pd.DonationDate', '>=', filterStartDate);
+        }
+        if (filterEndDate) {
+            filteredQuery.andWhere('pd.DonationDate', '<=', filterEndDate);
+        }
+
+        if (filterMinAmount) {
+            const minAmount = parseFloat(filterMinAmount);
+            if (!Number.isNaN(minAmount)) {
+                filteredQuery.andWhere('pd.DonationAmount', '>=', minAmount);
+            }
+        }
+        if (filterMaxAmount) {
+            const maxAmount = parseFloat(filterMaxAmount);
+            if (!Number.isNaN(maxAmount)) {
+                filteredQuery.andWhere('pd.DonationAmount', '<=', maxAmount);
+            }
+        }
+
+        const today = new Date();
+        if (filterMinAge || filterMaxAge) {
+            filteredQuery.whereNotNull('p.ParticipantDOB');
+        }
+        if (filterMinAge) {
+            const cutoff = new Date(today);
+            cutoff.setFullYear(cutoff.getFullYear() - parseInt(filterMinAge, 10));
+            filteredQuery.andWhere('p.ParticipantDOB', '<=', cutoff.toISOString().split('T')[0]);
+        }
+        if (filterMaxAge) {
+            const cutoff = new Date(today);
+            cutoff.setFullYear(cutoff.getFullYear() - parseInt(filterMaxAge, 10));
+            filteredQuery.andWhere('p.ParticipantDOB', '>=', cutoff.toISOString().split('T')[0]);
+        }
+
+        if (filterCity) {
+            filteredQuery.andWhere('p.ParticipantCity', 'ilike', `%${filterCity}%`);
+        }
+        if (filterState) {
+            filteredQuery.andWhere('p.ParticipantState', 'ilike', `%${filterState}%`);
+        }
+        if (filterRole) {
+            filteredQuery.andWhere('p.ParticipantRole', filterRole);
+        }
+        if (filterInterest) {
+            filteredQuery.andWhere('p.ParticipantFieldOfInterest', filterInterest);
+        }
+
+        const totalRow = await knex.count('* as count')
+            .from(filteredQuery.clone().as('donations_filtered'))
+            .first();
+        const totalDonations = parseInt(totalRow?.count, 10) || 0;
+
+        const totalPages = Math.max(Math.ceil(totalDonations / limit), 1);
+        const safePage = Math.min(page, totalPages);
+        const offset = (safePage - 1) * limit;
+
+        const donationRows = await filteredQuery.clone()
+            .select(
+                'pd.DonationID',
+                'pd.DonationDate',
+                'pd.DonationAmount',
+                'pd.ParticipantID',
+                'p.ParticipantEmail',
+                'p.ParticipantFirstName',
+                'p.ParticipantLastName',
+                'p.ParticipantCity',
+                'p.ParticipantState',
+                'p.ParticipantFieldOfInterest',
+                'p.ParticipantDOB'
+            )
+            .orderBy('pd.DonationDate', 'desc')
+            .orderBy('pd.DonationID', 'desc')
+            .limit(limit)
+            .offset(offset);
+
+        const donations = donationRows.map((donation) => ({
+            ...donation,
+            DonationAmountValue: parseFloat(donation.DonationAmount) || 0,
+            DonationAmountDisplay: donation.DonationAmount ? parseFloat(donation.DonationAmount).toFixed(2) : '0.00',
+            DonationDateDisplay: formatDateForDisplay(donation.DonationDate),
+            ParticipantAge: calculateAge(donation.ParticipantDOB)
+        }));
+
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+        const startOfMonthStr = startOfMonth.toISOString().split('T')[0];
+        const nextMonthStr = nextMonth.toISOString().split('T')[0];
+
+        const totalAmountRow = await filteredQuery.clone()
+            .sum('pd.DonationAmount as totalAmount')
+            .first();
+
+        const monthAmountRow = await filteredQuery.clone()
+            .where('pd.DonationDate', '>=', startOfMonthStr)
+            .andWhere('pd.DonationDate', '<', nextMonthStr)
+            .sum('pd.DonationAmount as totalAmount')
+            .first();
+
+        let participantOptions = [];
+        if (req.session.isAdmin) {
+            participantOptions = await knex('Participants')
+                .select('ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 'ParticipantEmail')
+                .orderBy('ParticipantLastName', 'asc')
+                .orderBy('ParticipantFirstName', 'asc');
+        }
+
+        res.render('donations', {
+            pageTitle: 'Donations',
+            donations,
+            participantOptions,
+            searchTerm,
+            filters: {
+                filterStartDate,
+                filterEndDate,
+                filterMinAge,
+                filterMaxAge,
+                filterCity,
+                filterState,
+                filterRole,
+                filterInterest,
+                filterMinAmount,
+                filterMaxAmount
+            },
+            currentPage: safePage,
+            totalPages,
+            totalDonations,
+            hasNextPage: safePage < totalPages,
+            pageSize: limit,
+            metrics: {
+                totalAmount: parseFloat(totalAmountRow?.totalAmount) || 0,
+                monthAmount: parseFloat(monthAmountRow?.totalAmount) || 0,
+                count: totalDonations
+            },
+            error: req.query.error || null,
+            success: req.query.success || null
+        });
     } catch (err) {
         console.error('Error loading donations:', err);
         res.status(500).send('Error loading donations');
     }
 });
 
+app.post('/donations/add', async (req, res) => {
+    if (!req.session.isAdmin) {
+        return res.status(418).render('landing', {
+            layout: 'public',
+            pageTitle: 'Welcome',
+            error: 'You do not have admin access'
+        });
+    }
+
+    try {
+        const { ParticipantID, DonationAmount, DonationDate } = req.body;
+        const parsedAmount = parseFloat(DonationAmount);
+
+        if (!ParticipantID || !DonationDate || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+            return res.redirect('/donations?error=' + encodeURIComponent('All fields are required and amount must be greater than zero.'));
+        }
+
+        const participant = await knex('Participants')
+            .where('ParticipantID', ParticipantID)
+            .first();
+
+        if (!participant) {
+            return res.redirect('/donations?error=' + encodeURIComponent('Participant not found.'));
+        }
+
+        await knex('Participant_Donation').insert({
+            ParticipantID,
+            DonationDate,
+            DonationAmount: parsedAmount
+        });
+
+        return res.redirect('/donations?success=' + encodeURIComponent('Donation recorded successfully.'));
+    } catch (err) {
+        console.error('Error adding donation:', err);
+        return res.redirect('/donations?error=' + encodeURIComponent('Error adding donation. Please try again.'));
+    }
+});
+
+app.post('/donations/edit', async (req, res) => {
+    if (!req.session.isAdmin) {
+        return res.status(418).render('landing', {
+            layout: 'public',
+            pageTitle: 'Welcome',
+            error: 'You do not have admin access'
+        });
+    }
+
+    try {
+        const { DonationID, ParticipantID, DonationAmount, DonationDate } = req.body;
+        const parsedAmount = parseFloat(DonationAmount);
+
+        if (!DonationID || !ParticipantID || !DonationDate || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+            return res.redirect('/donations?error=' + encodeURIComponent('All fields are required and amount must be greater than zero.'));
+        }
+
+        const donation = await knex('Participant_Donation')
+            .where('DonationID', DonationID)
+            .first();
+
+        if (!donation) {
+            return res.redirect('/donations?error=' + encodeURIComponent('Donation not found.'));
+        }
+
+        const participant = await knex('Participants')
+            .where('ParticipantID', ParticipantID)
+            .first();
+
+        if (!participant) {
+            return res.redirect('/donations?error=' + encodeURIComponent('Participant not found.'));
+        }
+
+        await knex('Participant_Donation')
+            .where('DonationID', DonationID)
+            .update({
+                ParticipantID,
+                DonationDate,
+                DonationAmount: parsedAmount
+            });
+
+        return res.redirect('/donations?success=' + encodeURIComponent('Donation updated successfully.'));
+    } catch (err) {
+        console.error('Error updating donation:', err);
+        return res.redirect('/donations?error=' + encodeURIComponent('Error updating donation. Please try again.'));
+    }
+});
+
+app.post('/donations/delete', async (req, res) => {
+    if (!req.session.isAdmin) {
+        return res.status(418).render('landing', {
+            layout: 'public',
+            pageTitle: 'Welcome',
+            error: 'You do not have admin access'
+        });
+    }
+
+    try {
+        const { DonationID } = req.body;
+
+        if (!DonationID) {
+            return res.redirect('/donations?error=' + encodeURIComponent('Donation ID is required.'));
+        }
+
+        await knex('Participant_Donation')
+            .where('DonationID', DonationID)
+            .del();
+
+        return res.redirect('/donations?success=' + encodeURIComponent('Donation deleted successfully.'));
+    } catch (err) {
+        console.error('Error deleting donation:', err);
+        return res.redirect('/donations?error=' + encodeURIComponent('Error deleting donation. Please try again.'));
+    }
+});
+
 app.get('/milestones', async (req, res) => {
     try {
-        if (req.session.isAdmin) {
-            // Show ALL milestones newest → oldest
-            const milestones = await knex('Participant_Milestone')
-            .join('Participants', 'Participant_Milestone.ParticipantID', 'Participants.ParticipantID')
-            .select(
-                'Participant_Milestone.MilestoneTitle',
-                'Participant_Milestone.MilestoneDate',
-                'Participants.ParticipantEmail',
-                'Participants.ParticipantFirstName',
-                'Participants.ParticipantLastName'
-            )
-            .orderBy('Participant_Milestone.MilestoneDate', 'desc');
+        const searchTerm = (req.query.search || '').trim();
+        const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+        const limit = 50;
+        const filterStartDate = req.query.filterStartDate || '';
+        const filterEndDate = req.query.filterEndDate || '';
+        const filterMinAge = req.query.filterMinAge || '';
+        const filterMaxAge = req.query.filterMaxAge || '';
+        const filterCity = req.query.filterCity || '';
+        const filterState = req.query.filterState || '';
+        const filterRole = req.query.filterRole || '';
+        const filterInterest = req.query.filterInterest || '';
 
-            res.render('milestones', {
-            pageTitle: 'Milestones',
-            milestones,
-            });
-        } else {
-            // Show user milestones newest → oldest
-            const milestones = await knex('Participant_Milestone')
-            .join('Participants', 'Participant_Milestone.ParticipantID', 'Participants.ParticipantID')
-            .select(
-                'Participant_Milestone.MilestoneTitle',
-                'Participant_Milestone.MilestoneDate',
-                'Participants.ParticipantEmail',
-                'Participants.ParticipantFirstName',
-                'Participants.ParticipantLastName'
-            )
-            .where('Participants.ParticipantID', req.session.user.ParticipantID)
-            .orderBy('Participant_Milestone.MilestoneDate', 'desc');
+        const baseQuery = knex('Participant_Milestone as pm')
+            .join('Participants as p', 'pm.ParticipantID', 'p.ParticipantID');
 
-            res.render('milestones', {
-            pageTitle: 'Milestones',
-            milestones,
+        if (!req.session.isAdmin) {
+            baseQuery.where('p.ParticipantID', req.session.user.ParticipantID);
+        }
+
+        const filteredQuery = baseQuery.clone();
+
+        if (searchTerm) {
+            const searchPattern = `%${searchTerm}%`;
+            filteredQuery.andWhere(function () {
+                this.where('pm.MilestoneTitle', 'ilike', searchPattern)
+                    .orWhere('p.ParticipantFirstName', 'ilike', searchPattern)
+                    .orWhere('p.ParticipantLastName', 'ilike', searchPattern)
+                    .orWhere('p.ParticipantEmail', 'ilike', searchPattern)
+                    .orWhereRaw(
+                        '("p"."ParticipantFirstName" || \' \' || "p"."ParticipantLastName") ILIKE ?',
+                        [searchPattern]
+                    )
+                    .orWhereRaw('CAST(pm."MilestoneID" AS TEXT) ILIKE ?', [searchPattern])
+                    .orWhereRaw('CAST(pm."MilestoneDate" AS TEXT) ILIKE ?', [searchPattern]);
             });
         }
+
+        if (filterStartDate) {
+            filteredQuery.andWhere('pm.MilestoneDate', '>=', filterStartDate);
+        }
+        if (filterEndDate) {
+            filteredQuery.andWhere('pm.MilestoneDate', '<=', filterEndDate);
+        }
+
+        const today = new Date();
+        if (filterMinAge || filterMaxAge) {
+            filteredQuery.whereNotNull('p.ParticipantDOB');
+        }
+        if (filterMinAge) {
+            const cutoff = new Date(today);
+            cutoff.setFullYear(cutoff.getFullYear() - parseInt(filterMinAge, 10));
+            filteredQuery.andWhere('p.ParticipantDOB', '<=', cutoff.toISOString().split('T')[0]);
+        }
+        if (filterMaxAge) {
+            const cutoff = new Date(today);
+            cutoff.setFullYear(cutoff.getFullYear() - parseInt(filterMaxAge, 10));
+            filteredQuery.andWhere('p.ParticipantDOB', '>=', cutoff.toISOString().split('T')[0]);
+        }
+
+        if (filterCity) {
+            filteredQuery.andWhere('p.ParticipantCity', 'ilike', `%${filterCity}%`);
+        }
+        if (filterState) {
+            filteredQuery.andWhere('p.ParticipantState', 'ilike', `%${filterState}%`);
+        }
+        if (filterRole) {
+            filteredQuery.andWhere('p.ParticipantRole', filterRole);
+        }
+        if (filterInterest) {
+            filteredQuery.andWhere('p.ParticipantFieldOfInterest', filterInterest);
+        }
+
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+        const totalFilteredRow = await knex.count('* as count')
+            .from(filteredQuery.clone().as('milestone_filtered'))
+            .first();
+        const totalFilteredMilestones = parseInt(totalFilteredRow?.count, 10) || 0;
+
+        const totalAchievedRow = await knex.count('* as count')
+            .from(
+                filteredQuery.clone()
+                    .whereNotNull('pm.MilestoneDate')
+                    .andWhere('pm.MilestoneDate', '<=', now)
+                    .as('milestone_achieved')
+            )
+            .first();
+        const totalAchievedMilestones = parseInt(totalAchievedRow?.count, 10) || 0;
+
+        const monthCountRow = await filteredQuery.clone()
+            .where('pm.MilestoneDate', '>=', startOfMonth)
+            .andWhere('pm.MilestoneDate', '<', nextMonth)
+            .whereNotNull('pm.MilestoneDate')
+            .andWhere('pm.MilestoneDate', '<=', now)
+            .count('* as count')
+            .first();
+
+        const futureCountRow = await filteredQuery.clone()
+            .where('pm.MilestoneDate', '>', now)
+            .count('* as count')
+            .first();
+
+        const milestonesThisMonth = parseInt(monthCountRow?.count, 10) || 0;
+        const futureMilestones = parseInt(futureCountRow?.count, 10) || 0;
+        const totalPages = Math.max(Math.ceil(totalFilteredMilestones / limit), 1);
+        const safePage = Math.min(page, totalPages);
+        const offset = (safePage - 1) * limit;
+
+        const milestoneRows = await filteredQuery.clone()
+            .select(
+                'pm.MilestoneID',
+                'pm.MilestoneTitle',
+                'pm.MilestoneDate',
+                'pm.ParticipantID',
+                'p.ParticipantEmail',
+                'p.ParticipantFirstName',
+                'p.ParticipantLastName',
+                'p.ParticipantCity',
+                'p.ParticipantState',
+                'p.ParticipantFieldOfInterest',
+                'p.ParticipantDOB'
+            )
+            .orderBy('pm.MilestoneDate', 'desc')
+            .orderBy('pm.MilestoneID', 'desc')
+            .limit(limit)
+            .offset(offset);
+
+        const milestones = milestoneRows.map(m => ({
+            ...m,
+            MilestoneDateDisplay: formatDateForDisplay(m.MilestoneDate),
+            ParticipantAge: calculateAge(m.ParticipantDOB)
+        }));
+
+        let participantOptions = [];
+        if (req.session.isAdmin) {
+            participantOptions = await knex('Participants')
+                .select('ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 'ParticipantEmail')
+                .orderBy('ParticipantLastName', 'asc')
+                .orderBy('ParticipantFirstName', 'asc');
+        }
+
+        res.render('milestones', {
+            pageTitle: 'Milestones',
+            milestones,
+            participantOptions,
+            searchTerm,
+            filters: {
+                filterStartDate,
+                filterEndDate,
+                filterMinAge,
+                filterMaxAge,
+                filterCity,
+                filterState,
+                filterRole,
+                filterInterest
+            },
+            currentPage: safePage,
+            totalPages,
+            totalMilestones: totalFilteredMilestones,
+            hasNextPage: safePage < totalPages,
+            pageSize: limit,
+            metrics: {
+                total: totalAchievedMilestones,
+                month: milestonesThisMonth,
+                future: futureMilestones
+            },
+            error: req.query.error || null,
+            success: req.query.success || null
+        });
     } catch (err) {
         console.error('Error loading milestones:', err);
         res.status(500).send('Error loading milestones');
     }
 });
 
+app.post('/milestones/add', async (req, res) => {
+    if (!req.session.isAdmin) {
+        return res.status(418).render('landing', {
+            layout: 'public',
+            pageTitle: 'Welcome',
+            error: 'You do not have admin access'
+        });
+    }
+
+    try {
+        const { ParticipantID, MilestoneTitle, MilestoneDate } = req.body;
+
+        if (!ParticipantID || !MilestoneTitle || !MilestoneDate) {
+            return res.redirect('/milestones?error=' + encodeURIComponent('All milestone fields are required.'));
+        }
+
+        const participant = await knex('Participants')
+            .where('ParticipantID', ParticipantID)
+            .first();
+
+        if (!participant) {
+            return res.redirect('/milestones?error=' + encodeURIComponent('Participant not found.'));
+        }
+
+        await knex('Participant_Milestone').insert({
+            ParticipantID,
+            MilestoneTitle,
+            MilestoneDate
+        });
+
+        return res.redirect('/milestones?success=' + encodeURIComponent('Milestone added successfully.'));
+    } catch (err) {
+        console.error('Error adding milestone:', err);
+        return res.redirect('/milestones?error=' + encodeURIComponent('Error adding milestone. Please try again.'));
+    }
+});
+
+app.post('/milestones/edit', async (req, res) => {
+    if (!req.session.isAdmin) {
+        return res.status(418).render('landing', {
+            layout: 'public',
+            pageTitle: 'Welcome',
+            error: 'You do not have admin access'
+        });
+    }
+
+    try {
+        const { MilestoneID, ParticipantID, MilestoneTitle, MilestoneDate } = req.body;
+
+        if (!MilestoneID || !ParticipantID || !MilestoneTitle || !MilestoneDate) {
+            return res.redirect('/milestones?error=' + encodeURIComponent('All milestone fields are required.'));
+        }
+
+        const milestone = await knex('Participant_Milestone')
+            .where('MilestoneID', MilestoneID)
+            .first();
+
+        if (!milestone) {
+            return res.redirect('/milestones?error=' + encodeURIComponent('Milestone not found.'));
+        }
+
+        const participant = await knex('Participants')
+            .where('ParticipantID', ParticipantID)
+            .first();
+
+        if (!participant) {
+            return res.redirect('/milestones?error=' + encodeURIComponent('Participant not found.'));
+        }
+
+        await knex('Participant_Milestone')
+            .where('MilestoneID', MilestoneID)
+            .update({
+                ParticipantID,
+                MilestoneTitle,
+                MilestoneDate
+            });
+
+        return res.redirect('/milestones?success=' + encodeURIComponent('Milestone updated successfully.'));
+    } catch (err) {
+        console.error('Error updating milestone:', err);
+        return res.redirect('/milestones?error=' + encodeURIComponent('Error updating milestone. Please try again.'));
+    }
+});
+
+app.post('/milestones/delete', async (req, res) => {
+    if (!req.session.isAdmin) {
+        return res.status(418).render('landing', {
+            layout: 'public',
+            pageTitle: 'Welcome',
+            error: 'You do not have admin access'
+        });
+    }
+
+    try {
+        const { MilestoneID } = req.body;
+
+        if (!MilestoneID) {
+            return res.redirect('/milestones?error=' + encodeURIComponent('Milestone ID is required.'));
+        }
+
+        await knex('Participant_Milestone')
+            .where('MilestoneID', MilestoneID)
+            .del();
+
+        return res.redirect('/milestones?success=' + encodeURIComponent('Milestone deleted successfully.'));
+    } catch (err) {
+        console.error('Error deleting milestone:', err);
+        return res.redirect('/milestones?error=' + encodeURIComponent('Error deleting milestone. Please try again.'));
+    }
+});
+
 app.get('/surveys', async (req, res) => {
     try {
-        if (req.session.isAdmin) {
-            // Show ALL surveys newest → oldest
-            const surveys = await knex('Surveys')
-            .join('Registration', 'Surveys.RegistrationID', 'Registration.RegistrationID')
-            .join('Participants', 'Registration.ParticipantID', 'Participants.ParticipantID')
-            .join('Event_Occurrence', 'Registration.OccurrenceID', 'Event_Occurrence.OccurrenceID')
-            .join('Event_Templates', 'Event_Occurrence.EventID', 'Event_Templates.EventID')
-            .select(
-                'Surveys.SurveyID',
-                'Surveys.SurveySatisfactionScore',
-                'Surveys.SurveyUsefulnessScore',
-                'Surveys.SurveyInstructorScore',
-                'Surveys.SurveyRecommendationScore',
-                'Surveys.SurveyOverallScore',
-                'Surveys.SurveyNPSBucket',
-                'Surveys.SurveyComments',
-                'Surveys.SurveySubmissionDate',
-                'Participants.ParticipantEmail',
-                'Participants.ParticipantFirstName',
-                'Participants.ParticipantLastName',
-                'Event_Templates.EventName',
-                'Event_Occurrence.EventDateTimeStart'
-            )
-            .orderBy('Surveys.SurveySubmissionDate', 'desc');
+        const searchTerm = (req.query.search || '').trim();
+        const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+        const limit = 50;
+        const filterStartDate = req.query.filterStartDate || '';
+        const filterEndDate = req.query.filterEndDate || '';
+        const filterMinAge = req.query.filterMinAge || '';
+        const filterMaxAge = req.query.filterMaxAge || '';
+        const filterCity = req.query.filterCity || '';
+        const filterState = req.query.filterState || '';
+        const filterRole = req.query.filterRole || '';
+        const filterInterest = req.query.filterInterest || '';
 
-            res.render('surveys', {
-            pageTitle: 'Surveys',
-            surveys,
-            });
-        } else {
-            // Show user surveys newest → oldest
-            const surveys = await knex('Surveys')
-            .join('Registration', 'Surveys.RegistrationID', 'Registration.RegistrationID')
-            .join('Participants', 'Registration.ParticipantID', 'Participants.ParticipantID')
-            .join('Event_Occurrence', 'Registration.OccurrenceID', 'Event_Occurrence.OccurrenceID')
-            .join('Event_Templates', 'Event_Occurrence.EventID', 'Event_Templates.EventID')
-            .select(
-                'Surveys.SurveyID',
-                'Surveys.SurveySatisfactionScore',
-                'Surveys.SurveyUsefulnessScore',
-                'Surveys.SurveyInstructorScore',
-                'Surveys.SurveyRecommendationScore',
-                'Surveys.SurveyOverallScore',
-                'Surveys.SurveyNPSBucket',
-                'Surveys.SurveyComments',
-                'Surveys.SurveySubmissionDate',
-                'Participants.ParticipantEmail',
-                'Participants.ParticipantFirstName',
-                'Participants.ParticipantLastName',
-                'Event_Templates.EventName',
-                'Event_Occurrence.EventDateTimeStart'
-            )
-            .where('Participants.ParticipantID', req.session.user.ParticipantID)
-            .orderBy('Surveys.SurveySubmissionDate', 'desc');
+        const baseQuery = knex('Surveys as s')
+            .join('Registration as r', 's.RegistrationID', 'r.RegistrationID')
+            .join('Participants as p', 'r.ParticipantID', 'p.ParticipantID')
+            .join('Event_Occurrence as eo', 'r.OccurrenceID', 'eo.OccurrenceID')
+            .join('Event_Templates as et', 'eo.EventID', 'et.EventID');
 
-            res.render('surveys', {
-            pageTitle: 'Surveys',
-            surveys,
+        if (!req.session.isAdmin) {
+            baseQuery.where('p.ParticipantID', req.session.user.ParticipantID);
+        }
+
+        const filteredQuery = baseQuery.clone();
+
+        if (searchTerm) {
+            const searchPattern = `%${searchTerm}%`;
+            filteredQuery.andWhere(function () {
+                this.where('p.ParticipantFirstName', 'ilike', searchPattern)
+                    .orWhere('p.ParticipantLastName', 'ilike', searchPattern)
+                    .orWhere('p.ParticipantEmail', 'ilike', searchPattern)
+                    .orWhere('et.EventName', 'ilike', searchPattern)
+                    .orWhereRaw("(\"p\".\"ParticipantFirstName\" || ' ' || \"p\".\"ParticipantLastName\") ILIKE ?", [searchPattern])
+                    .orWhereRaw('CAST(s."SurveyID" AS TEXT) ILIKE ?', [searchPattern])
+                    .orWhereRaw('CAST(s."SurveyOverallScore" AS TEXT) ILIKE ?', [searchPattern])
+                    .orWhere('s.SurveyComments', 'ilike', searchPattern);
             });
         }
+
+        if (filterStartDate) {
+            filteredQuery.andWhere('s.SurveySubmissionDate', '>=', filterStartDate);
+        }
+        if (filterEndDate) {
+            filteredQuery.andWhere('s.SurveySubmissionDate', '<=', filterEndDate);
+        }
+
+        const today = new Date();
+        if (filterMinAge || filterMaxAge) {
+            filteredQuery.whereNotNull('p.ParticipantDOB');
+        }
+        if (filterMinAge) {
+            const cutoff = new Date(today);
+            cutoff.setFullYear(cutoff.getFullYear() - parseInt(filterMinAge, 10));
+            filteredQuery.andWhere('p.ParticipantDOB', '<=', cutoff.toISOString().split('T')[0]);
+        }
+        if (filterMaxAge) {
+            const cutoff = new Date(today);
+            cutoff.setFullYear(cutoff.getFullYear() - parseInt(filterMaxAge, 10));
+            filteredQuery.andWhere('p.ParticipantDOB', '>=', cutoff.toISOString().split('T')[0]);
+        }
+
+        if (filterCity) {
+            filteredQuery.andWhere('p.ParticipantCity', 'ilike', `%${filterCity}%`);
+        }
+        if (filterState) {
+            filteredQuery.andWhere('p.ParticipantState', 'ilike', `%${filterState}%`);
+        }
+        if (filterRole) {
+            filteredQuery.andWhere('p.ParticipantRole', filterRole);
+        }
+        if (filterInterest) {
+            filteredQuery.andWhere('p.ParticipantFieldOfInterest', filterInterest);
+        }
+
+        const totalRow = await knex.count('* as count')
+            .from(filteredQuery.clone().as('survey_filtered'))
+            .first();
+        const totalSurveys = parseInt(totalRow?.count, 10) || 0;
+
+        const avgRow = await filteredQuery.clone()
+            .avg('s.SurveyOverallScore as avgScore')
+            .first();
+        const avgScore = avgRow?.avgScore !== null && avgRow?.avgScore !== undefined
+            ? parseFloat(avgRow.avgScore)
+            : 0;
+
+        const totalPages = Math.max(Math.ceil(totalSurveys / limit), 1);
+        const safePage = Math.min(page, totalPages);
+        const offset = (safePage - 1) * limit;
+
+        const surveyRows = await filteredQuery.clone()
+            .select(
+                's.SurveyID',
+                's.SurveySatisfactionScore',
+                's.SurveyUsefulnessScore',
+                's.SurveyInstructorScore',
+                's.SurveyRecommendationScore',
+                's.SurveyOverallScore',
+                's.SurveyNPSBucket',
+                's.SurveyComments',
+                's.SurveySubmissionDate',
+                'r.RegistrationID',
+                'p.ParticipantEmail',
+                'p.ParticipantFirstName',
+                'p.ParticipantLastName',
+                'p.ParticipantCity',
+                'p.ParticipantState',
+                'p.ParticipantFieldOfInterest',
+                'p.ParticipantDOB',
+                'et.EventName',
+                'eo.EventDateTimeStart'
+            )
+            .orderBy('s.SurveySubmissionDate', 'desc')
+            .orderBy('s.SurveyID', 'desc')
+            .limit(limit)
+            .offset(offset);
+
+        const surveys = surveyRows.map((survey) => ({
+            ...survey,
+            SurveyOverallScoreDisplay: survey.SurveyOverallScore !== null && survey.SurveyOverallScore !== undefined
+                ? parseFloat(survey.SurveyOverallScore).toFixed(2)
+                : '0.00',
+            SurveySubmissionDisplay: formatDateForDisplay(survey.SurveySubmissionDate),
+            EventDateDisplay: survey.EventDateTimeStart
+                ? new Date(survey.EventDateTimeStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                : 'Date TBD',
+            ParticipantAge: calculateAge(survey.ParticipantDOB)
+        }));
+
+        const registrationQuery = knex('Registration as r')
+            .join('Participants as p', 'r.ParticipantID', 'p.ParticipantID')
+            .join('Event_Occurrence as eo', 'r.OccurrenceID', 'eo.OccurrenceID')
+            .join('Event_Templates as et', 'eo.EventID', 'et.EventID');
+
+        if (!req.session.isAdmin) {
+            registrationQuery.where('p.ParticipantID', req.session.user.ParticipantID);
+        }
+
+        if (searchTerm) {
+            const searchPattern = `%${searchTerm}%`;
+            registrationQuery.andWhere(function () {
+                this.where('p.ParticipantFirstName', 'ilike', searchPattern)
+                    .orWhere('p.ParticipantLastName', 'ilike', searchPattern)
+                    .orWhere('p.ParticipantEmail', 'ilike', searchPattern)
+                    .orWhere('et.EventName', 'ilike', searchPattern)
+                    .orWhereRaw("(\"p\".\"ParticipantFirstName\" || ' ' || \"p\".\"ParticipantLastName\") ILIKE ?", [searchPattern]);
+            });
+        }
+
+        if (filterStartDate) {
+            registrationQuery.andWhere('eo.EventDateTimeStart', '>=', filterStartDate);
+        }
+        if (filterEndDate) {
+            registrationQuery.andWhere('eo.EventDateTimeStart', '<=', filterEndDate);
+        }
+        if (filterMinAge || filterMaxAge) {
+            registrationQuery.whereNotNull('p.ParticipantDOB');
+        }
+        if (filterMinAge) {
+            const cutoff = new Date(today);
+            cutoff.setFullYear(cutoff.getFullYear() - parseInt(filterMinAge, 10));
+            registrationQuery.andWhere('p.ParticipantDOB', '<=', cutoff.toISOString().split('T')[0]);
+        }
+        if (filterMaxAge) {
+            const cutoff = new Date(today);
+            cutoff.setFullYear(cutoff.getFullYear() - parseInt(filterMaxAge, 10));
+            registrationQuery.andWhere('p.ParticipantDOB', '>=', cutoff.toISOString().split('T')[0]);
+        }
+        if (filterCity) {
+            registrationQuery.andWhere('p.ParticipantCity', 'ilike', `%${filterCity}%`);
+        }
+        if (filterState) {
+            registrationQuery.andWhere('p.ParticipantState', 'ilike', `%${filterState}%`);
+        }
+        if (filterRole) {
+            registrationQuery.andWhere('p.ParticipantRole', filterRole);
+        }
+        if (filterInterest) {
+            registrationQuery.andWhere('p.ParticipantFieldOfInterest', filterInterest);
+        }
+
+        const registrationCountRow = await registrationQuery
+            .count('* as count')
+            .first();
+        const totalRegistrations = parseInt(registrationCountRow?.count, 10) || 0;
+        const completionRate = totalRegistrations > 0
+            ? (totalSurveys / totalRegistrations) * 100
+            : 0;
+
+        let registrationOptions = [];
+        if (req.session.isAdmin) {
+            registrationOptions = await knex('Registration as r')
+                .leftJoin('Surveys as s', 'r.RegistrationID', 's.RegistrationID')
+                .join('Participants as p', 'r.ParticipantID', 'p.ParticipantID')
+                .join('Event_Occurrence as eo', 'r.OccurrenceID', 'eo.OccurrenceID')
+                .join('Event_Templates as et', 'eo.EventID', 'et.EventID')
+                .select(
+                    'r.RegistrationID',
+                    'p.ParticipantFirstName',
+                    'p.ParticipantLastName',
+                    'p.ParticipantEmail',
+                    'et.EventName',
+                    'eo.EventDateTimeStart'
+                )
+                .whereNull('s.RegistrationID')
+                .orderBy('eo.EventDateTimeStart', 'desc');
+        }
+
+        res.render('surveys', {
+            pageTitle: 'Surveys',
+            surveys,
+            registrationOptions,
+            searchTerm,
+            filters: {
+                filterStartDate,
+                filterEndDate,
+                filterMinAge,
+                filterMaxAge,
+                filterCity,
+                filterState,
+                filterRole,
+                filterInterest
+            },
+            currentPage: safePage,
+            totalPages,
+            totalSurveys,
+            hasNextPage: safePage < totalPages,
+            pageSize: limit,
+            metrics: {
+                total: totalSurveys,
+                avgScore: avgScore || 0,
+                completionRate
+            },
+            error: req.query.error || null,
+            success: req.query.success || null
+        });
     } catch (err) {
         console.error('Error loading surveys:', err);
         res.status(500).send('Error loading surveys');
+    }
+});
+
+app.post('/surveys/add', async (req, res) => {
+    if (!req.session.isAdmin) {
+        return res.status(418).render('landing', {
+            layout: 'public',
+            pageTitle: 'Welcome',
+            error: 'You do not have admin access'
+        });
+    }
+
+    try {
+        const {
+            RegistrationID,
+            SurveySatisfactionScore,
+            SurveyUsefulnessScore,
+            SurveyInstructorScore,
+            SurveyRecommendationScore,
+            SurveyComments,
+            SurveySubmissionDate
+        } = req.body;
+
+        if (!RegistrationID) {
+            return res.redirect('/surveys?error=' + encodeURIComponent('Registration is required.'));
+        }
+
+        const sat = clampSurveyScore(SurveySatisfactionScore);
+        const useful = clampSurveyScore(SurveyUsefulnessScore);
+        const instructor = clampSurveyScore(SurveyInstructorScore);
+        const recommend = clampSurveyScore(SurveyRecommendationScore);
+
+        if ([sat, useful, instructor, recommend].some((score) => score === null)) {
+            return res.redirect('/surveys?error=' + encodeURIComponent('All survey scores must be between 0 and 5.'));
+        }
+
+        const registration = await knex('Registration')
+            .where('RegistrationID', RegistrationID)
+            .first();
+
+        if (!registration) {
+            return res.redirect('/surveys?error=' + encodeURIComponent('Registration not found.'));
+        }
+
+        const existingSurvey = await knex('Surveys')
+            .where('RegistrationID', RegistrationID)
+            .first();
+
+        if (existingSurvey) {
+            return res.redirect('/surveys?error=' + encodeURIComponent('A survey already exists for the selected registration.'));
+        }
+
+        const overall = computeSurveyAverage([sat, useful, instructor, recommend]);
+        const npsBucket = determineNpsBucket(recommend) || 'Passive';
+
+        await knex('Surveys').insert({
+            RegistrationID,
+            SurveySatisfactionScore: sat,
+            SurveyUsefulnessScore: useful,
+            SurveyInstructorScore: instructor,
+            SurveyRecommendationScore: recommend,
+            SurveyOverallScore: overall,
+            SurveyNPSBucket: npsBucket,
+            SurveyComments: SurveyComments || null,
+            SurveySubmissionDate: SurveySubmissionDate || knex.fn.now()
+        });
+
+        return res.redirect('/surveys?success=' + encodeURIComponent('Survey added successfully.'));
+    } catch (err) {
+        console.error('Error adding survey:', err);
+        return res.redirect('/surveys?error=' + encodeURIComponent('Error adding survey. Please try again.'));
+    }
+});
+
+app.post('/surveys/edit', async (req, res) => {
+    if (!req.session.isAdmin) {
+        return res.status(418).render('landing', {
+            layout: 'public',
+            pageTitle: 'Welcome',
+            error: 'You do not have admin access'
+        });
+    }
+
+    try {
+        const {
+            SurveyID,
+            SurveySatisfactionScore,
+            SurveyUsefulnessScore,
+            SurveyInstructorScore,
+            SurveyRecommendationScore,
+            SurveyComments,
+            SurveySubmissionDate
+        } = req.body;
+
+        if (!SurveyID) {
+            return res.redirect('/surveys?error=' + encodeURIComponent('Survey ID is required.'));
+        }
+
+        const sat = clampSurveyScore(SurveySatisfactionScore);
+        const useful = clampSurveyScore(SurveyUsefulnessScore);
+        const instructor = clampSurveyScore(SurveyInstructorScore);
+        const recommend = clampSurveyScore(SurveyRecommendationScore);
+
+        if ([sat, useful, instructor, recommend].some((score) => score === null)) {
+            return res.redirect('/surveys?error=' + encodeURIComponent('All survey scores must be between 0 and 5.'));
+        }
+
+        const survey = await knex('Surveys')
+            .where('SurveyID', SurveyID)
+            .first();
+
+        if (!survey) {
+            return res.redirect('/surveys?error=' + encodeURIComponent('Survey not found.'));
+        }
+
+        const overall = computeSurveyAverage([sat, useful, instructor, recommend]);
+        const npsBucket = determineNpsBucket(recommend) || 'Passive';
+
+        const updatePayload = {
+            SurveySatisfactionScore: sat,
+            SurveyUsefulnessScore: useful,
+            SurveyInstructorScore: instructor,
+            SurveyRecommendationScore: recommend,
+            SurveyOverallScore: overall,
+            SurveyNPSBucket: npsBucket,
+            SurveyComments: SurveyComments || null
+        };
+
+        if (SurveySubmissionDate) {
+            updatePayload.SurveySubmissionDate = SurveySubmissionDate;
+        }
+
+        await knex('Surveys')
+            .where('SurveyID', SurveyID)
+            .update(updatePayload);
+
+        return res.redirect('/surveys?success=' + encodeURIComponent('Survey updated successfully.'));
+    } catch (err) {
+        console.error('Error updating survey:', err);
+        return res.redirect('/surveys?error=' + encodeURIComponent('Error updating survey. Please try again.'));
+    }
+});
+
+app.post('/surveys/delete', async (req, res) => {
+    if (!req.session.isAdmin) {
+        return res.status(418).render('landing', {
+            layout: 'public',
+            pageTitle: 'Welcome',
+            error: 'You do not have admin access'
+        });
+    }
+
+    try {
+        const { SurveyID } = req.body;
+
+        if (!SurveyID) {
+            return res.redirect('/surveys?error=' + encodeURIComponent('Survey ID is required.'));
+        }
+
+        await knex('Surveys')
+            .where('SurveyID', SurveyID)
+            .del();
+
+        return res.redirect('/surveys?success=' + encodeURIComponent('Survey deleted successfully.'));
+    } catch (err) {
+        console.error('Error deleting survey:', err);
+        return res.redirect('/surveys?error=' + encodeURIComponent('Error deleting survey. Please try again.'));
     }
 });
     
@@ -687,6 +1551,7 @@ app.get('/profile', async (req, res) => {
         // Regular user view: show only their own data
         try {
             const participantId = req.session.user.ParticipantID;
+            const now = new Date();
             const participantPromise = knex('Participants')
                 .where('ParticipantID', participantId)
                 .first();
@@ -697,6 +1562,7 @@ app.get('/profile', async (req, res) => {
                 .first();
             const recentMilestonePromise = knex('Participant_Milestone')
                 .where('ParticipantID', participantId)
+                .andWhere('MilestoneDate', '<=', now)
                 .orderBy('MilestoneDate', 'desc')
                 .orderBy('MilestoneID', 'desc')
                 .first();
@@ -771,8 +1637,8 @@ app.get('/participants', async (req, res) => {
 
             // Validate sort column and direction
             const validColumns = ['ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 'ParticipantDOB',
-                                 'ParticipantSchoolOrEmployer', 'ParticipantRole', 'ParticipantEmail', 
-                                 'ParticipantCity', 'ParticipantState', 'ParticipantPhone', 'ParticipantFieldOfInterest'];
+                                    'ParticipantSchoolOrEmployer', 'ParticipantRole', 'ParticipantEmail', 
+                                    'ParticipantCity', 'ParticipantState', 'ParticipantPhone', 'ParticipantFieldOfInterest'];
             const validSortDir = ['asc', 'desc'];
             const safeSortColumn = validColumns.includes(sortColumn) ? sortColumn : 'ParticipantID';
             const safeSortDir = validSortDir.includes(sortDir.toLowerCase()) ? sortDir.toLowerCase() : 'asc';
