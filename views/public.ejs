@@ -15,7 +15,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 </head>
-<body>
+<body class="<%= typeof hasHero !== 'undefined' && hasHero ? 'has-hero' : '' %>">
+
     <header>
         <nav class="navbar navbar-expand-lg">
             <div class="container-fluid">

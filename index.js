@@ -131,7 +131,11 @@ app.use((req, res, next) => {
 // Public Routes (Handles landing, login, register)
 // GET /: Landing page
 app.get('/', (req, res) => {
-    res.render('landing', { layout: 'public', pageTitle: 'Welcome' });
+    res.render('landing', { 
+        layout: 'public',
+        pageTitle: 'Welcome',
+        hasHero: true
+     });
 });
 
 // GET /login: Show login form
