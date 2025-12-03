@@ -14,8 +14,17 @@ body {
     background-color: #F9F5EA; /* Cream */
     color: #3A3F3B;
     margin: 0;
-    padding: 0;
+     padding-top: 120px !important; /* pushes content down below navbar */
     line-height: 1.55;
+}
+
+body.has-hero {
+    padding-top: 0 !important; /* landing page only */
+}
+
+body.has-hero main {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
 }
 
 /* Headings use DM Serif Display */
@@ -264,6 +273,7 @@ p, li, a, .nav-link {
     border-radius: 18px;
     box-shadow: 0 6px 16px rgba(0,0,0,0.08);
     transition: transform 0.25s, box-shadow 0.25s;
+}
 
 .table thead th {
     border-radius: 0 !important;
@@ -373,4 +383,29 @@ footer {
     color: #3A3F3B;
     text-align: center;
     position: relative !important;
+}
+
+/* Default padding so navbar doesn't overlap content */
+body {
+    padding-top: 110px; /* adjust if needed */
+}
+
+/* If page has a hero, remove padding */
+body.has-hero {
+    padding-top: 0 !important;
+}
+
+/* Remove top margin for pages with hero */
+body.has-hero main.container {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Add spacing back for normal pages */
+body:not(.has-hero) main.container {
+    margin-top: 0 !important;
+}
+
+body:not(.has-hero) {
+   padding-top: 140px !important;
 }
