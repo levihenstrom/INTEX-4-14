@@ -1,227 +1,376 @@
-/* =========================================
-   SlopeSense Aesthetic UI Redesign (2025)
-   Clean • Modern • Alpine Blue Theme
-========================================= */
+/* ====================================================== */
+/*                    ELLA RISES BRAND CSS                */
+/* ====================================================== */
 
-/* -------- GLOBAL -------- */
+/* ===== BRAND FONTS ===== */
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+/* ====================================================== */
+/*                      GLOBAL TYPOGRAPHY                 */
+/* ====================================================== */
+
 body {
-    font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
-    background: linear-gradient(to bottom, #f8fbff, #eef3f8);
-    min-height: 100vh;
-    padding-bottom: 80px;
-    color: #2e3a4e;
+    font-family: 'Montserrat', sans-serif;
+    background-color: #F9F5EA; /* Cream */
+    color: #3A3F3B;
+    margin: 0;
+    padding: 0;
+    line-height: 1.55;
 }
 
-* {
-    border-radius: 6px;
+/* Headings use DM Serif Display */
+h1, h2, h3, h4,
+.hero-text h1 {
+    font-family: 'DM Serif Display', serif;
+    color: #3A3F3B;
+    letter-spacing: 0.3px;
 }
 
-/* -------- NAVBAR -------- */
-nav.navbar.navbar-expand-lg {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    padding-left: 16px !important;
-    padding-right: 16px !important;
-    min-height: 80px !important;
-    background: #ffffff !important;
+/* Body text / nav text uses Montserrat */
+p, li, a, .nav-link {
+    font-family: 'Montserrat', sans-serif;
 }
 
+/* ====================================================== */
+/*                           NAVBAR                        */
+/* ====================================================== */
+
+/* ====================================================== */
+/*                    FIXED CENTERED NAVBAR               */
+/* ====================================================== */
+
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #F9F5EA;
+    z-index: 1000;
+    padding: 1rem 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+/* Center entire content (logo + nav items) */
+.navbar .container-fluid {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 3rem;
+}
+
+/* Keep brand centered relative to everything */
 .navbar-brand {
-    padding: 0 !important;
     margin: 0 !important;
+    padding: 0 !important;
     display: flex !important;
     align-items: center !important;
+    justify-content: center !important;
 }
 
-.navbar .navbar-brand img.brand-logo {
-    height: 130px !important;
-    width: auto !important;
-    display: block !important;
-    object-fit: contain !important;
-    max-height: none !important;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+/* Center nav list */
+.navbar-nav {
+    flex-direction: row !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 2rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
-/* -------- HERO BANNER -------- */
-.hero-banner {
-    background-image: url('/images/mountains.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    padding: 90px 40px;
-    color: white;
-    text-align: center;
-    border-radius: 14px;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+/* Fix Bootstrap auto-alignment that pushes right */
+.ms-auto,
+.me-auto {
+    margin: 0 !important;
+}
+
+/* Make collapse container neutral (not pushing anything) */
+.navbar-collapse {
+    flex-grow: 0 !important;
+    justify-content: center !important;
+}
+
+
+/* ====================================================== */
+/*                       HERO SLIDESHOW                   */
+/* ====================================================== */
+
+.hero-slideshow {
     position: relative;
+    height: 65vh;
+    min-height: 430px;
+    width: 100vw;
+    margin-left: calc(50% - 50vw); /* Force full bleed */
+    overflow: hidden;
+    margin-top: 95px; /* Push down below fixed navbar */
 }
 
-.hero-banner::before {
-    content: "";
+/* Slides */
+.slide {
     position: absolute;
     inset: 0;
-    background: rgba(13, 69, 122, 0.35);
-    border-radius: 14px;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    animation: fadeSlides 15s infinite;
 }
 
-.hero-banner > * {
-    position: relative;
+.slide1 { background-image: url('/images/hero1.jpg'); }
+.slide2 { background-image: url('/images/hero2.jpg'); animation-delay: 5s; }
+.slide3 { background-image: url('/images/hero3.jpg'); animation-delay: 10s; }
+
+@keyframes fadeSlides {
+    0% { opacity: 0; }
+    8% { opacity: 1; }
+    33% { opacity: 1; }
+    41% { opacity: 0; }
+    100% { opacity: 0; }
 }
 
-.hero-banner h1 {
-    font-size: 3rem;
-    font-weight: 800;
-    margin-bottom: 10px;
-    text-shadow: 0px 3px 8px rgba(0, 0, 0, 0.4);
+/* Overlay */
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 176, 181, 0.62); /* deeper rose pink */
+    backdrop-filter: blur(2px);
+    z-index: 5;
 }
 
-.hero-banner p {
-    font-size: 1.2rem;
-    text-shadow: 0px 2px 6px rgba(0, 0, 0, 0.35);
-}
-
-/* -------- BUTTONS -------- */
-.btn-primary,
-.btn-success,
-.btn-light {
-    font-weight: 600;
-    padding: 10px 22px;
-    border-radius: 8px;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-}
-
-.btn-primary {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-}
-
-.btn-primary:hover {
-    background-color: #0b5ed7;
-    transform: translateY(-2px);
-}
-
-.btn-success {
-    background-color: #0b5ed7;
-    border-color: #0b5ed7;
-}
-
-.btn-success:hover {
-    background-color: #094db3;
-    transform: translateY(-2px);
-}
-
-.btn-light:hover {
-    background-color: #e2e6ea;
-    transform: translateY(-2px);
-}
-
-/* -------- LIST ITEMS -------- */
-.list-group-item {
-    background: #ffffff;
-    border: none;
-    margin-bottom: 10px;
-    padding: 18px 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    transition: all 0.2s ease;
-}
-
-.list-group-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-/* -------- FOOTER -------- */
-footer {
-    background: #ffffff;
-    border-top: 1px solid #e4e9f1;
-    color: #4a5568;
-    padding: 16px;
+/* Hero text */
+.hero-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
     text-align: center;
+    width: 90%;
+    max-width: 900px;
 }
 
-/* -------- TABLE STYLING -------- */
-table, 
-table th, 
-table td {
-    border-radius: 0 !important;
+.hero-text h1 {
+    font-size: 5rem;
+    color: white !important;
+    text-shadow: 0px 4px 10px rgba(0,0,0,0.35);
 }
 
+.hero-text p {
+    font-size: 1.65rem;
+    font-weight: 500;
+    color: white !important;
+    max-width: 850px;
+    margin: 1rem auto 2.2rem auto;
+    text-shadow: 0px 3px 8px rgba(0,0,0,0.3);
+}
+
+/* Buttons */
+.hero-btn {
+    background: #CE325B;
+    color: white;
+    padding: 0.9rem 1.8rem;
+    border-radius: 30px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-right: 1rem;
+}
+
+.hero-btn-outline {
+    border: 2px solid #CE325B;
+    padding: 0.8rem 1.7rem;
+    border-radius: 30px;
+    color: #CE325B;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.25s ease;
+}
+
+.hero-btn-outline:hover {
+    background: #CE325B;
+    color: white;
+}
+
+/* ====================================================== */
+/*                      STAT SECTION                      */
+/* ====================================================== */
+
+.stats-section {
+    margin: 5rem auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 2rem;
+    max-width: 1100px;
+    padding: 0 2rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-6px);
+}
+
+.stat-card i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.stat-card h2 {
+    font-size: 2.8rem;
+    font-weight: 700;
+}
+
+.stat-card p {
+    font-size: 1.1rem;
+    color: #444;
+}
+
+/* Brand icon colors */
+.stat-card:nth-child(1) i { color: #F4B092; }
+.stat-card:nth-child(2) i { color: #978EC4; }
+.stat-card:nth-child(3) i { color: #9AB59D; }
+.stat-card:nth-child(4) i { color: #CE325B; }
+
+/* ====================================================== */
+/*                       GALLERY SECTION                  */
+/* ====================================================== */
+
+.gallery-section {
+    margin: 5rem auto;
+    max-width: 1200px;
+    padding: 0 2rem;
+}
+
+.gallery-section h2 {
+    text-align: center;
+    font-size: 2.6rem;
+    margin-bottom: 2rem;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.7rem;
+}
+
+.gallery-grid img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    border-radius: 18px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    transition: transform 0.25s, box-shadow 0.25s;
 
 .table thead th {
     border-radius: 0 !important;
     vertical-align: middle !important;
 }
 
-.table tbody tr {
-    border-radius: 0 !important;
+.gallery-grid img:hover {
+    transform: scale(1.03);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.14);
 }
 
-.table tbody td {
-    border-radius: 0 !important;
-    vertical-align: middle !important;
+/* ====================================================== */
+/*                      CLEAN MINIMAL FOOTER              */
+/* ====================================================== */
+
+footer {
+    background-color: #3A3F3B;      /* deep charcoal brand color */
+    color: #FFFFFF;
+    text-align: center;
+    padding: 0.9rem 0;              /* SMALL padding */
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    margin-top: 4rem;               /* space above footer */
 }
 
-/* =======================================
-   FEATURE IMAGE CARDS (Hawaiian Style)
-======================================= */
-.feature-image-card {
-    display: block;
-    position: relative;
-    height: 380px;
-    border-radius: 18px;
-    overflow: hidden;
-    background-image: var(--image);
-    background-size: cover;
-    background-position: center;
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+/* Remove any forced sticky/footer behavior */
+footer {
+    position: static !important;
+    bottom: 0 !important;
+    width: 100%;
 }
 
-.feature-image-card:hover {
-    transform: translateY(-6px) scale(1.03);
-    box-shadow: 0 16px 32px rgba(0,0,0,0.25);
+/* Remove any extra spacing Bootstrap adds */
+footer * {
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
-/* Gradient overlay */
-.feature-image-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        to top,
-        rgba(0,0,0,0.6),
-        rgba(0,0,0,0.15)
-    );
-    z-index: 1;
+/* ====================================================== */
+/*               MINIMAL FLOATING CENTER FOOTER           */
+/* ====================================================== */
+
+footer {
+    background: none !important;     /* remove bar look */
+    color: #3A3F3B;                  /* brand charcoal */
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    padding: 1rem 0 2rem 0 !important; /* small and airy */
+    margin: 0 auto;
+    width: fit-content;              /* shrink to content */
+    position: relative;              /* normal flow */
 }
 
-/* Text overlay */
-.feature-text-overlay {
-    position: absolute;
-    bottom: 18px;
-    left: 18px;
-    right: 18px;
-    color: white;
-    z-index: 2;
-    text-align: left;
+
+
+/* ====================================================== */
+/*                ULTRA-MINIMAL FLOATING FOOTER           */
+/* ====================================================== */
+
+footer {
+    background: none !important;     /* NO bar */
+    border: none !important;         /* NO border */
+    box-shadow: none !important;     /* NO shadow */
+    
+    color: #3A3F3B;                  /* soft charcoal text */
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+
+    text-align: center;
+
+    width: fit-content;              /* shrink to content */
+    margin: 2rem auto 1rem auto;     /* centered, floating */
+    padding: 0 !important;           /* no extra space */
 }
 
-/* Text default state */
-.feature-text-overlay h3,
-.feature-text-overlay p {
-    position: relative;
-    display: inline-block;
-    padding: 6px 10px;
-    border-radius: 8px;
-    background-color: transparent;
-    transition: background-color 0.35s ease, padding 0.35s ease;
+/* Make sure nothing inside adds space */
+footer * {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
-/* Solid gold highlight on hover */
-.feature-image-card:hover .feature-text-overlay h3,
-.feature-image-card:hover .feature-text-overlay p {
-    background-color: #E7A53A; /* exact gold from logo */
-    padding: 6px 14px;
+/* ====================================================== */
+/*    FORCE FOOTER TO BE MINIMAL + REMOVE OUTER BARS     */
+/* ====================================================== */
+
+footer, 
+footer div, 
+footer .container, 
+footer .row, 
+footer .col,
+footer * {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+}
+
+/* Make footer shrink to content */
+footer {
+    width: fit-content;
+    margin: 3rem auto 1.5rem auto !important;
+    font-size: 0.85rem;
+    color: #3A3F3B;
+    text-align: center;
+    position: relative !important;
 }
