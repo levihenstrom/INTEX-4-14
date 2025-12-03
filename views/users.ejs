@@ -88,7 +88,7 @@
             <tbody id="usersTableBody">
                 <% if (typeof users !== 'undefined' && users.length > 0) { %>
                     <% users.forEach(function(user) { %>
-                        <tr>
+                        <tr class="align-middle">
                             <td><%= user.ParticipantID %></td>
                             <td><%= user.ParticipantFirstName || 'N/A' %></td>
                             <td><%= user.ParticipantLastName || 'N/A' %></td>

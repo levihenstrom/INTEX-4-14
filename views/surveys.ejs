@@ -10,6 +10,9 @@
     }
     pushFilter('filterStartDate');
     pushFilter('filterEndDate');
+    pushFilter('filterEventStartDate');
+    pushFilter('filterEventEndDate');
+    pushFilter('filterEventTitle');
     pushFilter('filterMinAge');
     pushFilter('filterMaxAge');
     pushFilter('filterCity');
@@ -302,6 +305,15 @@
                                 <input type="date" class="form-control" name="filterEndDate" value="<%= filterValues.filterEndDate || '' %>">
                             </div>
                             <div class="col-md-6">
+                                <label class="form-label">Event Date From</label>
+                                <input type="date" class="form-control" name="filterEventStartDate" value="<%= filterValues.filterEventStartDate || '' %>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Event Date To</label>
+                                <input type="date" class="form-control" name="filterEventEndDate" value="<%= filterValues.filterEventEndDate || '' %>">
+                            </div>
+        
+                            <div class="col-md-6">
                                 <label class="form-label">Minimum Age</label>
                                 <input type="number" min="0" class="form-control" name="filterMinAge" value="<%= filterValues.filterMinAge || '' %>">
                             </div>
@@ -318,11 +330,12 @@
                                 <input type="text" class="form-control" name="filterState" value="<%= filterValues.filterState || '' %>">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Participant Role</label>
-                                <select class="form-select" name="filterRole">
+                                <label class="form-label">Event Title</label>
+                                <select class="form-select" name="filterEventTitle">
                                     <option value="">Any</option>
-                                    <option value="a" <%= filterValues.filterRole === 'a' ? 'selected' : '' %>>Admin</option>
-                                    <option value="p" <%= filterValues.filterRole === 'p' ? 'selected' : '' %>>Participant</option>
+                                    <% (eventTitles || []).forEach(function(title) { %>
+                                        <option value="<%= title %>" <%= filterValues.filterEventTitle === title ? 'selected' : '' %>><%= title %></option>
+                                    <% }); %>
                                 </select>
                             </div>
                             <div class="col-md-6">

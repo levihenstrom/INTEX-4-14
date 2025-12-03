@@ -32,16 +32,24 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <% if (isAdmin) { %>
-                            <!-- Admin-only content -->   
+                            <!-- Admin-only content -->
                             <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/users">Users</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/participants">Participants</a></li>
                             <li class="nav-item"><a class="nav-link" href="/events">Events</a></li>
                             <li class="nav-item"><a class="nav-link" href="/surveys">Surveys</a></li>
                             <li class="nav-item"><a class="nav-link" href="/milestones">Milestones</a></li>
                             <li class="nav-item"><a class="nav-link" href="/donations">Donations</a></li>
                             <li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>
                             <li class="nav-item"><a class="nav-link btn btn-outline-danger ms-2" href="/logout">Logout</a></li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    Admin
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/users">Users</a></li>
+                                    <li><a class="dropdown-item" href="/participants">Participants</a></li>
+                                    <li><a class="dropdown-item" href="/dashboard">Dashboard</a></li>
+                                </ul>
+                            </li>
                         <% } else if (user) { %>
                             <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
                             <li class="nav-item"><a class="nav-link" href="/events">Events</a></li>
@@ -54,7 +62,7 @@
                             <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
                             <li class="nav-item"><a class="nav-link" href="/donations">Donate</a></li>
                             <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
-                            <li class="nav-item"><a class="nav-link btn btn-success ms-2" href="/register">Register</a></li>
+                            <li class="nav-item"><a class="nav-link btn btn-success ms-2" href="/register">Enroll</a></li>
                         <% } %>
                     </ul>
                 </div>

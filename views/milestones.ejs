@@ -8,8 +8,12 @@
             filterPairs.push({ key: key, value: filterValues[key] });
         }
     }
+    pushFilterPair('filterParticipantID');
+    pushFilterPair('filterMilestoneID');
     pushFilterPair('filterStartDate');
     pushFilterPair('filterEndDate');
+    pushFilterPair('filterTitle');
+    pushFilterPair('filterCategory');
     pushFilterPair('filterMinAge');
     pushFilterPair('filterMaxAge');
     pushFilterPair('filterCity');
@@ -19,6 +23,7 @@
     const filterQueryString = filterPairs.length ? '&' + filterPairs.map(function(pair) {
         return pair.key + '=' + encodeURIComponent(pair.value);
     }).join('&') : '';
+    const sortQueryString = (typeof sortColumn !== 'undefined' ? '&sort=' + encodeURIComponent(sortColumn) : '') + (typeof sortDir !== 'undefined' ? '&sortDir=' + encodeURIComponent(sortDir) : '');
 %>
 
 <div class="milestones-page">
@@ -65,6 +70,8 @@
                 <% filterPairs.forEach(function(pair) { %>
                     <input type="hidden" name="<%= pair.key %>" value="<%= pair.value %>">
                 <% }); %>
+                <input type="hidden" name="sort" value="<%= typeof sortColumn !== 'undefined' ? sortColumn : 'MilestoneDate' %>">
+                <input type="hidden" name="sortDir" value="<%= typeof sortDir !== 'undefined' ? sortDir : 'desc' %>">
                 <input type="hidden" name="page" value="1">
                 <div class="input-group">
                     <input type="text" class="form-control" name="search" placeholder="Search milestones by title, participant, ID, or date..." value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
@@ -76,6 +83,7 @@
             </form>
             <div class="d-flex gap-2">
                 <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#milestoneFilterModal">Filters</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#milestoneSortModal">Sort</button>
                 <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addMilestoneModal">
                     + Add Milestone
                 </button>
@@ -95,7 +103,7 @@
     <% } %>
 
     <% if (Array.isArray(milestones) && milestones.length > 0) { %>
-        <div class="row row-cols-1 row-cols-md-2 g-4">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             <% milestones.forEach(function(milestone) { %>
                 <div class="col">
                     <div class="card h-100 shadow-sm">
@@ -103,7 +111,7 @@
                             <div class="d-flex w-100 justify-content-between align-items-start mb-2">
                                 <div>
                                     <h5 class="card-title mb-1"><%= milestone.MilestoneTitle %></h5>
-                                    <small class="text-muted"><%= milestone.MilestoneDateDisplay || 'Date not set' %></small>
+                                    <small class="text-muted"><%= milestone.MilestoneCategory || 'Date not set' %></small>
                                 </div>
                                 <% if (isAdmin) { %>
                                     <div class="btn-group btn-group-sm ms-2">
@@ -113,8 +121,10 @@
                                                 data-bs-target="#editMilestoneModal"
                                                 data-milestone-id="<%= milestone.MilestoneID %>"
                                                 data-title="<%= milestone.MilestoneTitle %>"
+                                                data-category="<%= milestone.MilestoneCategory || '' %>"
                                                 data-date="<%= milestone.MilestoneDate ? new Date(milestone.MilestoneDate).toISOString().split('T')[0] : '' %>"
-                                                data-participant-id="<%= milestone.ParticipantID %>">
+                                                data-participant-id="<%= milestone.ParticipantID %>"
+                                                data-participant-display="<%= milestone.ParticipantFirstName %> <%= milestone.ParticipantLastName %> (#<%= milestone.ParticipantID %>) - <%= milestone.ParticipantEmail %>">
                                             Edit
                                         </button>
                                         <form action="/milestones/delete" method="POST" class="delete-milestone-form d-inline" data-title="<%= milestone.MilestoneTitle %>">
@@ -130,7 +140,7 @@
                                     <%= milestone.ParticipantFirstName %> <%= milestone.ParticipantLastName %>
                                 </span>
                             </p>
-                            <p class="text-muted mb-0">Milestone ID: <%= milestone.MilestoneID %></p>
+                            <p class="text-muted mb-0"><%= milestone.MilestoneDateDisplay || 'Date not set' %></p>
                         </div>
                     </div>
                 </div>
@@ -142,7 +152,7 @@
             <div class="mt-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                 <div>
                     <% if (currentPage > 1) { %>
-                        <a href="/milestones?page=<%= currentPage - 1 %><%= searchTerm ? '&search=' + encodeURIComponent(searchTerm) : '' %>" class="btn btn-secondary">← Previous Page</a>
+                        <a href="/milestones?page=<%= currentPage - 1 %><%= searchTerm ? '&search=' + encodeURIComponent(searchTerm) : '' %><%= filterQueryString %><%= sortQueryString %>" class="btn btn-secondary">← Previous Page</a>
                     <% } %>
                 </div>
                 <div class="text-muted text-center">
@@ -151,7 +161,7 @@
                 </div>
                 <div class="text-end">
                     <% if (hasNextPage) { %>
-                        <a href="/milestones?page=<%= currentPage + 1 %><%= searchTerm ? '&search=' + encodeURIComponent(searchTerm) : '' %>" class="btn btn-primary">Next Page →</a>
+                        <a href="/milestones?page=<%= currentPage + 1 %><%= searchTerm ? '&search=' + encodeURIComponent(searchTerm) : '' %><%= filterQueryString %><%= sortQueryString %>" class="btn btn-primary">Next Page →</a>
                     <% } %>
                 </div>
             </div>
@@ -174,6 +184,15 @@
                         <div class="mb-3">
                             <label for="addMilestoneTitle" class="form-label">Milestone Title *</label>
                             <input type="text" class="form-control" id="addMilestoneTitle" name="MilestoneTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addMilestoneCategory" class="form-label">Milestone Category</label>
+                            <select class="form-select" id="addMilestoneCategory" name="MilestoneCategory">
+                                <option value="">Select category</option>
+                                <% (milestoneCategories || []).forEach(function(cat) { %>
+                                    <option value="<%= cat %>"><%= cat %></option>
+                                <% }); %>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label for="addMilestoneDate" class="form-label">Milestone Date *</label>
@@ -216,6 +235,15 @@
                             <input type="text" class="form-control" id="editMilestoneTitle" name="MilestoneTitle" required>
                         </div>
                         <div class="mb-3">
+                            <label for="editMilestoneCategory" class="form-label">Milestone Category</label>
+                            <select class="form-select" id="editMilestoneCategory" name="MilestoneCategory">
+                                <option value="">Select category</option>
+                                <% (milestoneCategories || []).forEach(function(cat) { %>
+                                    <option value="<%= cat %>"><%= cat %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="mb-3">
                             <label for="editMilestoneDate" class="form-label">Milestone Date *</label>
                             <input type="date" class="form-control" id="editMilestoneDate" name="MilestoneDate" required>
                         </div>
@@ -253,6 +281,14 @@
                         <% if (searchTerm) { %>
                             <input type="hidden" name="search" value="<%= searchTerm %>">
                         <% } %>
+                        <input type="hidden" name="sort" value="<%= typeof sortColumn !== 'undefined' ? sortColumn : 'MilestoneDate' %>">
+                        <input type="hidden" name="sortDir" value="<%= typeof sortDir !== 'undefined' ? sortDir : 'desc' %>">
+                        <% if (filterValues.filterParticipantID) { %>
+                            <input type="hidden" name="filterParticipantID" value="<%= filterValues.filterParticipantID %>">
+                        <% } %>
+                        <% if (filterValues.filterMilestoneID) { %>
+                            <input type="hidden" name="filterMilestoneID" value="<%= filterValues.filterMilestoneID %>">
+                        <% } %>
                         <input type="hidden" name="page" value="1">
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -262,6 +298,22 @@
                             <div class="col-md-6">
                                 <label class="form-label">Milestone Date To</label>
                                 <input type="date" class="form-control" name="filterEndDate" value="<%= filterValues.filterEndDate || '' %>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Milestone Title</label>
+                                <input type="text" class="form-control" name="filterTitle" value="<%= filterValues.filterTitle || '' %>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Milestone Category</label>
+                                <select class="form-select" name="filterCategory">
+                                    <option value="">Any</option>
+                                    <option value="Post Secondary Education" <%= filterValues.filterCategory === 'Post Secondary Education' ? 'selected' : '' %>>Post Secondary Education</option>
+                                    <option value="Schooling" <%= filterValues.filterCategory === 'Schooling' ? 'selected' : '' %>>Other Schooling</option>
+                                    <option value="Award/Certificate" <%= filterValues.filterCategory === 'Award/Certificate' ? 'selected' : '' %>>Award or Certificate</option>
+                                    <option value="Internship/Mentorship" <%= filterValues.filterCategory === 'Internship/Mentorship' ? 'selected' : '' %>>Internship or Mentorship</option>
+                                    <option value="Project" <%= filterValues.filterCategory === 'Project' ? 'selected' : '' %>>Project</option>
+                                    <option value="Non-STEAM Job" <%= filterValues.filterCategory === 'Non-STEAM Job' ? 'selected' : '' %>>Non-STEAM Job</option>   
+                                </select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Minimum Participant Age</label>
@@ -299,8 +351,52 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <a href="/milestones<%= searchTerm ? '?search=' + encodeURIComponent(searchTerm) : '' %>" class="btn btn-outline-secondary">Clear Filters</a>
+                            <% if (!searchTerm) { %>
+                            <a href="/milestones" class="btn btn-outline-secondary">Clear Filters</a>
+                                <% } %>
+                            <% if (searchTerm) { %>
+                        <a href="/milestones<%= searchTerm ? '?search=' + encodeURIComponent(searchTerm) : '' %><%= sortQueryString %>" class="btn btn-outline-secondary">Clear Filters</a>
+                                <% } %>
                         <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="milestoneSortModal" tabindex="-1" aria-labelledby="milestoneSortModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="milestoneSortModalLabel">Sort Milestones</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="GET" action="/milestones">
+                    <div class="modal-body">
+                        <% if (searchTerm) { %>
+                            <input type="hidden" name="search" value="<%= searchTerm %>">
+                        <% } %>
+                        <% filterPairs.forEach(function(pair) { %>
+                            <input type="hidden" name="<%= pair.key %>" value="<%= pair.value %>">
+                        <% }); %>
+                        <input type="hidden" name="page" value="1">
+                        <div class="mb-3">
+                            <label class="form-label">Sort field</label>
+                            <select class="form-select" name="sort">
+                                <option value="MilestoneDate" <%= sortColumn === 'MilestoneDate' ? 'selected' : '' %>>Milestone Date</option>
+                                <option value="MilestoneTitle" <%= sortColumn === 'MilestoneTitle' ? 'selected' : '' %>>Milestone Title</option>
+                                <option value="MilestoneCategory" <%= sortColumn === 'MilestoneCategory' ? 'selected' : '' %>>Milestone Category</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Direction</label>
+                            <select class="form-select" name="sortDir">
+                                <option value="desc" <%= sortDir === 'desc' ? 'selected' : '' %>>Descending</option>
+                                <option value="asc" <%= sortDir === 'asc' ? 'selected' : '' %>>Ascending</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Apply Sort</button>
                     </div>
                 </form>
             </div>
@@ -312,6 +408,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     const editIdInput = document.getElementById('editMilestoneId');
     const editTitleInput = document.getElementById('editMilestoneTitle');
+    const editCategorySelect = document.getElementById('editMilestoneCategory');
+    const addCategorySelect = document.getElementById('addMilestoneCategory');
     const editDateInput = document.getElementById('editMilestoneDate');
     const addParticipantSearch = document.getElementById('addParticipantSearch');
     const addParticipantSelect = document.getElementById('addParticipantSelect');
@@ -350,6 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (addMilestoneModal) {
         addMilestoneModal.addEventListener('show.bs.modal', function() {
             if (addParticipantSearch) addParticipantSearch.value = '';
+            if (addCategorySelect) addCategorySelect.value = '';
             resetSelectOptions(addParticipantSelect);
         });
     }
@@ -357,13 +456,25 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.edit-milestone-btn').forEach(function(button) {
         button.addEventListener('click', function() {
             if (!editIdInput || !editTitleInput || !editDateInput || !editParticipantSelect) return;
-            if (editParticipantSearch) editParticipantSearch.value = '';
-            resetSelectOptions(editParticipantSelect);
+            const participantDisplay = this.getAttribute('data-participant-display') || '';
+            if (editParticipantSearch) {
+                editParticipantSearch.value = participantDisplay;
+                // Trigger filter to narrow list to the selected participant
+                editParticipantSearch.dispatchEvent(new Event('input', { bubbles: true }));
+            } else {
+                resetSelectOptions(editParticipantSelect);
+            }
             editIdInput.value = this.getAttribute('data-milestone-id') || '';
             editTitleInput.value = this.getAttribute('data-title') || '';
+            if (editCategorySelect) {
+                editCategorySelect.value = this.getAttribute('data-category') || '';
+            }
             editDateInput.value = this.getAttribute('data-date') || '';
             const participantId = this.getAttribute('data-participant-id') || '';
-            editParticipantSelect.value = participantId;
+            // Explicitly select matching participant option
+            Array.from(editParticipantSelect.options).forEach(function(opt, idx) {
+                opt.selected = idx === 0 ? false : opt.value === String(participantId);
+            });
         });
     });
 
