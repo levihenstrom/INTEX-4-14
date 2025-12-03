@@ -26,10 +26,24 @@
             <%= error %>
         </div>
     <% } %>
+    <% if (typeof success !== 'undefined' && success) { %>
+        <div class="alert alert-success" role="alert">
+            <%= success %>
+        </div>
+    <% } %>
+
+    <% 
+        const userRedirectParams = [];
+        if (typeof searchTerm !== 'undefined' && searchTerm) userRedirectParams.push('search=' + encodeURIComponent(searchTerm));
+        if (typeof sortColumn !== 'undefined' && sortColumn) userRedirectParams.push('sort=' + encodeURIComponent(sortColumn));
+        if (typeof sortDir !== 'undefined' && sortDir) userRedirectParams.push('sortDir=' + encodeURIComponent(sortDir));
+        if (typeof currentPage !== 'undefined' && currentPage) userRedirectParams.push('page=' + encodeURIComponent(currentPage));
+        const usersRedirectUrl = '/users' + (userRedirectParams.length ? '?' + userRedirectParams.join('&') : '');
+    %>
 
     <!-- Add Button and Table Header -->
     <div class="table-responsive">
-        <table class="table table-striped table-hover">
+        <table class="table table-striped table-hover" >
             <thead class="table-dark">
                 <tr>
                     <th style="cursor: pointer;" onclick="sortTable('ParticipantID')">
@@ -50,6 +64,12 @@
                             <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
                         <% } %>
                     </th>
+                    <th style="cursor: pointer;" onclick="sortTable('ParticipantEmail')">
+                        Email
+                        <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantEmail') { %>
+                            <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
+                        <% } %>
+                    </th>
                     <th style="cursor: pointer;" onclick="sortTable('ParticipantSchoolOrEmployer')">
                         School/Employer
                         <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantSchoolOrEmployer') { %>
@@ -62,7 +82,7 @@
                             <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
                         <% } %>
                     </th>
-                    <th>Actions</th>
+                    <th >Actions</th>
                 </tr>
             </thead>
             <tbody id="usersTableBody">
@@ -72,13 +92,14 @@
                             <td><%= user.ParticipantID %></td>
                             <td><%= user.ParticipantFirstName || 'N/A' %></td>
                             <td><%= user.ParticipantLastName || 'N/A' %></td>
+                            <td><%= user.ParticipantEmail || 'N/A' %></td>
                             <td><%= user.ParticipantSchoolOrEmployer || 'N/A' %></td>
                             <td>
                                 <span class="badge <%= user.ParticipantRole === 'a' ? 'bg-danger' : 'bg-secondary' %>">
                                     <%= user.ParticipantRole === 'a' ? 'Admin' : 'User' %>
                                 </span>
                             </td>
-                            <td>
+                            <td >
                                 <form action="/users" method="POST" style="display: inline;" 
                                       class="role-change-form"
                                       data-user-name="<%= user.ParticipantFirstName %> <%= user.ParticipantLastName %>"
@@ -93,6 +114,22 @@
                                         Switch to <%= user.ParticipantRole === 'a' ? 'User' : 'Admin' %>
                                     </button>
                                 </form>
+                                <button type="button" class="btn btn-sm btn-primary edit-user-btn" 
+                                            data-participant-id="<%= user.ParticipantID %>"
+                                            data-first-name="<%= user.ParticipantFirstName || '' %>"
+                                            data-last-name="<%= user.ParticipantLastName || '' %>"
+                                            data-dob="<%= user.ParticipantDOB ? new Date(user.ParticipantDOB).toISOString().split('T')[0] : '' %>"
+                                            data-phone="<%= user.ParticipantPhone || '' %>"
+                                            data-city="<%= user.ParticipantCity || '' %>"
+                                            data-state="<%= user.ParticipantState || '' %>"
+                                            data-zip="<%= user.ParticipantZip || '' %>"
+                                            data-school="<%= user.ParticipantSchoolOrEmployer || '' %>"
+                                            data-interest="<%= user.ParticipantFieldOfInterest || '' %>"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editParticipantModal"
+                                            style="min-width: 80px;">
+                                        Edit
+                                    </button>
                                 <button type="button" class="btn btn-sm btn-danger ms-2 delete-user-btn" 
                                         data-user-id="<%= user.ParticipantID %>"
                                         data-user-name="<%= user.ParticipantFirstName %> <%= user.ParticipantLastName %>"
@@ -139,6 +176,104 @@
         </div>
     </div>
 </div>
+
+<!-- Edit Participant Modal -->
+    <div class="modal fade" id="editParticipantModal" tabindex="-1" aria-labelledby="editParticipantModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editParticipantModalLabel">Edit Participant</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editParticipantForm" action="/participants" method="POST">
+                        <input type="hidden" name="participantId" id="editParticipantId">
+                        <input type="hidden" name="preserveSearch" value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
+                        <input type="hidden" name="preserveSort" value="<%= typeof sortColumn !== 'undefined' ? sortColumn : 'ParticipantID' %>">
+                        <input type="hidden" name="preserveSortDir" value="<%= typeof sortDir !== 'undefined' ? sortDir : 'asc' %>">
+                        <input type="hidden" name="preservePage" value="<%= typeof currentPage !== 'undefined' ? currentPage : 1 %>">
+                        <input type="hidden" name="redirectTo" value="<%= usersRedirectUrl %>">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editParticipantFirstName" class="form-label">First Name *</label>
+                                <input type="text" class="form-control" id="editParticipantFirstName" 
+                                       name="ParticipantFirstName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editParticipantLastName" class="form-label">Last Name *</label>
+                                <input type="text" class="form-control" id="editParticipantLastName" 
+                                       name="ParticipantLastName" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editParticipantDOB" class="form-label">Date of Birth</label>
+                                <input type="date" class="form-control" id="editParticipantDOB" 
+                                       name="ParticipantDOB">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editParticipantPhone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="editParticipantPhone" 
+                                       name="ParticipantPhone" inputmode="numeric" maxlength="12"
+                                       pattern="\d{3}-\d{3}-\d{4}"
+                                       title="Phone must be in the format 111-111-1111">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="editParticipantCity" class="form-label">City</label>
+                                <input type="text" class="form-control" id="editParticipantCity" 
+                                       name="ParticipantCity">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="editParticipantState" class="form-label">State</label>
+                                <input type="text" class="form-control" id="editParticipantState" 
+                                       name="ParticipantState">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="editParticipantZip" class="form-label">ZIP Code</label>
+                                <input type="text" class="form-control" id="editParticipantZip" 
+                                       name="ParticipantZip">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editParticipantSchoolOrEmployer" class="form-label">School or Employer</label>
+                            <input type="text" class="form-control" id="editParticipantSchoolOrEmployer" 
+                                   name="ParticipantSchoolOrEmployer">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Field of Interest</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
+                                       id="edit_interest_stem" value="STEM">
+                                <label class="form-check-label" for="edit_interest_stem">STEM</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
+                                       id="edit_interest_arts" value="Arts">
+                                <label class="form-check-label" for="edit_interest_arts">Arts</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
+                                       id="edit_interest_both" value="Both">
+                                <label class="form-check-label" for="edit_interest_both">Both</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="editParticipantForm" class="btn btn-primary">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 <!-- Add User Modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
@@ -356,12 +491,45 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Edit user modal population
+    const editButtons = document.querySelectorAll('.edit-user-btn');
+    const editFormFields = {
+        id: document.getElementById('editParticipantId'),
+        firstName: document.getElementById('editParticipantFirstName'),
+        lastName: document.getElementById('editParticipantLastName'),
+        dob: document.getElementById('editParticipantDOB'),
+        phone: document.getElementById('editParticipantPhone'),
+        city: document.getElementById('editParticipantCity'),
+        state: document.getElementById('editParticipantState'),
+        zip: document.getElementById('editParticipantZip'),
+        school: document.getElementById('editParticipantSchoolOrEmployer')
+    };
+
+    editButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            editFormFields.id.value = button.getAttribute('data-participant-id') || '';
+            editFormFields.firstName.value = button.getAttribute('data-first-name') || '';
+            editFormFields.lastName.value = button.getAttribute('data-last-name') || '';
+            editFormFields.dob.value = button.getAttribute('data-dob') || '';
+            editFormFields.phone.value = button.getAttribute('data-phone') || '';
+            editFormFields.city.value = button.getAttribute('data-city') || '';
+            editFormFields.state.value = button.getAttribute('data-state') || '';
+            editFormFields.zip.value = button.getAttribute('data-zip') || '';
+            editFormFields.school.value = button.getAttribute('data-school') || '';
+
+            const interestValue = button.getAttribute('data-interest');
+            document.querySelectorAll('input[name="ParticipantFieldOfInterest"]').forEach(function(radio) {
+                radio.checked = (radio.value === interestValue);
+            });
+        });
+    });
+
     // Phone formatting for modal
-    const modalPhoneInput = document.getElementById('modalParticipantPhone');
-    if (modalPhoneInput) {
-        modalPhoneInput.addEventListener('input', function () {
+    function attachPhoneMask(input) {
+        if (!input) return;
+        input.addEventListener('input', function () {
             // Strip all non-digits
-            let digits = modalPhoneInput.value.replace(/\D/g, '');
+            let digits = input.value.replace(/\D/g, '');
 
             // Limit to 10 digits
             if (digits.length > 10) {
@@ -379,8 +547,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 formatted += '-' + digits.substring(6, 10);
             }
 
-            modalPhoneInput.value = formatted;
+            input.value = formatted;
         });
     }
+
+    attachPhoneMask(document.getElementById('modalParticipantPhone'));
+    attachPhoneMask(document.getElementById('editParticipantPhone'));
 });
 </script>

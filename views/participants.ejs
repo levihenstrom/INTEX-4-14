@@ -1,0 +1,377 @@
+<% if (isAdmin) { %>
+    <div class="users-page">
+        <h1 class="mb-4">Participant Management</h1>
+        
+        <!-- Search Box and Add Button - Aligned -->
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+            <form method="GET" action="/participants" class="d-inline-block" style="max-width: 500px;">
+                <input type="hidden" name="sort" value="<%= typeof sortColumn !== 'undefined' ? sortColumn : 'ParticipantID' %>">
+                <input type="hidden" name="sortDir" value="<%= typeof sortDir !== 'undefined' ? sortDir : 'asc' %>">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="search" id="searchInput" 
+                           placeholder="Search participants by name, ID, email..." 
+                           value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
+                    <button type="submit" class="btn btn-outline-secondary">Search</button>
+                    <% if (typeof searchTerm !== 'undefined' && searchTerm) { %>
+                        <a href="/participants?sort=<%= typeof sortColumn !== 'undefined' ? sortColumn : 'ParticipantID' %>&sortDir=<%= typeof sortDir !== 'undefined' ? sortDir : 'asc' %>" class="btn btn-outline-secondary">Clear</a>
+                    <% } %>
+                </div>
+            </form>
+            <button type="button" class="btn btn-success" style="background-color: #28a745; border-color: #28a745;" data-bs-toggle="modal" data-bs-target="#addUserModal">
+            + Add New Participant
+        </button>
+        </div>
+        
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger" role="alert">
+                <%= error %>
+            </div>
+        <% } %>
+        <% if (typeof success !== 'undefined' && success) { %>
+            <div class="alert alert-success" role="alert">
+                <%= success %>
+            </div>
+        <% } %>
+    
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="cursor: pointer;" onclick="sortTable('ParticipantID')">
+                            ID 
+                            <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantID') { %>
+                                <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
+                            <% } %>
+                        </th>
+                        <th style="cursor: pointer;" onclick="sortTable('ParticipantFirstName')">
+                            First Name
+                            <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantFirstName') { %>
+                                <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
+                            <% } %>
+                        </th>
+                        <th style="cursor: pointer;" onclick="sortTable('ParticipantLastName')">
+                            Last Name
+                            <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantLastName') { %>
+                                <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
+                            <% } %>
+                        </th>
+                        <th style="cursor: pointer;" onclick="sortTable('ParticipantDOB')">
+                            Age
+                            <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantDOB') { %>
+                                <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
+                            <% } %>
+                        </th>
+                        <th style="cursor: pointer;" onclick="sortTable('ParticipantEmail')">
+                            Email
+                            <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantEmail') { %>
+                                <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
+                            <% } %>
+                        </th>
+                        <th style="cursor: pointer;" onclick="sortTable('ParticipantPhone')">
+                            Phone
+                            <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantPhone') { %>
+                                <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
+                            <% } %>
+                        </th>
+                        <th style="cursor: pointer;" onclick="sortTable('ParticipantSchoolOrEmployer')">
+                            School/Employer
+                            <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantSchoolOrEmployer') { %>
+                                <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
+                            <% } %>
+                        </th>
+                        <th style="cursor: pointer;" onclick="sortTable('ParticipantCity')">
+                            City
+                            <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantCity') { %>
+                                <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
+                            <% } %>
+                        </th>
+                        
+                        <th style="cursor: pointer;" onclick="sortTable('ParticipantFieldOfInterest')">
+                            Interest
+                            <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantFieldOfInterest') { %>
+                                <%= typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲' %>
+                            <% } %>
+                        </th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="participantsTableBody">
+                    <% if (typeof participants !== 'undefined' && participants.length > 0) { %>
+                        <% participants.forEach(function(participant) { %>
+                            <tr>
+                                <td><%= participant.ParticipantID %></td>
+                                <td><%= participant.ParticipantFirstName || 'N/A' %></td>
+                                <td><%= participant.ParticipantLastName || 'N/A' %></td>
+                                <td><%= typeof participant.ParticipantAge === 'number' ? participant.ParticipantAge : 'N/A' %></td>
+                                <td><%= participant.ParticipantEmail || 'N/A' %></td>
+                                <td><%= participant.ParticipantPhone || 'N/A' %></td>
+                                <td><%= participant.ParticipantSchoolOrEmployer || 'N/A' %></td>
+                                <td><%= participant.ParticipantCity || 'N/A' %></td>
+                                <td><%= participant.ParticipantFieldOfInterest || 'N/A' %></td>
+                                <td>
+                                    <!--View Milestones -->
+                                    <button 
+                                    
+                                    >
+
+
+                                    View Milestones
+                                    </button>
+                                    
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7" class="text-center">No participants found</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    
+        <!-- Pagination Info and Controls -->
+        <div class="mt-4 d-flex justify-content-between align-items-center">
+            <div>
+                <% if (typeof currentPage !== 'undefined' && currentPage > 1) { %>
+                    <a href="/participants?page=<%= currentPage - 1 %><%= typeof searchTerm !== 'undefined' && searchTerm ? '&search=' + encodeURIComponent(searchTerm) : '' %><%= typeof sortColumn !== 'undefined' ? '&sort=' + sortColumn : '' %><%= typeof sortDir !== 'undefined' ? '&sortDir=' + sortDir : '' %>" class="btn btn-secondary me-2">
+                        ← Previous Page
+                    </a>
+                <% } %>
+            </div>
+            <div class="text-muted">
+                Showing <%= typeof participants !== 'undefined' && participants.length > 0 ? ((currentPage - 1) * 50 + 1) : 0 %> - 
+                <%= typeof participants !== 'undefined' && participants.length > 0 ? Math.min(currentPage * 50, totalUsers) : 0 %> 
+                of <%= typeof totalUsers !== 'undefined' ? totalUsers : 0 %> participants
+                (Page <%= typeof currentPage !== 'undefined' ? currentPage : 1 %> of <%= typeof totalPages !== 'undefined' ? totalPages : 1 %>)
+            </div>
+            <div>
+                <% if (typeof hasNextPage !== 'undefined' && hasNextPage) { %>
+                    <a href="/participants?page=<%= currentPage + 1 %><%= typeof searchTerm !== 'undefined' && searchTerm ? '&search=' + encodeURIComponent(searchTerm) : '' %><%= typeof sortColumn !== 'undefined' ? '&sort=' + sortColumn : '' %><%= typeof sortDir !== 'undefined' ? '&sortDir=' + sortDir : '' %>" class="btn btn-primary" id="nextPageBtn">
+                        Next Page →
+                    </a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Participant Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addUserModalLabel">Add New Participant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addUserForm" action="/participants/add" method="POST">
+                    <!-- Name -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modalParticipantFirstName" class="form-label">First Name *</label>
+                            <input type="text" class="form-control" id="modalParticipantFirstName" 
+                                name="ParticipantFirstName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modalParticipantLastName" class="form-label">Last Name *</label>
+                            <input type="text" class="form-control" id="modalParticipantLastName" 
+                                name="ParticipantLastName" required>
+                        </div>
+                    </div>
+
+                    <!-- Email & Password -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modalParticipantEmail" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="modalParticipantEmail" 
+                                   name="ParticipantEmail" required
+                                   pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
+                                   oninvalid="this.setCustomValidity('Please input a valid email')"
+                                   oninput="this.setCustomValidity('')">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modalParticipantPhone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="modalParticipantPhone" 
+                                   name="ParticipantPhone" inputmode="numeric" maxlength="12"
+                                   pattern="\d{3}-\d{3}-\d{4}"
+                                   title="Phone must be in the format 111-111-1111">
+                        </div>
+                    </div>
+
+                    <!-- DOB & Phone -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modalParticipantDOB" class="form-label">Date of Birth *</label>
+                            <input type="date" class="form-control" id="modalParticipantDOB" 
+                                   name="ParticipantDOB" required>
+                        </div>
+                        
+                    </div>
+
+                    <!-- Location -->
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="modalParticipantCity" class="form-label">City</label>
+                            <input type="text" class="form-control" id="modalParticipantCity" 
+                                   name="ParticipantCity">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="modalParticipantState" class="form-label">State</label>
+                            <input type="text" class="form-control" id="modalParticipantState" 
+                                   name="ParticipantState">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="modalParticipantZip" class="form-label">ZIP Code</label>
+                            <input type="text" class="form-control" id="modalParticipantZip" 
+                                   name="ParticipantZip">
+                        </div>
+                    </div>
+
+                    <!-- School/Employer -->
+                    <div class="mb-3">
+                        <label for="modalParticipantSchoolOrEmployer" class="form-label">School or Employer</label>
+                        <input type="text" class="form-control" id="modalParticipantSchoolOrEmployer" 
+                               name="ParticipantSchoolOrEmployer">
+                    </div>
+
+                    <!-- Field of Interest -->
+                    <div class="mb-3">
+                        <label class="form-label">Field of Interest</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
+                                   id="modal_interest_stem" value="STEM">
+                            <label class="form-check-label" for="modal_interest_stem">STEM</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
+                                   id="modal_interest_arts" value="Arts">
+                            <label class="form-check-label" for="modal_interest_arts">Arts</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
+                                   id="modal_interest_both" value="Both">
+                            <label class="form-check-label" for="modal_interest_both">Both</label>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="ParticipantRole" value="p">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="addUserForm" class="btn btn-success">Create Participant</button>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    <script>
+    function sortTable(column) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentSort = urlParams.get('sort') || 'ParticipantID';
+        const currentSortDir = urlParams.get('sortDir') || 'asc';
+        
+        let newSortDir = 'asc';
+        if (currentSort === column && currentSortDir === 'asc') {
+            newSortDir = 'desc';
+        }
+        
+        urlParams.set('sort', column);
+        urlParams.set('sortDir', newSortDir);
+        urlParams.set('page', '1');
+        
+        window.location.href = '/participants?' + urlParams.toString();
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Edit button handlers - load participant data into modal
+        const editButtons = document.querySelectorAll('.edit-participant-btn');
+        editButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                // Load all data from data attributes
+                document.getElementById('editParticipantId').value = button.getAttribute('data-participant-id');
+                document.getElementById('editParticipantFirstName').value = button.getAttribute('data-first-name');
+                document.getElementById('editParticipantLastName').value = button.getAttribute('data-last-name');
+                document.getElementById('editParticipantDOB').value = button.getAttribute('data-dob');
+                document.getElementById('editParticipantPhone').value = button.getAttribute('data-phone');
+                document.getElementById('editParticipantCity').value = button.getAttribute('data-city');
+                document.getElementById('editParticipantState').value = button.getAttribute('data-state');
+                document.getElementById('editParticipantZip').value = button.getAttribute('data-zip');
+                document.getElementById('editParticipantSchoolOrEmployer').value = button.getAttribute('data-school');
+                
+                // Set field of interest radio button
+                const interest = button.getAttribute('data-interest');
+                document.querySelectorAll('input[name="ParticipantFieldOfInterest"]').forEach(function(radio) {
+                    radio.checked = (radio.value === interest);
+                });
+            });
+        });
+
+        // Delete participant button handlers
+        const deleteButtons = document.querySelectorAll('.delete-participant-btn');
+        deleteButtons.forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                const participantId = button.getAttribute('data-participant-id');
+                const participantName = button.getAttribute('data-participant-name');
+                const preserveSearch = button.getAttribute('data-preserve-search') || '';
+                const preserveSort = button.getAttribute('data-preserve-sort') || 'ParticipantID';
+                const preserveSortDir = button.getAttribute('data-preserve-sort-dir') || 'asc';
+                const preservePage = button.getAttribute('data-preserve-page') || '1';
+                const message = 'Are you sure you want to delete participant \'' + participantName + '\'? This action cannot be undone.';
+                
+                if (confirm(message)) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/participants/delete';
+                    
+                    const fields = {
+                        participantId: participantId,
+                        preserveSearch: preserveSearch,
+                        preserveSort: preserveSort,
+                        preserveSortDir: preserveSortDir,
+                        preservePage: preservePage
+                    };
+                    
+                    for (const [name, value] of Object.entries(fields)) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = name;
+                        input.value = value;
+                        form.appendChild(input);
+                    }
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
+
+        // Phone formatting for edit modal
+        const editPhoneInput = document.getElementById('editParticipantPhone');
+        if (editPhoneInput) {
+            editPhoneInput.addEventListener('input', function () {
+                let digits = editPhoneInput.value.replace(/\D/g, '');
+                if (digits.length > 10) {
+                    digits = digits.slice(0, 10);
+                }
+                let formatted = '';
+                if (digits.length > 0) {
+                    formatted = digits.substring(0, 3);
+                }
+                if (digits.length >= 4) {
+                    formatted += '-' + digits.substring(3, 6);
+                }
+                if (digits.length >= 7) {
+                    formatted += '-' + digits.substring(6, 10);
+                }
+                editPhoneInput.value = formatted;
+            });
+        }
+    });
+    </script>
+<% } else { %>
+    <!-- Not logged in - should not reach here due to middleware -->
+    <div class="alert alert-warning">
+        Please log in to view your profile.
+    </div>
+<% } %>

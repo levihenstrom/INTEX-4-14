@@ -1,0 +1,202 @@
+    <!-- Regular User View: Show their own profile -->
+    <div class="participants-page">
+        <h1 class="mb-4">My Profile</h1>
+        
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger" role="alert">
+                <%= error %>
+            </div>
+        <% } %>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-start gap-4">
+                <div>
+                    <p class="text-muted text-uppercase small mb-1"></p>
+                    <h2 class="mb-3">Welcome, <%= participant.ParticipantFirstName %> <%= participant.ParticipantLastName %></h2>
+                    <p class="mb-1"><strong>Email:</strong> <%= participant.ParticipantEmail %></p>
+                    <p class="mb-1"><strong>Phone:</strong> <%= participant.ParticipantPhone || 'Not provided' %></p>
+                    <p class="mb-1"><strong>Birthday:</strong> <%= profileDOBDisplay || 'Not provided' %></p>
+                    <p class="mb-1"><strong>Location:</strong> 
+                        <%= participant.ParticipantCity || 'City N/A' %>, 
+                        <%= participant.ParticipantState || 'State N/A' %>
+                    </p>
+                    <p class="mb-0"><strong>School/Employer:</strong> <%= participant.ParticipantSchoolOrEmployer || 'Not provided' %></p>
+                </div>
+                <!-- <div class="text-muted small">
+                    <p class="mb-1">Member since</p>
+                    <p class="fs-5 mb-0"><%= profileDOBDisplay || 'Date not set' %></p>
+                </div> -->
+            </div>
+        </div>
+
+        <% const kpiMetrics = metrics || {}; %>
+        <% const latestMilestone = kpiMetrics.recentMilestone; %>
+        <% const showDonationsCard = (kpiMetrics.totalDonationsDisplay && Number(kpiMetrics.totalDonationsDisplay) > 0); %>
+        <div class="row g-3 mb-4">
+            <div class="<%= showDonationsCard ? 'col-md-4' : 'col-md-6' %>">
+                <div class="card h-100 text-center shadow-sm">
+                    <div class="card-body">
+                        <p class="text-muted text-uppercase small">Total Events Attended</p>
+                        <h3 class="display-6"><%= kpiMetrics.totalEventsAttended || 0 %></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="<%= showDonationsCard ? 'col-md-4' : 'col-md-6' %>">
+                <div class="card h-100 text-center shadow-sm">
+                    <div class="card-body">
+                        <p class="text-muted text-uppercase small">Most Recent Milestone</p>
+                        <% if (latestMilestone) { %>
+                            <h5 class="mb-1"><%= latestMilestone.MilestoneTitle %></h5>
+                            <p class="text-muted mb-0"><%= latestMilestone.MilestoneDate ? new Date(latestMilestone.MilestoneDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date TBD' %></p>
+                        <% } else { %>
+                            <h5 class="mb-1">No milestones yet</h5>
+                            <p class="text-muted mb-0">Keep going!</p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+            <% if (showDonationsCard) { %>
+            <div class="col-md-4">
+                <div class="card h-100 text-center shadow-sm">
+                    <div class="card-body">
+                        <p class="text-muted text-uppercase small">Total Donations</p>
+                        <h3 class="display-6">$<%= kpiMetrics.totalDonationsDisplay || '0.00' %></h3>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+        </div>
+
+        <button class="btn btn-outline-primary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#profileEditForm" aria-expanded="false" aria-controls="profileEditForm">
+            Update Your Details
+        </button>
+
+        <div class="collapse" id="profileEditForm">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Update Your Details</h5>
+                </div>
+                <div class="card-body">
+                    <form action="/participants" method="POST">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="userParticipantFirstName" class="form-label">First Name *</label>
+                            <input type="text" class="form-control" id="userParticipantFirstName" 
+                                   name="ParticipantFirstName" 
+                                   value="<%= participant.ParticipantFirstName || '' %>" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="userParticipantLastName" class="form-label">Last Name *</label>
+                            <input type="text" class="form-control" id="userParticipantLastName" 
+                                   name="ParticipantLastName" 
+                                   value="<%= participant.ParticipantLastName || '' %>" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="userParticipantEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="userParticipantEmail" 
+                               value="<%= participant.ParticipantEmail || '' %>" disabled>
+                        <small class="form-text text-muted">Email cannot be changed</small>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="userParticipantDOB" class="form-label">Date of Birth</label>
+                            <input type="date" class="form-control" id="userParticipantDOB" 
+                                   name="ParticipantDOB" 
+                                   value="<%= profileDOBInput || '' %>">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="userParticipantPhone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="userParticipantPhone" 
+                                   name="ParticipantPhone" inputmode="numeric" maxlength="12"
+                                   pattern="\d{3}-\d{3}-\d{4}"
+                                   title="Phone must be in the format 111-111-1111"
+                                   value="<%= participant.ParticipantPhone || '' %>">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="userParticipantCity" class="form-label">City</label>
+                            <input type="text" class="form-control" id="userParticipantCity" 
+                                   name="ParticipantCity" 
+                                   value="<%= participant.ParticipantCity || '' %>">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="userParticipantState" class="form-label">State</label>
+                            <input type="text" class="form-control" id="userParticipantState" 
+                                   name="ParticipantState" 
+                                   value="<%= participant.ParticipantState || '' %>">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="userParticipantZip" class="form-label">ZIP Code</label>
+                            <input type="text" class="form-control" id="userParticipantZip" 
+                                   name="ParticipantZip" 
+                                   value="<%= participant.ParticipantZip || '' %>">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="userParticipantSchoolOrEmployer" class="form-label">School or Employer</label>
+                        <input type="text" class="form-control" id="userParticipantSchoolOrEmployer" 
+                               name="ParticipantSchoolOrEmployer" 
+                               value="<%= participant.ParticipantSchoolOrEmployer || '' %>">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Field of Interest</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
+                                   id="user_interest_stem" value="STEM"
+                                   <%= participant.ParticipantFieldOfInterest === 'STEM' ? 'checked' : '' %>>
+                            <label class="form-check-label" for="user_interest_stem">STEM</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
+                                   id="user_interest_arts" value="Arts"
+                                   <%= participant.ParticipantFieldOfInterest === 'Arts' ? 'checked' : '' %>>
+                            <label class="form-check-label" for="user_interest_arts">Arts</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
+                                   id="user_interest_both" value="Both"
+                                   <%= participant.ParticipantFieldOfInterest === 'Both' ? 'checked' : '' %>>
+                            <label class="form-check-label" for="user_interest_both">Both</label>
+                        </div>
+                    </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Phone formatting
+        const userPhoneInput = document.getElementById('userParticipantPhone');
+        if (userPhoneInput) {
+            userPhoneInput.addEventListener('input', function () {
+                let digits = userPhoneInput.value.replace(/\D/g, '');
+                if (digits.length > 10) {
+                    digits = digits.slice(0, 10);
+                }
+                let formatted = '';
+                if (digits.length > 0) {
+                    formatted = digits.substring(0, 3);
+                }
+                if (digits.length >= 4) {
+                    formatted += '-' + digits.substring(3, 6);
+                }
+                if (digits.length >= 7) {
+                    formatted += '-' + digits.substring(6, 10);
+                }
+                userPhoneInput.value = formatted;
+            });
+        }
+    });
+    </script>
