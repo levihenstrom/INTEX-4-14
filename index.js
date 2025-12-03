@@ -99,8 +99,16 @@ app.use((req, res, next) => {
     res.locals.userRole = req.session.userRole || null;
     res.locals.isAdmin = req.session.isAdmin || false;
 
-     // Skip auth for public routes
-    if (req.path === '/donations' || req.path === '/'|| req.path === '/login' || req.path === '/register' || req.path === '/logout') {
+    // Skip auth for public routes
+    const openPaths = [
+        '/donations',
+        '/',
+        '/login',
+        '/register',
+        '/logout',
+        '/donations/add/visitor'
+    ]
+    if (openPaths.includes(req.path)) {
         return next();
     }
 
@@ -110,7 +118,12 @@ app.use((req, res, next) => {
     }
 
     // Not logged in → show login (ONE response, then stop)
-    return res.status(418).render("login", { layout: 'public', pageTitle: 'Login', error_message: "Please log in to access this page" });
+    return res.status(418).render("login", {
+        layout: 'public',
+        pageTitle: 'Login',
+        hasHero: false,
+        error_message: "Please log in to access this page"
+    });
 });
 
 
@@ -135,7 +148,7 @@ app.get('/', (req, res) => {
         layout: 'public',
         pageTitle: 'Welcome',
         hasHero: true
-     });
+    });
 });
 
 // GET /login: Show login form
@@ -291,7 +304,7 @@ app.get('/donations', async (req, res) => {
         const baseQuery = knex('Participant_Donation as pd')
             .join('Participants as p', 'pd.ParticipantID', 'p.ParticipantID');
 
-        if (!req.session.isAdmin) {
+        if (!req.session.isAdmin && req.session.isLoggedIn) {
             baseQuery.where('p.ParticipantID', req.session.user.ParticipantID);
         }
 
@@ -492,6 +505,36 @@ app.post('/donations/add', async (req, res) => {
 });
 
 app.post('/donations/add/user', async (req, res) => {
+    try {
+        const { ParticipantID, DonationAmount, DonationDate } = req.body;
+        const parsedAmount = parseFloat(DonationAmount);
+
+        if (!ParticipantID || !DonationDate || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+            return res.redirect('/donations?error=' + encodeURIComponent('Please try again'));
+        }
+
+        const participant = await knex('Participants')
+            .where('ParticipantID', ParticipantID)
+            .first();
+
+        if (!participant) {
+            return res.redirect('/donations?error=' + encodeURIComponent('Participant not found.'));
+        }
+
+        await knex('Participant_Donation').insert({
+            ParticipantID,
+            DonationDate,
+            DonationAmount: parsedAmount
+        });
+
+        return res.redirect('/donations?success=' + encodeURIComponent('Donation recorded successfully.'));
+    } catch (err) {
+        console.error('Error adding donation:', err);
+        return res.redirect('/donations?error=' + encodeURIComponent('Error adding donation. Please try again.'));
+    }
+});
+
+app.post('/donations/add/visitor', async (req, res) => {
     try {
         const { ParticipantID, DonationAmount, DonationDate } = req.body;
         const parsedAmount = parseFloat(DonationAmount);
@@ -1736,7 +1779,8 @@ app.get('/participants', async (req, res) => {
                 .select('ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 
                         'ParticipantEmail', 'ParticipantDOB', 'ParticipantPhone',
                         'ParticipantCity', 'ParticipantState', 'ParticipantZip',
-                        'ParticipantSchoolOrEmployer', 'ParticipantFieldOfInterest', 'ParticipantRole');
+                        'ParticipantSchoolOrEmployer', 'ParticipantFieldOfInterest', 'ParticipantRole')
+                .where('ParticipantRole', 'p');
 
             // Add search conditions if search term exists
             if (searchTerm) {
@@ -1754,7 +1798,7 @@ app.get('/participants', async (req, res) => {
             }
 
             // Get total count for pagination (with search filter)
-            const countQuery = knex('Participants');
+            const countQuery = knex('Participants').where('ParticipantRole', 'p');
             if (searchTerm) {
                 const searchPattern = `%${searchTerm}%`;
                 countQuery.where(function() {

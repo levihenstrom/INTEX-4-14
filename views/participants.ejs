@@ -9,8 +9,8 @@
                 <input type="hidden" name="sortDir" value="<%= typeof sortDir !== 'undefined' ? sortDir : 'asc' %>">
                 <div class="input-group">
                     <input type="text" class="form-control" name="search" id="searchInput" 
-                           placeholder="Search participants by name, ID, email..." 
-                           value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
+                        placeholder="Search participants by name, ID, email..." 
+                        value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
                     <button type="submit" class="btn btn-outline-secondary">Search</button>
                     <% if (typeof searchTerm !== 'undefined' && searchTerm) { %>
                         <a href="/participants?sort=<%= typeof sortColumn !== 'undefined' ? sortColumn : 'ParticipantID' %>&sortDir=<%= typeof sortDir !== 'undefined' ? sortDir : 'asc' %>" class="btn btn-outline-secondary">Clear</a>
