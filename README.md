@@ -40,6 +40,8 @@
 
 
 # Extra Scope
+# -- add icon for milestone type
 # -- interest icons on profile page
 # -- event type pictures
 # -- filter modal on participant page
+# -- alert to check in to event that is registered for
