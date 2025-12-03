@@ -1,27 +1,87 @@
 <% hasHero = true; %>
 
-<section class="hero-slideshow">
+<% hasHero = true; %>
 
-    <div class="slide slide1"></div>
-    <div class="slide slide2"></div>
-    <div class="slide slide3"></div>
+<section class="hero hero-video">
 
-    <div class="hero-overlay"></div>
+    <!-- Background video -->
+    <video class="hero-video-bg" autoplay muted playsinline loop preload="auto" defaultMuted>
+    <source src="/images/ella-hero.mp4" type="video/mp4">
+</video>
 
+        <!-- fallback text -->
+        Your browser does not support the video tag.
+    </video>
+
+    <button class="hero-video-toggle" id="heroVideoToggle">
+    <i class="fa-solid fa-pause"></i>
+</button>
+
+    <!-- Centered hero text/buttons -->
     <div class="hero-text">
-        <h1>Ella Rises</h1>
-        <p>Empowering young women to pursue higher education through high-impact multicultural activities focused on mariachi and STEAM.</p>
 
-        <% if (!user) { %>
-            <a href="/register" class="hero-btn">Get Started</a>
-            <a href="/login" class="hero-btn-outline">Login</a>
-        <% } %>
-        </div>
+    <h1 class="hero-title">Ella Rises</h1>
+
+    <p class="hero-subtitle">
+        Empowering young women to pursue higher education through high-impact
+        multicultural activities focused on mariachi and STEAM.
+    </p>
+
+    <div class="hero-buttons">
+        <a href="/film" class="hero-btn-watch">Watch the film</a>
+        <a href="/register" class="hero-btn-secondary">Get Started</a>
+    </div>
+
+</div>
+
 </section>
 
+<section class="impact-section">
+  <div class="impact-inner">
 
+    <h2 class="impact-title">Our Impact</h2>
 
+    <div class="impact-grid-clean">
 
+      <div class="impact-item">
+        <i class="fa-solid fa-user-group impact-icon peach"></i>
+        <h3>130</h3>
+        <p>Youth Participants</p>
+      </div>
+
+      <div class="impact-item">
+        <i class="fa-solid fa-file-circle-check impact-icon lavender"></i>
+        <h3>254</h3>
+        <p>Applications Received</p>
+      </div>
+
+      <div class="impact-item">
+        <i class="fa-solid fa-seedling impact-icon sage"></i>
+        <h3>$49,600</h3>
+        <p>Funds Distributed</p>
+      </div>
+
+      <div class="impact-item">
+        <i class="fa-solid fa-people-group impact-icon rose"></i>
+        <h3>6,051</h3>
+        <p>Youth Engaged</p>
+      </div>
+
+      <div class="impact-item">
+        <i class="fa-solid fa-chalkboard-user impact-icon mint"></i>
+        <h3>52</h3>
+        <p>Workshops Hosted</p>
+      </div>
+
+      <div class="impact-item">
+        <i class="fa-solid fa-handshake-angle impact-icon charcoal"></i>
+        <h3>87</h3>
+        <p>Mentors & Volunteers</p>
+      </div>
+
+    </div>
+  </div>
+</section>
 
 <!-- Features Section -->
 <section class="stats-section">
@@ -60,5 +120,26 @@
         <img src="/images/gallery4.jpg" />
         <img src="/images/gallery5.jpg" />
         <img src="/images/gallery6.jpg" />
+
+        <script>
+    const heroVideo = document.querySelector('.hero-video-bg');
+    const toggleBtn = document.getElementById('heroVideoToggle');
+    const icon = toggleBtn.querySelector('i');
+
+    toggleBtn.addEventListener('click', () => {
+        if (heroVideo.paused) {
+            heroVideo.play();
+            icon.classList.remove('fa-play');
+            icon.classList.add('fa-pause');
+        } else {
+            heroVideo.pause();
+            icon.classList.remove('fa-pause');
+            icon.classList.add('fa-play');
+        }
+    });
+</script>
+
+
+
     </div>
 </section>
