@@ -103,6 +103,7 @@ exports.seed = async function (knex) {
   const milestoneRows = milestonesCsv.map((m) => ({
     ParticipantID: parseInt(m.ParticipantID, 10),
     MilestoneTitle: m.MilestoneTitle,
+    MilestoneCategory: m.MilestoneCategory,
     MilestoneDate: m.MilestoneDate,
   }));
 

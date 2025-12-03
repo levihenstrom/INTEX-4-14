@@ -9,8 +9,8 @@
                 <input type="hidden" name="sortDir" value="<%= typeof sortDir !== 'undefined' ? sortDir : 'asc' %>">
                 <div class="input-group">
                     <input type="text" class="form-control" name="search" id="searchInput" 
-                           placeholder="Search participants by name, ID, email..." 
-                           value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
+                        placeholder="Search participants by name, ID, email..." 
+                        value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
                     <button type="submit" class="btn btn-outline-secondary">Search</button>
                     <% if (typeof searchTerm !== 'undefined' && searchTerm) { %>
                         <a href="/participants?sort=<%= typeof sortColumn !== 'undefined' ? sortColumn : 'ParticipantID' %>&sortDir=<%= typeof sortDir !== 'undefined' ? sortDir : 'asc' %>" class="btn btn-outline-secondary">Clear</a>
@@ -98,7 +98,7 @@
                 <tbody id="participantsTableBody">
                     <% if (typeof participants !== 'undefined' && participants.length > 0) { %>
                         <% participants.forEach(function(participant) { %>
-                            <tr>
+                            <tr class="align-middle">
                                 <td><%= participant.ParticipantID %></td>
                                 <td><%= participant.ParticipantFirstName || 'N/A' %></td>
                                 <td><%= participant.ParticipantLastName || 'N/A' %></td>
@@ -111,11 +111,12 @@
                                 <td>
                                     <!--View Milestones -->
                                     <button 
-                                    
-                                    >
-
-
-                                    View Milestones
+                                        type="button" 
+                                        class="btn btn-sm btn-primary view-progress-btn" 
+                                        data-participant-id="<%= participant.ParticipantID %>" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#progressModal">
+                                        View Progress
                                     </button>
                                     
                                 </td>
@@ -264,8 +265,73 @@
         </div>
     </div>
 </div>
-    
-    <script>
+
+<!-- Progress Modal -->
+<div class="modal fade" id="progressModal" tabindex="-1" aria-labelledby="progressModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title" id="progressModalLabel">Participant Progress</h5>
+                    <p class="mb-0 text-muted" id="progressParticipantName"></p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-12 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="text-uppercase text-muted mb-2">Events</h6>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <div class="fw-bold fs-3" id="kpiEventsAttended">0</div>
+                                        <small class="text-muted">Events attended</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-bold fs-3" id="kpiSurveyRate">0%</div>
+                                        <small class="text-muted">Survey completion</small>
+                                    </div>
+                                </div>
+                                <div class="small text-muted mb-2">Event history</div>
+                                <div id="eventsList" class="d-grid gap-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="card h-100" id="milestoneSummaryCard" role="button" style="cursor: pointer;">
+                            <div class="card-body">
+                                <h6 class="text-uppercase text-muted mb-2">Milestones</h6>
+                                <div class="d-flex align-items-baseline gap-2 mb-3">
+                                    <div class="fw-bold fs-3" id="kpiMilestones">0</div>
+                                    <small class="text-muted">Total milestones</small>
+                                </div>
+                                <div class="small text-muted mb-2">Milestone cards</div>
+                                <div id="milestoneList" class="d-grid gap-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="card h-100" id="donationSummaryCard" role="button" style="cursor: pointer;">
+                            <div class="card-body">
+                                <h6 class="text-uppercase text-muted mb-2">Donations</h6>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="fw-bold fs-3" id="kpiDonationsTotal">$0.00</div>
+                                    <small class="text-muted" id="kpiDonationsCount">0 gifts</small>
+                                </div>
+                                <div class="small text-muted mb-2">Donation history</div>
+                                <div id="donationList" class="d-grid gap-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Sorting logic stays as-is
     function sortTable(column) {
         const urlParams = new URLSearchParams(window.location.search);
         const currentSort = urlParams.get('sort') || 'ParticipantID';
@@ -282,7 +348,36 @@
         
         window.location.href = '/participants?' + urlParams.toString();
     }
-    
+</script>
+
+<!-- Server → Client data as pure JSON (no JS parsing errors) -->
+<script id="participantData" type="application/json">
+    <%- JSON.stringify({
+        progress: participantProgress || {},
+        names: (participants || []).reduce((acc, p) => {
+            acc[p.ParticipantID] =
+                ((p.ParticipantFirstName || '') + ' ' + (p.ParticipantLastName || '')).trim();
+            return acc;
+        }, {})
+    }) %>
+</script>
+
+<script>
+    // Read JSON embedded above and expose to the rest of the script
+    const dataEl = document.getElementById('participantData');
+    let participantProgress = {};
+    let participantNames = {};
+
+    if (dataEl) {
+        try {
+            const data = JSON.parse(dataEl.textContent);
+            participantProgress = data.progress || {};
+            participantNames = data.names || {};
+        } catch (err) {
+            console.error('Error parsing participantData JSON:', err);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         // Edit button handlers - load participant data into modal
         const editButtons = document.querySelectorAll('.edit-participant-btn');
@@ -347,10 +442,10 @@
         });
 
         // Phone formatting for edit modal
-        const editPhoneInput = document.getElementById('editParticipantPhone');
-        if (editPhoneInput) {
-            editPhoneInput.addEventListener('input', function () {
-                let digits = editPhoneInput.value.replace(/\D/g, '');
+        const editParticipantPhone = document.getElementById('editParticipantPhone');
+        if (editParticipantPhone) {
+            editParticipantPhone.addEventListener('input', function () {
+                let digits = editParticipantPhone.value.replace(/\D/g, '');
                 if (digits.length > 10) {
                     digits = digits.slice(0, 10);
                 }
@@ -364,11 +459,156 @@
                 if (digits.length >= 7) {
                     formatted += '-' + digits.substring(6, 10);
                 }
-                editPhoneInput.value = formatted;
+                editParticipantPhone.value = formatted;
             });
         }
+
+        const progressModal = document.getElementById('progressModal');
+        const eventsList = document.getElementById('eventsList');
+        const milestoneList = document.getElementById('milestoneList');
+        const milestoneSummaryCard = document.getElementById('milestoneSummaryCard');
+        const donationSummaryCard = document.getElementById('donationSummaryCard');
+        const donationList = document.getElementById('donationList');
+        const kpiEventsAttended = document.getElementById('kpiEventsAttended');
+        const kpiSurveyRate = document.getElementById('kpiSurveyRate');
+        const kpiMilestones = document.getElementById('kpiMilestones');
+        const kpiDonationsTotal = document.getElementById('kpiDonationsTotal');
+        const kpiDonationsCount = document.getElementById('kpiDonationsCount');
+        const progressParticipantName = document.getElementById('progressParticipantName');
+
+        function renderList(target, items, emptyMessage) {
+            if (!target) return;
+            target.innerHTML = '';
+            if (!items || items.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'text-muted small';
+                empty.textContent = emptyMessage;
+                target.appendChild(empty);
+                return;
+            }
+            items.forEach((item) => target.appendChild(item));
+        }
+
+        function createBadge(text, variant) {
+            const badge = document.createElement('span');
+            badge.className = `badge bg-${variant}`;
+            badge.textContent = text;
+            return badge;
+        }
+
+        function formatCurrency(amount) {
+            const safeAmount = Number.isFinite(amount) ? amount : 0;
+            return `$${safeAmount.toFixed(2)}`;
+        }
+
+        const progressButtons = document.querySelectorAll('.view-progress-btn');
+        progressButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const participantId = button.getAttribute('data-participant-id');
+                const data = participantProgress[participantId] || {
+                    events: [],
+                    milestones: [],
+                    donations: [],
+                    summary: {}
+                };
+
+                if (progressParticipantName) {
+                    progressParticipantName.textContent =
+                        participantNames[participantId] || `Participant ${participantId}`;
+                }
+
+                if (kpiEventsAttended) {
+                    kpiEventsAttended.textContent = data.summary.eventsAttended || 0;
+                }
+                const surveyRate = data.summary.surveyCompletionRate || 0;
+                if (kpiSurveyRate) {
+                    kpiSurveyRate.textContent = `${surveyRate}%`;
+                }
+                if (kpiMilestones) {
+                    kpiMilestones.textContent = data.summary.milestonesTotal || 0;
+                }
+                if (kpiDonationsTotal) {
+                    kpiDonationsTotal.textContent = formatCurrency(data.summary.totalDonations || 0);
+                }
+                if (kpiDonationsCount) {
+                    kpiDonationsCount.textContent = `${data.summary.donationsCount || 0} gifts`;
+                }
+
+                if (milestoneSummaryCard) {
+                    milestoneSummaryCard.onclick = () => {
+                        window.location.href = `/milestones?filterParticipantID=${encodeURIComponent(participantId)}`;
+                    };
+                }
+                if (donationSummaryCard) {
+                    donationSummaryCard.onclick = () => {
+                        window.location.href = `/donations?filterParticipantID=${encodeURIComponent(participantId)}`;
+                    };
+                }
+
+                const eventCards = (data.events || []).map((event) => {
+                    const card = document.createElement('div');
+                    card.className = 'border rounded p-2';
+                    const header = document.createElement('div');
+                    header.className = 'd-flex justify-content-between align-items-center';
+                    const title = document.createElement('div');
+                    title.className = 'fw-semibold';
+                    title.textContent = event.eventName || 'Event';
+                    const badge = createBadge(
+                        event.surveyCompleted ? 'Survey Complete' : 'Survey Pending',
+                        event.surveyCompleted ? 'success' : 'danger'
+                    );
+                    header.appendChild(title);
+                    header.appendChild(badge);
+                    const meta = document.createElement('div');
+                    meta.className = 'small text-muted';
+                    meta.textContent = event.eventDate || 'Date TBD';
+                    card.appendChild(header);
+                    card.appendChild(meta);
+                    return card;
+                });
+
+                const milestoneCards = (data.milestones || []).map((milestone) => {
+                    const card = document.createElement('div');
+                    card.className = 'border rounded p-2';
+                    const title = document.createElement('div');
+                    title.className = 'fw-semibold';
+                    title.textContent = milestone.title || 'Milestone';
+                    const meta = document.createElement('div');
+                    meta.className = 'small text-muted';
+                    meta.textContent =
+                        [milestone.category, milestone.date].filter(Boolean).join(' • ') ||
+                        'No details';
+                    card.appendChild(title);
+                    card.appendChild(meta);
+                    return card;
+                });
+               
+                const donationCards = (data.donations || []).map((donation) => {
+                    const card = document.createElement('div');
+                    card.className =
+                        'border rounded p-2 d-flex justify-content-between align-items-center';
+                    const date = document.createElement('div');
+                    date.className = 'small text-muted';
+                    date.textContent = donation.date || 'No date';
+                    const amount = document.createElement('div');
+                    amount.className = 'fw-semibold';
+                    amount.textContent = formatCurrency(donation.amount || 0);
+                    card.appendChild(date);
+                    card.appendChild(amount);
+                    return card;
+                });
+
+                renderList(eventsList, eventCards, 'No event history yet.');
+                renderList(milestoneList, milestoneCards, 'No milestones recorded.');
+                renderList(donationList, donationCards, 'No donations recorded.');
+            });
+        });
     });
-    </script>
+</script>
+
+
+
+
 <% } else { %>
     <!-- Not logged in - should not reach here due to middleware -->
     <div class="alert alert-warning">
