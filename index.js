@@ -559,36 +559,50 @@ app.post('/donations/add/user', async (req, res) => {
     }
 });
 
-// app.post('/donations/add/visitor', async (req, res) => {
-//     try {
-//         const { FirstName, LastName, Email, DonationAmount, DonationDate } = req.body;
-//         const parsedAmount = parseFloat(DonationAmount);
+app.post('/donations/add/visitor', async (req, res) => {
+    try {
+        const { FirstName, LastName, Email, DonationAmount, DonationDate } = req.body;
+        const parsedAmount = parseFloat(DonationAmount);
 
-//         if (!FirstName || !LastName || !Email || !DonationDate || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
-//             return res.redirect('/donations?error=' + encodeURIComponent('Please try again'));
-//         }
+        if (!FirstName || !LastName || !Email || !DonationDate || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+            return res.redirect('/donations?error=' + encodeURIComponent('Please try again'));
+        }
 
-//         const participant = await knex('Participants')
-//             .where('ParticipantEmail', ParticipantEmail)
-//             .first();
+        const duplicate = await knex('Participants')
+            .where('ParticipantEmail', Email)
+            .first();
 
-//         if (!participant) {
-//             // insert donor logic
-//             return res.redirect('/donations?error=' + encodeURIComponent('Participant not found.'));
-//         }
+        if (!duplicate) {
+            await knex('Participants').insert({
+                ParticipantEmail: Email,
+                ParticipantFirstName: FirstName,
+                ParticipantLastName: LastName,
+                ParticipantRole: 'd'
+            });
 
-//         await knex('Participant_Donation').insert({
-//             ParticipantID,
-//             DonationDate,
-//             DonationAmount: parsedAmount
-//         });
+            const newDonor = await knex('Participants')
+                .where('ParticipantEmail', Email)
+                .first();
 
-//         return res.redirect('/donations?success=' + encodeURIComponent('Donation recorded successfully.'));
-//     } catch (err) {
-//         console.error('Error adding donation:', err);
-//         return res.redirect('/donations?error=' + encodeURIComponent('Error adding donation. Please try again.'));
-//     }
-// });
+            await knex('Participant_Donation').insert({
+                ParticipantID: newDonor.ParticipantID,
+                DonationDate,
+                DonationAmount: parsedAmount
+            });
+        }
+
+        await knex('Participant_Donation').insert({
+            ParticipantID: duplicate.ParticipantID,
+            DonationDate,
+            DonationAmount: parsedAmount
+        });
+
+        return res.redirect('/donations?success=' + encodeURIComponent('Donation recorded successfully.'));
+    } catch (err) {
+        console.error('Error adding donation:', err);
+        return res.redirect('/donations?error=' + encodeURIComponent('Error adding donation. Please try again.'));
+    }
+});
 
 app.post('/donations/edit', async (req, res) => {
     if (!req.session.isAdmin) {
@@ -2202,6 +2216,10 @@ app.post('/participants/add', async (req, res) => {
         console.error('Error creating participant:', err);
         return res.redirect('/participants?error=' + encodeURIComponent('Error creating participant. Please try again.'));
     }
+});
+
+app.get('/dashboard', (req, res) => {
+    res.render('dashboard', { layout: 'public', pageTitle: 'Dashboard' });
 });
 
 // 6. Start Server
