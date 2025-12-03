@@ -22,6 +22,8 @@ exports.up = function (knex) {
         table.string("ParticipantZip", 20);
         table.string("ParticipantSchoolOrEmployer", 255);
         table.string("ParticipantFieldOfInterest", 255);
+        table.timestamp("AccountCreatedDate")
+        .defaultTo(knex.fn.now());
       })
   
       // EVENT TEMPLATE

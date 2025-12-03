@@ -83,6 +83,7 @@ exports.seed = async function (knex) {
     ParticipantZip: p.ParticipantZip,
     ParticipantSchoolOrEmployer: p.ParticipantSchoolOrEmployer,
     ParticipantFieldOfInterest: p.ParticipantFieldOfInterest,
+    AccountCreatedDate: p.AccountCreatedDate || knex.fn.now(),
   }));
 
   const insertedParticipants = await knex("Participants")
@@ -125,7 +126,7 @@ exports.seed = async function (knex) {
 const eventTemplatesCsv = loadCsv("event_templates.csv");
 
 const eventTemplateRows = eventTemplatesCsv.map((e) => ({
-  EventID: parseInt(e.EventID, 10),                     // use CSV PK
+  // auto incrememnt PK
   EventName: e.EventName,
   EventType: e.EventType,
   EventDescription: e.EventDescription,
@@ -146,7 +147,7 @@ const occurrenceRows = eventOccurrenceCsv.map((o) => {
   const cap = parseInt(o.EventCapacity, 10);
 
   return {
-    OccurrenceID: parseInt(o.OccurrenceID, 10),          // use CSV PK
+    // auto incrememnt PK,          
     EventID: parseInt(o.EventID, 10),                    // FK from CSV
     EventDateTimeStart: o.EventDateTimeStart,
     EventDateTimeEnd: o.EventDateTimeEnd,
@@ -163,7 +164,7 @@ await knex("Event_Occurrence").insert(occurrenceRows);
 const registrationCsv = loadCsv("registration.csv");
 
 const registrationRows = registrationCsv.map((r) => ({
-  RegistrationID: parseInt(r.RegistrationID, 10),        // use CSV PK
+  // auto incrememnt PK       
   ParticipantID: parseInt(r.ParticipantID, 10),          // FK → Participants
   OccurrenceID: parseInt(r.OccurrenceID, 10),            // FK → Event_Occurrence
   RegistrationStatus: r.RegistrationStatus,
@@ -180,7 +181,7 @@ await knex("Registration").insert(registrationRows);
 const surveysCsv = loadCsv("surveys.csv");
 
 const surveyRows = surveysCsv.map((s) => ({
-  SurveyID: parseInt(s.SurveyID, 10),                    // optional, but fine
+  // auto incrememnt PK          
   RegistrationID: parseInt(s.RegistrationID, 10),        // FK → Registration
 
   SurveySatisfactionScore: s.SurveySatisfactionScore
@@ -205,7 +206,6 @@ const surveyRows = surveysCsv.map((s) => ({
 }));
 
 await knex("Surveys").insert(surveyRows);
-
 
 
   console.log("🌱 Ella Rises seeding complete.");
