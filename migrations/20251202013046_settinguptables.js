@@ -133,6 +133,7 @@ exports.up = function (knex) {
             .onUpdate("CASCADE");
   
           table.string("MilestoneTitle", 255).notNullable();
+          table.string("MilestoneCategory", 255);
           table.date("MilestoneDate");
         })
       )

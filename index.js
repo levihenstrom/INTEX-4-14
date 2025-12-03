@@ -677,6 +677,7 @@ app.get('/milestones', async (req, res) => {
             const searchPattern = `%${searchTerm}%`;
             filteredQuery.andWhere(function () {
                 this.where('pm.MilestoneTitle', 'ilike', searchPattern)
+                    .orWhere('pm.MilestoneCategory', 'ilike', searchPattern)
                     .orWhere('p.ParticipantFirstName', 'ilike', searchPattern)
                     .orWhere('p.ParticipantLastName', 'ilike', searchPattern)
                     .orWhere('p.ParticipantEmail', 'ilike', searchPattern)
@@ -766,6 +767,7 @@ app.get('/milestones', async (req, res) => {
             .select(
                 'pm.MilestoneID',
                 'pm.MilestoneTitle',
+                'pm.MilestoneCategory',
                 'pm.MilestoneDate',
                 'pm.ParticipantID',
                 'p.ParticipantEmail',
@@ -839,9 +841,9 @@ app.post('/milestones/add', async (req, res) => {
     }
 
     try {
-        const { ParticipantID, MilestoneTitle, MilestoneDate } = req.body;
+        const { ParticipantID, MilestoneTitle, MilestoneCategory, MilestoneDate } = req.body;
 
-        if (!ParticipantID || !MilestoneTitle || !MilestoneDate) {
+        if (!ParticipantID || !MilestoneTitle || !MilestoneCategory || !MilestoneDate ) {
             return res.redirect('/milestones?error=' + encodeURIComponent('All milestone fields are required.'));
         }
 
@@ -856,6 +858,7 @@ app.post('/milestones/add', async (req, res) => {
         await knex('Participant_Milestone').insert({
             ParticipantID,
             MilestoneTitle,
+            MilestoneCategory,
             MilestoneDate
         });
 
@@ -876,9 +879,9 @@ app.post('/milestones/edit', async (req, res) => {
     }
 
     try {
-        const { MilestoneID, ParticipantID, MilestoneTitle, MilestoneDate } = req.body;
+        const { MilestoneID, ParticipantID, MilestoneTitle, MilestoneCategory, MilestoneDate } = req.body;
 
-        if (!MilestoneID || !ParticipantID || !MilestoneTitle || !MilestoneDate) {
+        if (!MilestoneID || !ParticipantID || !MilestoneTitle || !MilestoneCategory || !MilestoneDate) {
             return res.redirect('/milestones?error=' + encodeURIComponent('All milestone fields are required.'));
         }
 
@@ -903,6 +906,7 @@ app.post('/milestones/edit', async (req, res) => {
             .update({
                 ParticipantID,
                 MilestoneTitle,
+                MilestoneCategory,
                 MilestoneDate
             });
 
