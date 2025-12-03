@@ -252,6 +252,60 @@ app.get('/donations', async (req, res) => {
     }
 });
 
+app.get('/events', async (req, res) => {
+    try {
+        if (req.session.isAdmin) {
+            // Show all events
+            const events = await knex('Event_Occurrence')
+            .join('Event_Templates', 'Event_Occurrence.EventID', 'Event_Templates.EventID')
+            .select(
+                'Event_Templates.EventName',
+                'Event_Templates.EventType',
+                'Event_Templates.EventDescription',
+                'Event_Templates.EventRecurrencePattern',
+                'Event_Templates.EventDefaultCapacity',
+                'Event_Occurrence.EventDateTimeStart',
+                'Event_Occurrence.EventDateTimeEnd',
+                'Event_Occurrence.EventLocation',
+                'Event_Occurrence.EventCapacity',
+                'Event_Occurrence.EventRegistrationDeadline'
+            )
+            .orderBy('Event_Occurrence.EventDateTimeStart', 'asc');
+
+            res.render('events', {
+            pageTitle: 'Events',
+            events,
+            });
+        } else {
+            // Show future events
+            const events = await knex('Event_Occurrence')
+            .join('Event_Templates', 'Event_Occurrence.EventID', 'Event_Templates.EventID')
+            .select(
+                'Event_Templates.EventName',
+                'Event_Templates.EventType',
+                'Event_Templates.EventDescription',
+                'Event_Templates.EventRecurrencePattern',
+                'Event_Templates.EventDefaultCapacity',
+                'Event_Occurrence.EventDateTimeStart',
+                'Event_Occurrence.EventDateTimeEnd',
+                'Event_Occurrence.EventLocation',
+                'Event_Occurrence.EventCapacity',
+                'Event_Occurrence.EventRegistrationDeadline'
+            )
+            .where('Event_Occurrence.EventDateTimeEnd', '>=', new Date())
+            .orderBy('Event_Occurrence.EventDateTimeEnd', 'asc');
+
+            res.render('events', {
+            pageTitle: 'Events',
+            events,
+            });
+        }
+    } catch (err) {
+        console.error('Error loading events:', err);
+        res.status(500).send('Error loading events');
+    }
+});
+
 app.get('/milestones', async (req, res) => {
     try {
         if (req.session.isAdmin) {

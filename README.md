@@ -6,6 +6,11 @@
 ## Donation kpi for total donations and user donations
 
 # events.ejs -- show all events. User uses modal to register for an event
+# -- two buttons for admin: 
+# -- -- add event template
+# -- -- add event occurrence
+# -- admin also has buttons to edit and delete events
+# -- admin sees all events but user only sees current/future events
 
 # landing.ejs -- using public to allow acces to the correct pages based off of login/manager status
 
@@ -13,7 +18,11 @@
 
 # milestones.ejs -- show for user. If manager, give search function to find user. manager has edit and delete access.
 
-# participants.ejs -- treat as profile page if participant, but have a search function for all participants if admin. Two separate ejs blocks
+# profile.ejs -- showing kpis. Show future and past events:
+# -- future: have unregister button
+# -- past: check if has survey, if not, have take survey button
+
+# participants.ejs -- Only see if admin, have a search function for all participants.
 
 # public.ejs -- only show user.ejs if manager
 # -- donations.ejs should show for all
@@ -23,3 +32,14 @@
 # surveys.ejs -- show for user. If manager, give search function to find user. Manager has edit and delete access.
 
 # users.ejs -- show all details of all users (include search) and allow only manager to edit and delete
+
+
+
+# IN Scope
+# -- 
+
+
+# Extra Scope
+# -- interest icons on profile page
+# -- event type pictures
+# -- filter modal on participant page
