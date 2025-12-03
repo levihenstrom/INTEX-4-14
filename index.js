@@ -480,7 +480,8 @@ app.get('/donations', async (req, res) => {
                 count: totalDonations
             },
             error: req.query.error || null,
-            success: req.query.success || null
+            success: req.query.success || null,
+            hasHero: !user
         });
     } catch (err) {
         console.error('Error loading donations:', err);
@@ -556,35 +557,36 @@ app.post('/donations/add/user', async (req, res) => {
     }
 });
 
-app.post('/donations/add/visitor', async (req, res) => {
-    try {
-        const { ParticipantID, DonationAmount, DonationDate } = req.body;
-        const parsedAmount = parseFloat(DonationAmount);
+// app.post('/donations/add/visitor', async (req, res) => {
+//     try {
+//         const { FirstName, LastName, Email, DonationAmount, DonationDate } = req.body;
+//         const parsedAmount = parseFloat(DonationAmount);
 
-        if (!ParticipantID || !DonationDate || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
-            return res.redirect('/donations?error=' + encodeURIComponent('Please try again'));
-        }
+//         if (!FirstName || !LastName || !Email || !DonationDate || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+//             return res.redirect('/donations?error=' + encodeURIComponent('Please try again'));
+//         }
 
-        const participant = await knex('Participants')
-            .where('ParticipantID', ParticipantID)
-            .first();
+//         const participant = await knex('Participants')
+//             .where('ParticipantEmail', ParticipantEmail)
+//             .first();
 
-        if (!participant) {
-            return res.redirect('/donations?error=' + encodeURIComponent('Participant not found.'));
-        }
+//         if (!participant) {
+//             // insert donor logic
+//             return res.redirect('/donations?error=' + encodeURIComponent('Participant not found.'));
+//         }
 
-        await knex('Participant_Donation').insert({
-            ParticipantID,
-            DonationDate,
-            DonationAmount: parsedAmount
-        });
+//         await knex('Participant_Donation').insert({
+//             ParticipantID,
+//             DonationDate,
+//             DonationAmount: parsedAmount
+//         });
 
-        return res.redirect('/donations?success=' + encodeURIComponent('Donation recorded successfully.'));
-    } catch (err) {
-        console.error('Error adding donation:', err);
-        return res.redirect('/donations?error=' + encodeURIComponent('Error adding donation. Please try again.'));
-    }
-});
+//         return res.redirect('/donations?success=' + encodeURIComponent('Donation recorded successfully.'));
+//     } catch (err) {
+//         console.error('Error adding donation:', err);
+//         return res.redirect('/donations?error=' + encodeURIComponent('Error adding donation. Please try again.'));
+//     }
+// });
 
 app.post('/donations/edit', async (req, res) => {
     if (!req.session.isAdmin) {
