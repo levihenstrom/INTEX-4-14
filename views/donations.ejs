@@ -1,220 +1,132 @@
 <% pageTitle = 'Donations'; %>
-<% const participantChoices = Array.isArray(participantOptions) ? participantOptions : []; %>
-<% const filterValues = filters || {}; %>
-<% const filterPairs = []; %>
-<%
-    function pushFilter(key) {
-        if (filterValues[key]) {
-            filterPairs.push({ key, value: filterValues[key] });
-        }
-    }
-    pushFilter('filterStartDate');
-    pushFilter('filterEndDate');
-    pushFilter('filterMinAge');
-    pushFilter('filterMaxAge');
-    pushFilter('filterCity');
-    pushFilter('filterState');
-    pushFilter('filterRole');
-    pushFilter('filterInterest');
-    pushFilter('filterMinAmount');
-    pushFilter('filterMaxAmount');
-    const filterQueryString = filterPairs.length ? '&' + filterPairs.map(function(pair) {
-        return pair.key + '=' + encodeURIComponent(pair.value);
-    }).join('&') : '';
-%>
-<%
-    function formatCurrency(value) {
-        if (typeof value !== 'number' || Number.isNaN(value)) {
-            return '$0.00';
-        }
-        return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-    }
-%>
-<% const searchValue = typeof searchTerm !== 'undefined' ? searchTerm : ''; %>
-<% const metricsData = metrics || {}; %>
-<% const totalAmountValue = typeof metricsData.totalAmount === 'number' ? metricsData.totalAmount : 0; %>
-<% const monthAmountValue = typeof metricsData.monthAmount === 'number' ? metricsData.monthAmount : 0; %>
-<% const donationCountValue = typeof metricsData.count === 'number' ? metricsData.count : 0; %>
+<% if (!user) { %>
+    <% hasHero = true; %>
 
-<div class="milestones-page">
-    <div class="row g-3 mb-4">
-            <h1 class="mb-1">Donations</h1>
-            <p class="text-muted mb-0">Track generosity and giving impact.</p>
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#DonateModal">Donate</button>
-    </div>
+    <section class="hero-slideshow">
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="card text-center shadow-sm h-100">
-                <div class="card-body">
-                    <p class="text-muted mb-1">Total Donation Amount</p>
-                    <h3 class="mb-0"><%= formatCurrency(totalAmountValue) %></h3>
-                </div>
+        <div class="slide slide1"></div>
+        <div class="slide slide2"></div>
+        <div class="slide slide3"></div>
+
+        <div class="hero-overlay"></div>
+
+        <div class="hero-text">
+            <h1>Donate</h1>
+            <p>Empowering young women to pursue higher education through high-impact multicultural activities focused on mariachi and STEAM.</p>
+
+            <a href="/register" class="hero-btn"data-bs-toggle="modal" data-bs-target="#visitorDonateModal">Donate</a>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center shadow-sm h-100">
-                <div class="card-body">
-                    <p class="text-muted mb-1">Donations This Month</p>
-                    <h3 class="mb-0"><%= formatCurrency(monthAmountValue) %></h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center shadow-sm h-100">
-                <div class="card-body">
-                    <p class="text-muted mb-1">Number of Donations</p>
-                    <h3 class="mb-0"><%= donationCountValue %></h3>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <% if (isAdmin) { %>
-        <div class="d-flex flex-column flex-md-row gap-3 mb-4 align-items-md-center">
-            <form method="GET" action="/donations" class="flex-grow-1">
-                <% filterPairs.forEach(function(pair) { %>
-                    <input type="hidden" name="<%= pair.key %>" value="<%= pair.value %>">
-                <% }); %>
-                <input type="hidden" name="page" value="1">
-                <div class="input-group">
-                    <input type="text" class="form-control" name="search" placeholder="Search by donor, amount, or ID..." value="<%= searchValue %>">
-                    <button type="submit" class="btn btn-primary">Search</button>
-                    <% if (searchValue) { %>
-                        <a href="/donations" class="btn btn-outline-secondary">Clear</a>
-                    <% } %>
-                </div>
-            </form>
-            <div class="d-flex gap-2">
-                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#donationFilterModal">Filters</button>
-                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDonationModal">+ Add Donation</button>
-            </div>
-        </div>
-    <% } else { %>
-        <div class="mb-4"></div>
-    <% } %>
-
-    <div class="border-bottom mb-4"></div>
-
-    <% if (typeof error !== 'undefined' && error) { %>
-        <div class="alert alert-danger" role="alert"><%= error %></div>
-    <% } %>
-    <% if (typeof success !== 'undefined' && success) { %>
-        <div class="alert alert-success" role="alert"><%= success %></div>
-    <% } %>
-
-    <% if (Array.isArray(donations) && donations.length) { %>
-        <div class="row row-cols-1 row-cols-md-2 g-4">
-            <% donations.forEach(function(donation) { %>
-                <div class="col">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body d-flex flex-column">
-                            <div class="d-flex w-100 justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h5 class="card-title mb-1"><%= formatCurrency(donation.DonationAmountValue) %></h5>
-                                    <small class="text-muted"><%= donation.DonationDateDisplay || 'Date not set' %></small>
-                                </div>
-                                <% if (isAdmin) { %>
-                                    <div class="btn-group btn-group-sm ms-2">
-                                        <button type="button"
-                                                class="btn btn-outline-primary edit-donation-btn"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#editDonationModal"
-                                                data-donation-id="<%= donation.DonationID %>"
-                                                data-date="<%= donation.DonationDate ? new Date(donation.DonationDate).toISOString().split('T')[0] : '' %>"
-                                                data-amount="<%= donation.DonationAmountValue %>"
-                                                data-participant-id="<%= donation.ParticipantID %>">
-                                            Edit
-                                        </button>
-                                        <form action="/donations/delete" method="POST" class="delete-donation-form d-inline" data-amount="<%= formatCurrency(donation.DonationAmountValue) %>">
-                                            <input type="hidden" name="DonationID" value="<%= donation.DonationID %>">
-                                            <button type="submit" class="btn btn-outline-danger">Delete</button>
-                                        </form>
-                                    </div>
-                                <% } %>
-                            </div>
-                            <p class="mb-1">
-                                <strong>Participant:</strong>
-                                <span class="participant-tooltip" data-bs-toggle="tooltip" data-bs-html="true" title="<%= donation.ParticipantFirstName %> <%= donation.ParticipantLastName %><br>Age: <%= typeof donation.ParticipantAge === 'number' ? donation.ParticipantAge : 'N/A' %><br>City: <%= donation.ParticipantCity || 'N/A' %><br>State: <%= donation.ParticipantState || 'N/A' %><br>Interest: <%= donation.ParticipantFieldOfInterest || 'N/A' %><br>Email: <%= donation.ParticipantEmail %>">
-                                    <%= donation.ParticipantFirstName %> <%= donation.ParticipantLastName %>
-                                </span>
-                            </p>
-                            <p class="text-muted mb-0">Donation ID: <%= donation.DonationID %></p>
-                        </div>
-                    </div>
-                </div>
-            <% }); %>
-        </div>
-        <% if (typeof totalDonations !== 'undefined' && totalDonations >= 0) { %>
-            <% const startIndex = totalDonations > 0 ? ((currentPage - 1) * pageSize + 1) : 0; %>
-            <% const endIndex = totalDonations > 0 ? Math.min(currentPage * pageSize, totalDonations) : 0; %>
-            <div class="mt-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-                <div>
-                    <% if (currentPage > 1) { %>
-                        <a href="/donations?page=<%= currentPage - 1 %><%= searchValue ? '&search=' + encodeURIComponent(searchValue) : '' %><%= filterQueryString %>" class="btn btn-secondary">&larr; Previous Page</a>
-                    <% } %>
-                </div>
-                <div class="text-muted text-center">
-                    Showing <%= startIndex %> - <%= endIndex %> of <%= totalDonations %> donations (Page <%= currentPage %> of <%= totalPages %>)
-                </div>
-                <div class="text-end">
-                    <% if (hasNextPage) { %>
-                        <a href="/donations?page=<%= currentPage + 1 %><%= searchValue ? '&search=' + encodeURIComponent(searchValue) : '' %><%= filterQueryString %>" class="btn btn-primary">Next Page &rarr;</a>
-                    <% } %>
-                </div>
-            </div>
-        <% } %>
-    <% } else { %>
-        <div class="alert alert-info text-center">No donations found.</div>
-    <% } %>
-</div>
-
-<% if (isAdmin) { %>
-    <div class="modal fade" id="addDonationModal" tabindex="-1" aria-labelledby="addDonationModalLabel" aria-hidden="true">
+    </section>
+    <div class="modal fade" id="visitorDonateModal" tabindex="-1" aria-labelledby="visitorDonateModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addDonationModalLabel">Add Donation</h5>
+                    <h5 class="modal-title" id="visitorDonateLabel">Donate</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="addDonationForm" action="/donations/add" method="POST">
+                    <form id="VisitorDonateForm" action="/donations/add/visitor" method="POST">
                         <div class="mb-3">
-                            <label class="form-label">Participant *</label>
-                            <input type="text" class="form-control mb-2" id="donationParticipantSearch" placeholder="Search by name or email" autocomplete="off">
-                            <select class="form-select" id="donationParticipantSelect" name="ParticipantID" size="6" required>
-                                <option value="">Select participant</option>
-                                <% participantChoices.forEach(function(participant) { %>
-                                    <option value="<%= participant.ParticipantID %>">
-                                        <%= participant.ParticipantFirstName %> <%= participant.ParticipantLastName %> (#<%= participant.ParticipantID %>) - <%= participant.ParticipantEmail %>
-                                    </option>
-                                <% }); %>
-                            </select>
+                            <label for="FirstName" class="form-label">First Name *</label>
+                            <input type="text" class="form-control" id="FirstName" name="FirstName" required>
                         </div>
                         <div class="mb-3">
-                            <label for="addDonationAmount" class="form-label">Amount *</label>
-                            <input type="number" step="0.01" min="0.01" class="form-control" id="addDonationAmount" name="DonationAmount" required>
+                            <label for="LastName" class="form-label">Last Name *</label>
+                            <input type="text" class="form-control" id="LastName" name="LastName" required>
                         </div>
                         <div class="mb-3">
-                            <label for="addDonationDate" class="form-label">Donation Date *</label>
-                            <input type="date" class="form-control" id="addDonationDate" name="DonationDate" required>
+                            <label for="Email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="Email" name="Email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="VisitorDonateAmount" class="form-label">Amount *</label>
+                            <input type="number" step="0.01" min="0.01" class="form-control" id="DonateAmount" name="DonationAmount" required>
+                        </div>
+                        <div class="mb-3">
+                            <input 
+                                type="hidden"
+                                id="addDonationDate"
+                                name="DonationDate"
+                                value="<%= new Date().toISOString().split('T')[0] %>"
+                            >
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="addDonationForm" class="btn btn-success">Save Donation</button>
+                    <button type="submit" form="VisitorDonateForm" class="btn btn-success">Save Donation</button>
                 </div>
             </div>
         </div>
     </div>
+    <script>
+        var form = document.getElementById('VisitorDonateForm');
 
-    <div class="modal fade" id="editDonationModal" tabindex="-1" aria-labelledby="editDonationModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editDonationModalLabel">Edit Donation</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        form.addEventListener('submit', function(e) {
+
+            // get donation amount
+            var amount = document.getElementById('VisitorDonateAmount').value;
+
+            // Open new tab
+            window.open(`https://givebutter.com/EllaRises?amount=${encodeURIComponent(amount)}`, '_blank');
+
+            // Form will still submit normally to /donations
+        });
+    </script>
+<% } else { %>
+    <% const participantChoices = Array.isArray(participantOptions) ? participantOptions : []; %>
+    <% const filterValues = filters || {}; %>
+    <% const filterPairs = []; %>
+    <%
+        function pushFilter(key) {
+            if (filterValues[key]) {
+                filterPairs.push({ key, value: filterValues[key] });
+            }
+        }
+        pushFilter('filterStartDate');
+        pushFilter('filterEndDate');
+        pushFilter('filterMinAge');
+        pushFilter('filterMaxAge');
+        pushFilter('filterCity');
+        pushFilter('filterState');
+        pushFilter('filterRole');
+        pushFilter('filterInterest');
+        pushFilter('filterMinAmount');
+        pushFilter('filterMaxAmount');
+        const filterQueryString = filterPairs.length ? '&' + filterPairs.map(function(pair) {
+            return pair.key + '=' + encodeURIComponent(pair.value);
+        }).join('&') : '';
+    %>
+    <%
+        function formatCurrency(value) {
+            if (typeof value !== 'number' || Number.isNaN(value)) {
+                return '$0.00';
+            }
+            return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+        }
+    %>
+    <% const searchValue = typeof searchTerm !== 'undefined' ? searchTerm : ''; %>
+    <% const metricsData = metrics || {}; %>
+    <% const totalAmountValue = typeof metricsData.totalAmount === 'number' ? metricsData.totalAmount : 0; %>
+    <% const monthAmountValue = typeof metricsData.monthAmount === 'number' ? metricsData.monthAmount : 0; %>
+    <% const donationCountValue = typeof metricsData.count === 'number' ? metricsData.count : 0; %>
+
+    <div class="milestones-page">
+        <div class="row g-3 mb-4">
+                <h1 class="mb-1">Donations</h1>
+                <p class="text-muted mb-0">Track generosity and giving impact.</p>
+                <% if(!isAdmin) { %>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#DonateModal">Donate</button>
+                <% } %>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card text-center shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-1">Total Donation Amount</p>
+                        <h3 class="mb-0"><%= formatCurrency(totalAmountValue) %></h3>
+                    </div>
                 </div>
                 <div class="modal-body">
                     <form id="editDonationForm" action="/donations/edit" method="POST">
@@ -240,215 +152,406 @@
                             <input type="date" class="form-control" id="editDonationDate" name="DonationDate">
                         </div>
                     </form>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-1">Donations This Month</p>
+                        <h3 class="mb-0"><%= formatCurrency(monthAmountValue) %></h3>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="editDonationForm" class="btn btn-primary">Update Donation</button>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-1">Number of Donations</p>
+                        <h3 class="mb-0"><%= donationCountValue %></h3>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="modal fade" id="donationFilterModal" tabindex="-1" aria-labelledby="donationFilterModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="donationFilterModalLabel">Filter Donations</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form method="GET" action="/donations">
-                    <div class="modal-body">
+        <% if (isAdmin) { %>
+            <div class="d-flex flex-column flex-md-row gap-3 mb-4 align-items-md-center">
+                <form method="GET" action="/donations" class="flex-grow-1">
+                    <% filterPairs.forEach(function(pair) { %>
+                        <input type="hidden" name="<%= pair.key %>" value="<%= pair.value %>">
+                    <% }); %>
+                    <input type="hidden" name="page" value="1">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="search" placeholder="Search by donor, amount, or ID..." value="<%= searchValue %>">
+                        <button type="submit" class="btn btn-primary">Search</button>
                         <% if (searchValue) { %>
-                            <input type="hidden" name="search" value="<%= searchValue %>">
+                            <a href="/donations" class="btn btn-outline-secondary">Clear</a>
                         <% } %>
-                        <input type="hidden" name="page" value="1">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Donation Date From</label>
-                                <input type="date" class="form-control" name="filterStartDate" value="<%= filterValues.filterStartDate || '' %>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Donation Date To</label>
-                                <input type="date" class="form-control" name="filterEndDate" value="<%= filterValues.filterEndDate || '' %>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Minimum Amount</label>
-                                <input type="number" step="0.01" min="0" class="form-control" name="filterMinAmount" value="<%= filterValues.filterMinAmount || '' %>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Maximum Amount</label>
-                                <input type="number" step="0.01" min="0" class="form-control" name="filterMaxAmount" value="<%= filterValues.filterMaxAmount || '' %>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Minimum Age</label>
-                                <input type="number" min="0" class="form-control" name="filterMinAge" value="<%= filterValues.filterMinAge || '' %>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Maximum Age</label>
-                                <input type="number" min="0" class="form-control" name="filterMaxAge" value="<%= filterValues.filterMaxAge || '' %>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">City</label>
-                                <input type="text" class="form-control" name="filterCity" value="<%= filterValues.filterCity || '' %>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">State</label>
-                                <input type="text" class="form-control" name="filterState" value="<%= filterValues.filterState || '' %>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Participant Role</label>
-                                <select class="form-select" name="filterRole">
-                                    <option value="">Any</option>
-                                    <option value="a" <%= filterValues.filterRole === 'a' ? 'selected' : '' %>>Admin</option>
-                                    <option value="p" <%= filterValues.filterRole === 'p' ? 'selected' : '' %>>Participant</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Field of Interest</label>
-                                <select class="form-select" name="filterInterest">
-                                    <option value="">Any</option>
-                                    <option value="STEM" <%= filterValues.filterInterest === 'STEM' ? 'selected' : '' %>>STEM</option>
-                                    <option value="Arts" <%= filterValues.filterInterest === 'Arts' ? 'selected' : '' %>>Arts</option>
-                                    <option value="Both" <%= filterValues.filterInterest === 'Both' ? 'selected' : '' %>>Both</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <a href="/donations<%= searchValue ? '?search=' + encodeURIComponent(searchValue) : '' %>" class="btn btn-outline-secondary">Clear Filters</a>
-                        <button type="submit" class="btn btn-primary">Apply Filters</button>
                     </div>
                 </form>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#donationFilterModal">Filters</button>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDonationModal">+ Add Donation</button>
+                </div>
+            </div>
+        <% } else { %>
+            <div class="mb-4"></div>
+        <% } %>
+
+        <div class="border-bottom mb-4"></div>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger" role="alert"><%= error %></div>
+        <% } %>
+        <% if (typeof success !== 'undefined' && success) { %>
+            <div class="alert alert-success" role="alert"><%= success %></div>
+        <% } %>
+
+        <% if (Array.isArray(donations) && donations.length) { %>
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3  g-4">
+                <% donations.forEach(function(donation) { %>
+                    <div class="col">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex w-100 justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h5 class="card-title mb-1"><%= formatCurrency(donation.DonationAmountValue) %></h5>
+                                        <small class="text-muted"><%= donation.DonationDateDisplay || 'Date not set' %></small>
+                                    </div>
+                                    <% if (isAdmin) { %>
+                                        <div class="btn-group btn-group-sm ms-2">
+                                            <button type="button"
+                                                    class="btn btn-outline-primary edit-donation-btn"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#editDonationModal"
+                                                    data-donation-id="<%= donation.DonationID %>"
+                                                    data-date="<%= donation.DonationDate ? new Date(donation.DonationDate).toISOString().split('T')[0] : '' %>"
+                                                    data-amount="<%= donation.DonationAmountValue %>"
+                                                    data-participant-id="<%= donation.ParticipantID %>">
+                                                Edit
+                                            </button>
+                                            <form action="/donations/delete" method="POST" class="delete-donation-form d-inline" data-amount="<%= formatCurrency(donation.DonationAmountValue) %>">
+                                                <input type="hidden" name="DonationID" value="<%= donation.DonationID %>">
+                                                <button type="submit" class="btn btn-outline-danger">Delete</button>
+                                            </form>
+                                        </div>
+                                    <% } %>
+                                </div>
+                                <p class="mb-1">
+                                    <strong>Participant:</strong>
+                                    <span class="participant-tooltip" data-bs-toggle="tooltip" data-bs-html="true" title="<%= donation.ParticipantFirstName %> <%= donation.ParticipantLastName %><br>Age: <%= typeof donation.ParticipantAge === 'number' ? donation.ParticipantAge : 'N/A' %><br>City: <%= donation.ParticipantCity || 'N/A' %><br>State: <%= donation.ParticipantState || 'N/A' %><br>Interest: <%= donation.ParticipantFieldOfInterest || 'N/A' %><br>Email: <%= donation.ParticipantEmail %>">
+                                        <%= donation.ParticipantFirstName %> <%= donation.ParticipantLastName %>
+                                    </span>
+                                </p>
+                                <p class="text-muted mb-0">Donation ID: <%= donation.DonationID %></p>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+            <% if (typeof totalDonations !== 'undefined' && totalDonations >= 0) { %>
+                <% const startIndex = totalDonations > 0 ? ((currentPage - 1) * pageSize + 1) : 0; %>
+                <% const endIndex = totalDonations > 0 ? Math.min(currentPage * pageSize, totalDonations) : 0; %>
+                <div class="mt-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div>
+                        <% if (currentPage > 1) { %>
+                            <a href="/donations?page=<%= currentPage - 1 %><%= searchValue ? '&search=' + encodeURIComponent(searchValue) : '' %><%= filterQueryString %>" class="btn btn-secondary">&larr; Previous Page</a>
+                        <% } %>
+                    </div>
+                    <div class="text-muted text-center">
+                        Showing <%= startIndex %> - <%= endIndex %> of <%= totalDonations %> donations (Page <%= currentPage %> of <%= totalPages %>)
+                    </div>
+                    <div class="text-end">
+                        <% if (hasNextPage) { %>
+                            <a href="/donations?page=<%= currentPage + 1 %><%= searchValue ? '&search=' + encodeURIComponent(searchValue) : '' %><%= filterQueryString %>" class="btn btn-primary">Next Page &rarr;</a>
+                        <% } %>
+                    </div>
+                </div>
+            <% } %>
+        <% } else { %>
+            <div class="alert alert-info text-center">No donations found.</div>
+        <% } %>
+    </div>
+
+
+    <% if (isAdmin) { %>
+        <div class="modal fade" id="addDonationModal" tabindex="-1" aria-labelledby="addDonationModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addDonationModalLabel">Add Donation</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addDonationForm" action="/donations/add" method="POST">
+                            <div class="mb-3">
+                                <label class="form-label">Participant *</label>
+                                <input type="text" class="form-control mb-2" id="donationParticipantSearch" placeholder="Search by name or email" autocomplete="off">
+                                <select class="form-select" id="donationParticipantSelect" name="ParticipantID" size="6" required>
+                                    <option value="">Select participant</option>
+                                    <% participantChoices.forEach(function(participant) { %>
+                                        <option value="<%= participant.ParticipantID %>">
+                                            <%= participant.ParticipantFirstName %> <%= participant.ParticipantLastName %> (#<%= participant.ParticipantID %>) - <%= participant.ParticipantEmail %>
+                                        </option>
+                                    <% }); %>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="addDonationAmount" class="form-label">Amount *</label>
+                                <input type="number" step="0.01" min="0.01" class="form-control" id="addDonationAmount" name="DonationAmount" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="addDonationDate" class="form-label">Donation Date *</label>
+                                <input type="date" class="form-control" id="addDonationDate" name="DonationDate" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" form="addDonationForm" class="btn btn-success">Save Donation</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-<% } else { %>
-    <div class="modal fade" id="DonateModal" tabindex="-1" aria-labelledby="DonateModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="DonateLabel">Donate</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+        <div class="modal fade" id="editDonationModal" tabindex="-1" aria-labelledby="editDonationModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editDonationModalLabel">Edit Donation</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editDonationForm" action="/donations/edit" method="POST">
+                            <input type="hidden" name="DonationID" id="editDonationId">
+                            <div class="mb-3">
+                                <label class="form-label">Participant *</label>
+                                <input type="text" class="form-control mb-2" id="editDonationParticipantSearch" placeholder="Search by name or email" autocomplete="off">
+                                <select class="form-select" id="editDonationParticipantSelect" name="ParticipantID" size="6" required>
+                                    <option value="">Select participant</option>
+                                    <% participantChoices.forEach(function(participant) { %>
+                                        <option value="<%= participant.ParticipantID %>">
+                                            <%= participant.ParticipantFirstName %> <%= participant.ParticipantLastName %> (#<%= participant.ParticipantID %>) - <%= participant.ParticipantEmail %>
+                                        </option>
+                                    <% }); %>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editDonationAmount" class="form-label">Amount *</label>
+                                <input type="number" step="0.01" min="0.01" class="form-control" id="editDonationAmount" name="DonationAmount" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editDonationDate" class="form-label">Donation Date *</label>
+                                <input type="date" class="form-control" id="editDonationDate" name="DonationDate" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" form="editDonationForm" class="btn btn-primary">Update Donation</button>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <form id="DonateForm" action="/donations/add/user" method="POST">
-                        <div class="mb-3">
-                            <input 
-                                type="hidden"
-                                id="donationParticipantSearch"
-                                name="ParticipantID"
-                                value="<%= user.ParticipantID %>"
-                            >
+            </div>
+        </div>
+
+        <div class="modal fade" id="donationFilterModal" tabindex="-1" aria-labelledby="donationFilterModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="donationFilterModalLabel">Filter Donations</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="GET" action="/donations">
+                        <div class="modal-body">
+                            <% if (searchValue) { %>
+                                <input type="hidden" name="search" value="<%= searchValue %>">
+                            <% } %>
+                            <input type="hidden" name="page" value="1">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Donation Date From</label>
+                                    <input type="date" class="form-control" name="filterStartDate" value="<%= filterValues.filterStartDate || '' %>">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Donation Date To</label>
+                                    <input type="date" class="form-control" name="filterEndDate" value="<%= filterValues.filterEndDate || '' %>">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Minimum Amount</label>
+                                    <input type="number" step="0.01" min="0" class="form-control" name="filterMinAmount" value="<%= filterValues.filterMinAmount || '' %>">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Maximum Amount</label>
+                                    <input type="number" step="0.01" min="0" class="form-control" name="filterMaxAmount" value="<%= filterValues.filterMaxAmount || '' %>">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Minimum Age</label>
+                                    <input type="number" min="0" class="form-control" name="filterMinAge" value="<%= filterValues.filterMinAge || '' %>">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Maximum Age</label>
+                                    <input type="number" min="0" class="form-control" name="filterMaxAge" value="<%= filterValues.filterMaxAge || '' %>">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">City</label>
+                                    <input type="text" class="form-control" name="filterCity" value="<%= filterValues.filterCity || '' %>">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">State</label>
+                                    <input type="text" class="form-control" name="filterState" value="<%= filterValues.filterState || '' %>">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Participant Role</label>
+                                    <select class="form-select" name="filterRole">
+                                        <option value="">Any</option>
+                                        <option value="a" <%= filterValues.filterRole === 'a' ? 'selected' : '' %>>Admin</option>
+                                        <option value="p" <%= filterValues.filterRole === 'p' ? 'selected' : '' %>>Participant</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Field of Interest</label>
+                                    <select class="form-select" name="filterInterest">
+                                        <option value="">Any</option>
+                                        <option value="STEM" <%= filterValues.filterInterest === 'STEM' ? 'selected' : '' %>>STEM</option>
+                                        <option value="Arts" <%= filterValues.filterInterest === 'Arts' ? 'selected' : '' %>>Arts</option>
+                                        <option value="Both" <%= filterValues.filterInterest === 'Both' ? 'selected' : '' %>>Both</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="DonateAmount" class="form-label">Amount</label>
-                            <input type="number" step="0.01" min="0.01" class="form-control" id="DonateAmount" name="DonationAmount" required>
-                        </div>
-                        <div class="mb-3">
-                            <input 
-                                type="hidden"
-                                id="addDonationDate"
-                                name="DonationDate"
-                                value="<%= new Date().toISOString().split('T')[0] %>"
-                            >
+                        <div class="modal-footer">
+                            <a href="/donations<%= searchValue ? '?search=' + encodeURIComponent(searchValue) : '' %>" class="btn btn-outline-secondary">Clear Filters</a>
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="DonateForm" class="btn btn-success">Save Donation</button>
+            </div>
+        </div>
+    <% } else if (user.ParticipantRole === 'p') { %>
+        <div class="modal fade" id="DonateModal" tabindex="-1" aria-labelledby="DonateModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="DonateLabel">Donate</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="DonateForm" action="/donations/add/user" method="POST">
+                            <div class="mb-3">
+                                <input 
+                                    type="hidden"
+                                    id="donationParticipantSearch"
+                                    name="ParticipantID"
+                                    value="<%= user.ParticipantID %>"
+                                >
+                            </div>
+                            <div class="mb-3">
+                                <label for="DonateAmount" class="form-label">Amount *</label>
+                                <input type="number" step="0.01" min="0.01" class="form-control" id="DonateAmount" name="DonationAmount" required>
+                            </div>
+                            <div class="mb-3">
+                                <input 
+                                    type="hidden"
+                                    id="addDonationDate"
+                                    name="DonationDate"
+                                    value="<%= new Date().toISOString().split('T')[0] %>"
+                                >
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" form="DonateForm" class="btn btn-success">Save Donation</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-<% } %>
+    <% } %>
 
-<script>
-    var form = document.getElementById('DonateForm');
+    <script>
+        var form = document.getElementById('DonateForm');
 
-    form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', function(e) {
 
-        // get donation amount
-        var amount = document.getElementById('DonateAmount').value;
+            // get donation amount
+            var amount = document.getElementById('DonateAmount').value;
 
-        // Open new tab
-        window.open(`https://givebutter.com/EllaRises?amount=${encodeURIComponent(amount)}`, '_blank');
+            // Open new tab
+            window.open(`https://givebutter.com/EllaRises?amount=${encodeURIComponent(amount)}`, '_blank');
 
-        // Form will still submit normally to /donations
-    });
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const addSearchInput = document.getElementById('donationParticipantSearch');
-    const addSelect = document.getElementById('donationParticipantSelect');
-    const editSearchInput = document.getElementById('editDonationParticipantSearch');
-    const editSelect = document.getElementById('editDonationParticipantSelect');
-    const editIdInput = document.getElementById('editDonationId');
-    const editAmountInput = document.getElementById('editDonationAmount');
-    const editDateInput = document.getElementById('editDonationDate');
-
-    function resetSelect(selectElement) {
-        if (!selectElement) return;
-        Array.from(selectElement.options).forEach(function(option, index) {
-            option.hidden = false;
-            if (index === 0) {
-                option.selected = true;
-            }
+            // Form will still submit normally to /donations
         });
-    }
+    </script>
 
-    function bindFilter(input, selectElement) {
-        if (!input || !selectElement) return;
-        input.addEventListener('input', function() {
-            const term = (input.value || '').toLowerCase();
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addSearchInput = document.getElementById('donationParticipantSearch');
+        const addSelect = document.getElementById('donationParticipantSelect');
+        const editSearchInput = document.getElementById('editDonationParticipantSearch');
+        const editSelect = document.getElementById('editDonationParticipantSelect');
+        const editIdInput = document.getElementById('editDonationId');
+        const editAmountInput = document.getElementById('editDonationAmount');
+        const editDateInput = document.getElementById('editDonationDate');
+
+        function resetSelect(selectElement) {
+            if (!selectElement) return;
             Array.from(selectElement.options).forEach(function(option, index) {
+                option.hidden = false;
                 if (index === 0) {
-                    option.hidden = false;
-                    return;
+                    option.selected = true;
                 }
-                option.hidden = term && !option.textContent.toLowerCase().includes(term);
+            });
+        }
+
+        function bindFilter(input, selectElement) {
+            if (!input || !selectElement) return;
+            input.addEventListener('input', function() {
+                const term = (input.value || '').toLowerCase();
+                Array.from(selectElement.options).forEach(function(option, index) {
+                    if (index === 0) {
+                        option.hidden = false;
+                        return;
+                    }
+                    option.hidden = term && !option.textContent.toLowerCase().includes(term);
+                });
+            });
+        }
+
+        bindFilter(addSearchInput, addSelect);
+        bindFilter(editSearchInput, editSelect);
+
+        const addModal = document.getElementById('addDonationModal');
+        if (addModal) {
+            addModal.addEventListener('show.bs.modal', function() {
+                if (addSearchInput) addSearchInput.value = '';
+                resetSelect(addSelect);
+            });
+        }
+
+        document.querySelectorAll('.edit-donation-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                if (editSearchInput) editSearchInput.value = '';
+                resetSelect(editSelect);
+                if (editIdInput) editIdInput.value = this.getAttribute('data-donation-id') || '';
+                if (editAmountInput) editAmountInput.value = this.getAttribute('data-amount') || '';
+                if (editDateInput) editDateInput.value = this.getAttribute('data-date') || '';
+                if (editSelect) {
+                    const participantId = this.getAttribute('data-participant-id') || '';
+                    editSelect.value = participantId;
+                }
             });
         });
-    }
 
-    bindFilter(addSearchInput, addSelect);
-    bindFilter(editSearchInput, editSelect);
-
-    const addModal = document.getElementById('addDonationModal');
-    if (addModal) {
-        addModal.addEventListener('show.bs.modal', function() {
-            if (addSearchInput) addSearchInput.value = '';
-            resetSelect(addSelect);
+        document.querySelectorAll('.delete-donation-form').forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                const summary = form.getAttribute('data-amount') || 'this donation';
+                if (!confirm('Delete ' + summary + '?')) {
+                    e.preventDefault();
+                }
+            });
         });
-    }
 
-    document.querySelectorAll('.edit-donation-btn').forEach(function(button) {
-        button.addEventListener('click', function() {
-            if (editSearchInput) editSearchInput.value = '';
-            resetSelect(editSelect);
-            if (editIdInput) editIdInput.value = this.getAttribute('data-donation-id') || '';
-            if (editAmountInput) editAmountInput.value = this.getAttribute('data-amount') || '';
-            if (editDateInput) editDateInput.value = this.getAttribute('data-date') || '';
-            if (editSelect) {
-                const participantId = this.getAttribute('data-participant-id') || '';
-                editSelect.value = participantId;
-            }
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(function(triggerEl) {
+            new bootstrap.Tooltip(triggerEl);
         });
     });
-
-    document.querySelectorAll('.delete-donation-form').forEach(function(form) {
-        form.addEventListener('submit', function(e) {
-            const summary = form.getAttribute('data-amount') || 'this donation';
-            if (!confirm('Delete ' + summary + '?')) {
-                e.preventDefault();
-            }
-        });
-    });
-
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.forEach(function(triggerEl) {
-        new bootstrap.Tooltip(triggerEl);
-    });
-});
-</script>
+    </script>
+<% } %>
