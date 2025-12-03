@@ -128,6 +128,30 @@
                         <h3 class="mb-0"><%= formatCurrency(totalAmountValue) %></h3>
                     </div>
                 </div>
+                <div class="modal-body">
+                    <form id="editDonationForm" action="/donations/edit" method="POST">
+                        <input type="hidden" name="DonationID" id="editDonationId">
+                        <div class="mb-3">
+                            <label class="form-label">Participant *</label>
+                            <input type="text" class="form-control mb-2" id="editDonationParticipantSearch" placeholder="Search by name or email" autocomplete="off">
+                            <select class="form-select" id="editDonationParticipantSelect" name="ParticipantID" size="6" required>
+                                <option value="">Select participant</option>
+                                <% participantChoices.forEach(function(participant) { %>
+                                    <option value="<%= participant.ParticipantID %>">
+                                        <%= participant.ParticipantFirstName %> <%= participant.ParticipantLastName %> (#<%= participant.ParticipantID %>) - <%= participant.ParticipantEmail %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editDonationAmount" class="form-label">Amount *</label>
+                            <input type="number" step="0.01" min="0.01" class="form-control" id="editDonationAmount" name="DonationAmount" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editDonationDate" class="form-label">Donation Date</label>
+                            <input type="date" class="form-control" id="editDonationDate" name="DonationDate">
+                        </div>
+                    </form>
             </div>
             <div class="col-md-4">
                 <div class="card text-center shadow-sm h-100">

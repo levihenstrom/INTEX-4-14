@@ -698,14 +698,20 @@ app.get('/milestones', async (req, res) => {
         const searchTerm = (req.query.search || '').trim();
         const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
         const limit = 50;
+        const filterParticipantID = req.query.filterParticipantID || '';
+        const filterMilestoneID = req.query.filterMilestoneID || '';
         const filterStartDate = req.query.filterStartDate || '';
         const filterEndDate = req.query.filterEndDate || '';
         const filterMinAge = req.query.filterMinAge || '';
         const filterMaxAge = req.query.filterMaxAge || '';
+        const filterTitle = req.query.filterTitle || '';
+        const filterCategory = req.query.filterCategory || '';
         const filterCity = req.query.filterCity || '';
         const filterState = req.query.filterState || '';
         const filterRole = req.query.filterRole || '';
         const filterInterest = req.query.filterInterest || '';
+        const sortColumn = req.query.sort || 'MilestoneDate';
+        const sortDir = (req.query.sortDir || 'desc').toLowerCase();
 
         const baseQuery = knex('Participant_Milestone as pm')
             .join('Participants as p', 'pm.ParticipantID', 'p.ParticipantID');
@@ -732,12 +738,24 @@ app.get('/milestones', async (req, res) => {
                     .orWhereRaw('CAST(pm."MilestoneDate" AS TEXT) ILIKE ?', [searchPattern]);
             });
         }
-
+        if (filterParticipantID) {
+            filteredQuery.andWhere('pm.ParticipantID', filterParticipantID);
+        }
+        if (filterMilestoneID) {
+            filteredQuery.andWhere('pm.MilestoneID', filterMilestoneID);
+        }
         if (filterStartDate) {
             filteredQuery.andWhere('pm.MilestoneDate', '>=', filterStartDate);
         }
         if (filterEndDate) {
             filteredQuery.andWhere('pm.MilestoneDate', '<=', filterEndDate);
+        }
+        if (filterTitle) {
+            filteredQuery.andWhere('pm.MilestoneTitle', 'ilike', `%${filterTitle}%`);
+        }
+    
+        if (filterCategory) {
+            filteredQuery.andWhere('pm.MilestoneCategory', 'ilike', `%${filterCategory}%`);
         }
 
         const today = new Date();
@@ -806,6 +824,15 @@ app.get('/milestones', async (req, res) => {
         const safePage = Math.min(page, totalPages);
         const offset = (safePage - 1) * limit;
 
+        const sortOptions = {
+            MilestoneDate: 'pm.MilestoneDate',
+            MilestoneTitle: 'pm.MilestoneTitle',
+            MilestoneCategory: 'pm.MilestoneCategory'
+        };
+        const normalizedSortColumn = sortOptions[sortColumn] ? sortColumn : 'MilestoneDate';
+        const safeSortColumn = sortOptions[normalizedSortColumn] || 'pm.MilestoneDate';
+        const safeSortDir = sortDir === 'asc' ? 'asc' : 'desc';
+
         const milestoneRows = await filteredQuery.clone()
             .select(
                 'pm.MilestoneID',
@@ -821,7 +848,7 @@ app.get('/milestones', async (req, res) => {
                 'p.ParticipantFieldOfInterest',
                 'p.ParticipantDOB'
             )
-            .orderBy('pm.MilestoneDate', 'desc')
+            .orderBy(safeSortColumn, safeSortDir)
             .orderBy('pm.MilestoneID', 'desc')
             .limit(limit)
             .offset(offset);
@@ -846,8 +873,12 @@ app.get('/milestones', async (req, res) => {
             participantOptions,
             searchTerm,
             filters: {
+                filterParticipantID,
+                filterMilestoneID,
                 filterStartDate,
                 filterEndDate,
+                filterTitle,
+                filterCategory,
                 filterMinAge,
                 filterMaxAge,
                 filterCity,
@@ -855,6 +886,8 @@ app.get('/milestones', async (req, res) => {
                 filterRole,
                 filterInterest
             },
+            sortColumn: normalizedSortColumn,
+            sortDir: safeSortDir,
             currentPage: safePage,
             totalPages,
             totalMilestones: totalFilteredMilestones,
@@ -1830,11 +1863,108 @@ app.get('/participants', async (req, res) => {
                 ...participant,
                 ParticipantAge: calculateAge(participant.ParticipantDOB)
             }));
+
+            // Progress data for admin modal
+            const participantIds = participantsWithAge.map(p => p.ParticipantID);
+            const participantProgress = {};
+            participantIds.forEach((id) => {
+                participantProgress[id] = {
+                    events: [],
+                    milestones: [],
+                    donations: [],
+                    summary: {
+                        eventsAttended: 0,
+                        surveysCompleted: 0,
+                        surveyCompletionRate: 0,
+                        milestonesTotal: 0,
+                        totalDonations: 0,
+                        donationsCount: 0
+                    }
+                };
+            });
+
+            if (participantIds.length > 0) {
+                // Event attendance + survey completion
+                const eventRows = await knex('Registration as r')
+                    .join('Event_Occurrence as o', 'r.OccurrenceID', 'o.OccurrenceID')
+                    .join('Event_Templates as et', 'o.EventID', 'et.EventID')
+                    .leftJoin('Surveys as s', 'r.RegistrationID', 's.RegistrationID')
+                    .whereIn('r.ParticipantID', participantIds)
+                    .select(
+                        'r.ParticipantID',
+                        'r.RegistrationAttendedFlag',
+                        'o.EventDateTimeStart',
+                        'et.EventName',
+                        's.SurveyID'
+                    );
+
+                eventRows.forEach((row) => {
+                    const progress = participantProgress[row.ParticipantID];
+                    if (!progress) return;
+                    const attended = !!row.RegistrationAttendedFlag;
+                    const surveyCompleted = !!row.SurveyID;
+                    progress.events.push({
+                        eventName: row.EventName,
+                        eventDate: formatDateForDisplay(row.EventDateTimeStart),
+                        attended,
+                        surveyCompleted
+                    });
+                    if (attended) {
+                        progress.summary.eventsAttended += 1;
+                    }
+                    if (surveyCompleted) {
+                        progress.summary.surveysCompleted += 1;
+                    }
+                });
+
+                Object.values(participantProgress).forEach((progress) => {
+                    const totalEvents = progress.events.length;
+                    if (totalEvents > 0) {
+                        progress.summary.surveyCompletionRate = Math.round(
+                            (progress.summary.surveysCompleted / totalEvents) * 100
+                        );
+                    }
+                });
+
+                // Milestones
+                const milestoneRows = await knex('Participant_Milestone')
+                    .whereIn('ParticipantID', participantIds)
+                    .select('ParticipantID', 'MilestoneID', 'MilestoneTitle', 'MilestoneCategory', 'MilestoneDate');
+
+                milestoneRows.forEach((row) => {
+                    const progress = participantProgress[row.ParticipantID];
+                    if (!progress) return;
+                    progress.milestones.push({
+                        title: row.MilestoneTitle,
+                        category: row.MilestoneCategory,
+                        date: formatDateForDisplay(row.MilestoneDate)
+                    });
+                    progress.summary.milestonesTotal += 1;
+                });
+
+                // Donations
+                const donationRows = await knex('Participant_Donation')
+                    .whereIn('ParticipantID', participantIds)
+                    .select('ParticipantID', 'DonationDate', 'DonationAmount');
+
+                donationRows.forEach((row) => {
+                    const progress = participantProgress[row.ParticipantID];
+                    if (!progress) return;
+                    const amount = row.DonationAmount ? Number(row.DonationAmount) : 0;
+                    progress.donations.push({
+                        date: formatDateForDisplay(row.DonationDate),
+                        amount
+                    });
+                    progress.summary.totalDonations += amount;
+                    progress.summary.donationsCount += 1;
+                });
+            }
             
             res.render('participants', { 
                 layout: 'public', 
                 pageTitle: 'Participants',
                 participants: participantsWithAge,
+                participantProgress,
                 currentPage: page,
                 totalPages: totalPages,
                 totalUsers: totalUsers,
@@ -1853,6 +1983,7 @@ app.get('/participants', async (req, res) => {
                 layout: 'public', 
                 pageTitle: 'Participants',
                 participants: [],
+                participantProgress: {},
                 error: 'Error loading participants. Please try again.',
                 success: null,
                 profileDOBDisplay: null,
