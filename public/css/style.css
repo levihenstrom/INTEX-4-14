@@ -264,6 +264,10 @@ p, li, a, .nav-link {
     border-radius: 18px;
     box-shadow: 0 6px 16px rgba(0,0,0,0.08);
     transition: transform 0.25s, box-shadow 0.25s;
+
+.table thead th {
+    border-radius: 0 !important;
+    vertical-align: middle !important;
 }
 
 .gallery-grid img:hover {
