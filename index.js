@@ -305,6 +305,8 @@ app.get('/donations', async (req, res) => {
         const sortColumn = req.query.sort || 'DonationDate';
         const sortDir = (req.query.sortDir || 'desc').toLowerCase();
 
+        const user = req.session.user || null;
+
         const baseQuery = knex('Participant_Donation as pd')
             .join('Participants as p', 'pd.ParticipantID', 'p.ParticipantID');
 
