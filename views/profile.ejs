@@ -34,35 +34,41 @@
         <% const showDonationsCard = (kpiMetrics.totalDonationsDisplay && Number(kpiMetrics.totalDonationsDisplay) > 0); %>
         <div class="row g-3 mb-4">
             <div class="<%= showDonationsCard ? 'col-md-4' : 'col-md-6' %>">
-                <div class="card h-100 text-center shadow-sm">
-                    <div class="card-body">
-                        <p class="text-muted text-uppercase small">Total Events Attended</p>
-                        <h3 class="display-6"><%= kpiMetrics.totalEventsAttended || 0 %></h3>
+                <a href="/events" class="text-decoration-none text-reset d-block h-100">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <p class="text-muted text-uppercase small">Total Events Attended</p>
+                            <h3 class="display-6"><%= kpiMetrics.totalEventsAttended || 0 %></h3>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
             <div class="<%= showDonationsCard ? 'col-md-4' : 'col-md-6' %>">
-                <div class="card h-100 text-center shadow-sm">
-                    <div class="card-body">
-                        <p class="text-muted text-uppercase small">Most Recent Milestone</p>
-                        <% if (latestMilestone) { %>
-                            <h5 class="mb-1"><%= latestMilestone.MilestoneTitle %></h5>
-                            <p class="text-muted mb-0"><%= latestMilestone.MilestoneDate ? new Date(latestMilestone.MilestoneDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date TBD' %></p>
-                        <% } else { %>
-                            <h5 class="mb-1">No milestones yet</h5>
-                            <p class="text-muted mb-0">Keep going!</p>
-                        <% } %>
+                <a href="/milestones" class="text-decoration-none text-reset d-block h-100">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <p class="text-muted text-uppercase small">Most Recent Milestone</p>
+                            <% if (latestMilestone) { %>
+                                <h5 class="mb-1"><%= latestMilestone.MilestoneTitle %></h5>
+                                <p class="text-muted mb-0"><%= latestMilestone.MilestoneDate ? new Date(latestMilestone.MilestoneDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date TBD' %></p>
+                            <% } else { %>
+                                <h5 class="mb-1">No milestones yet</h5>
+                                <p class="text-muted mb-0">Keep going!</p>
+                            <% } %>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
             <% if (showDonationsCard) { %>
             <div class="col-md-4">
-                <div class="card h-100 text-center shadow-sm">
-                    <div class="card-body">
-                        <p class="text-muted text-uppercase small">Total Donations</p>
-                        <h3 class="display-6">$<%= kpiMetrics.totalDonationsDisplay || '0.00' %></h3>
+                <a href="/donations" class="text-decoration-none text-reset d-block h-100">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <p class="text-muted text-uppercase small">Total Donations</p>
+                            <h3 class="display-6">$<%= kpiMetrics.totalDonationsDisplay || '0.00' %></h3>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
             <% } %>
         </div>

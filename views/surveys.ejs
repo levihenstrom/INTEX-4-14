@@ -1,7 +1,407 @@
-<% pageTitle = 'Surveys' %>
+<% pageTitle = 'Surveys'; %>
+<% const registrationChoices = Array.isArray(registrationOptions) ? registrationOptions : []; %>
+<% const filterValues = filters || {}; %>
+<% const filterPairs = []; %>
+<%
+    function pushFilter(key) {
+        if (filterValues[key]) {
+            filterPairs.push({ key, value: filterValues[key] });
+        }
+    }
+    pushFilter('filterStartDate');
+    pushFilter('filterEndDate');
+    pushFilter('filterMinAge');
+    pushFilter('filterMaxAge');
+    pushFilter('filterCity');
+    pushFilter('filterState');
+    pushFilter('filterRole');
+    pushFilter('filterInterest');
+    const filterQueryString = filterPairs.length ? '&' + filterPairs.map(function(pair) {
+        return pair.key + '=' + encodeURIComponent(pair.value);
+    }).join('&') : '';
+%>
+<% const searchValue = typeof searchTerm !== 'undefined' ? searchTerm : ''; %>
+<% const metricsData = metrics || {}; %>
+<% const totalSurveyValue = typeof metricsData.total === 'number' ? metricsData.total : 0; %>
+<% const avgSurveyValue = (typeof metricsData.avgScore === 'number' && !Number.isNaN(metricsData.avgScore)) ? metricsData.avgScore : 0; %>
+<% const completionRateValue = (typeof metricsData.completionRate === 'number' && !Number.isNaN(metricsData.completionRate)) ? metricsData.completionRate : 0; %>
+<%
+    function formatScore(value) {
+        if (typeof value !== 'number' || Number.isNaN(value)) {
+            return '0.00';
+        }
+        return value.toFixed(2);
+    }
+%>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Surveys</h1>
+<div class="milestones-page">
+    <div class="mb-4">
+        <h1 class="mb-1">Surveys</h1>
+        <p class="text-muted mb-0">Understand participant satisfaction and follow-up.</p>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Total Surveys Submitted</p>
+                    <h3 class="mb-0"><%= totalSurveyValue %></h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Average Overall Score</p>
+                    <h3 class="mb-0"><%= formatScore(avgSurveyValue) %></h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Survey Completion Rate</p>
+                    <h3 class="mb-0"><%= completionRateValue.toFixed(1) %>%</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <% if (isAdmin) { %>
+        <div class="d-flex flex-column flex-md-row gap-3 mb-4 align-items-md-center">
+            <form method="GET" action="/surveys" class="flex-grow-1">
+                <% filterPairs.forEach(function(pair) { %>
+                    <input type="hidden" name="<%= pair.key %>" value="<%= pair.value %>">
+                <% }); %>
+                <input type="hidden" name="page" value="1">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="search" placeholder="Search surveys by participant, event, or ID..." value="<%= searchValue %>">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    <% if (searchValue) { %>
+                        <a href="/surveys" class="btn btn-outline-secondary">Clear</a>
+                    <% } %>
+                </div>
+            </form>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#surveyFilterModal">Filters</button>
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addSurveyModal">+ Add Survey</button>
+            </div>
+        </div>
+    <% } else { %>
+        <div class="mb-4"></div>
+    <% } %>
+
+    <div class="border-bottom mb-4"></div>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger" role="alert"><%= error %></div>
+    <% } %>
+    <% if (typeof success !== 'undefined' && success) { %>
+        <div class="alert alert-success" role="alert"><%= success %></div>
+    <% } %>
+
+    <% if (Array.isArray(surveys) && surveys.length) { %>
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            <% surveys.forEach(function(survey) { %>
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex w-100 justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="card-title mb-1"><%= survey.EventName || 'Event' %></h5>
+                                    <small class="text-muted">Submitted <%= survey.SurveySubmissionDisplay || 'Date not set' %></small>
+                                </div>
+                                <% if (isAdmin) { %>
+                                    <div class="btn-group btn-group-sm ms-2">
+                                        <button type="button"
+                                                class="btn btn-outline-primary edit-survey-btn"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editSurveyModal"
+                                                data-survey-id="<%= survey.SurveyID %>"
+                                                data-satisfaction="<%= survey.SurveySatisfactionScore %>"
+                                                data-usefulness="<%= survey.SurveyUsefulnessScore %>"
+                                                data-instructor="<%= survey.SurveyInstructorScore %>"
+                                                data-recommendation="<%= survey.SurveyRecommendationScore %>"
+                                                data-comments="<%= survey.SurveyComments || '' %>"
+                                                data-submission="<%= survey.SurveySubmissionDate ? new Date(survey.SurveySubmissionDate).toISOString().split('T')[0] : '' %>"
+                                                data-registration-label="<%= survey.ParticipantFirstName %> <%= survey.ParticipantLastName %> - <%= survey.EventName || 'Event' %> (<%= survey.EventDateDisplay %>)">
+                                            Edit
+                                        </button>
+                                        <form action="/surveys/delete" method="POST" class="delete-survey-form d-inline" data-event="<%= survey.EventName || 'this event' %>">
+                                            <input type="hidden" name="SurveyID" value="<%= survey.SurveyID %>">
+                                            <button type="submit" class="btn btn-outline-danger">Delete</button>
+                                        </form>
+                                    </div>
+                                <% } %>
+                            </div>
+                            <p class="mb-1"><strong>Overall Score:</strong> <%= survey.SurveyOverallScoreDisplay %> / 5</p>
+                            <p class="mb-1"><strong>Participant:</strong>
+                                <span class="participant-tooltip" data-bs-toggle="tooltip" data-bs-html="true" title="<%= survey.ParticipantFirstName %> <%= survey.ParticipantLastName %><br>Age: <%= typeof survey.ParticipantAge === 'number' ? survey.ParticipantAge : 'N/A' %><br>City: <%= survey.ParticipantCity || 'N/A' %><br>State: <%= survey.ParticipantState || 'N/A' %><br>Interest: <%= survey.ParticipantFieldOfInterest || 'N/A' %><br>Email: <%= survey.ParticipantEmail %>">
+                                    <%= survey.ParticipantFirstName %> <%= survey.ParticipantLastName %>
+                                </span>
+                            </p>
+                            <p class="mb-1"><strong>Event Date:</strong> <%= survey.EventDateDisplay %></p>
+                            <% if (survey.SurveyComments) { %>
+                                <p class="text-muted mb-1">"<%= survey.SurveyComments %>"</p>
+                            <% } %>
+                            <p class="text-muted mb-0">Survey ID: <%= survey.SurveyID %> | Registration #<%= survey.RegistrationID %></p>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+        <% if (typeof totalSurveys !== 'undefined') { %>
+            <% const startIndex = totalSurveys > 0 ? ((currentPage - 1) * pageSize + 1) : 0; %>
+            <% const endIndex = totalSurveys > 0 ? Math.min(currentPage * pageSize, totalSurveys) : 0; %>
+            <div class="mt-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <% if (currentPage > 1) { %>
+                        <a href="/surveys?page=<%= currentPage - 1 %><%= searchValue ? '&search=' + encodeURIComponent(searchValue) : '' %><%= filterQueryString %>" class="btn btn-secondary">&larr; Previous Page</a>
+                    <% } %>
+                </div>
+                <div class="text-muted text-center">
+                    Showing <%= startIndex %> - <%= endIndex %> of <%= totalSurveys %> surveys (Page <%= currentPage %> of <%= totalPages %>)
+                </div>
+                <div class="text-end">
+                    <% if (hasNextPage) { %>
+                        <a href="/surveys?page=<%= currentPage + 1 %><%= searchValue ? '&search=' + encodeURIComponent(searchValue) : '' %><%= filterQueryString %>" class="btn btn-primary">Next Page &rarr;</a>
+                    <% } %>
+                </div>
+            </div>
+        <% } %>
+    <% } else { %>
+        <div class="alert alert-info text-center">No surveys found.</div>
+    <% } %>
 </div>
 
-<%= JSON.stringify(surveys) %>
+<% if (isAdmin) { %>
+    <div class="modal fade" id="addSurveyModal" tabindex="-1" aria-labelledby="addSurveyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addSurveyModalLabel">Add Survey</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addSurveyForm" action="/surveys/add" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Registration *</label>
+                            <input type="text" class="form-control mb-2" id="addRegistrationSearch" placeholder="Search participant or event" autocomplete="off">
+                            <select class="form-select" id="addRegistrationSelect" name="RegistrationID" size="6" required>
+                                <option value="">Select registration (no existing survey)</option>
+                                <% registrationChoices.forEach(function(reg) { %>
+                                    <option value="<%= reg.RegistrationID %>">
+                                        <%= reg.ParticipantFirstName %> <%= reg.ParticipantLastName %> - <%= reg.EventName %> (<%= reg.EventDateTimeStart ? new Date(reg.EventDateTimeStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date TBD' %>)
+                                    </option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Satisfaction *</label>
+                                <input type="number" class="form-control" name="SurveySatisfactionScore" min="0" max="5" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Usefulness *</label>
+                                <input type="number" class="form-control" name="SurveyUsefulnessScore" min="0" max="5" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Instructor *</label>
+                                <input type="number" class="form-control" name="SurveyInstructorScore" min="0" max="5" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Recommendation *</label>
+                                <input type="number" class="form-control" name="SurveyRecommendationScore" min="0" max="5" required>
+                            </div>
+                        </div>
+                        <div class="mb-3 mt-3">
+                            <label class="form-label">Comments</label>
+                            <textarea class="form-control" name="SurveyComments" rows="3"></textarea>
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label">Submission Date</label>
+                            <input type="date" class="form-control" name="SurveySubmissionDate">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="addSurveyForm" class="btn btn-success">Save Survey</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editSurveyModal" tabindex="-1" aria-labelledby="editSurveyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editSurveyModalLabel">Edit Survey</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editSurveyForm" action="/surveys/edit" method="POST">
+                        <input type="hidden" name="SurveyID" id="editSurveyId">
+                        <div class="alert alert-light border mb-3" id="editSurveyRegistrationInfo"></div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Satisfaction *</label>
+                                <input type="number" class="form-control" id="editSurveySatisfaction" name="SurveySatisfactionScore" min="0" max="5" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Usefulness *</label>
+                                <input type="number" class="form-control" id="editSurveyUsefulness" name="SurveyUsefulnessScore" min="0" max="5" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Instructor *</label>
+                                <input type="number" class="form-control" id="editSurveyInstructor" name="SurveyInstructorScore" min="0" max="5" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Recommendation *</label>
+                                <input type="number" class="form-control" id="editSurveyRecommendation" name="SurveyRecommendationScore" min="0" max="5" required>
+                            </div>
+                        </div>
+                        <div class="mb-3 mt-3">
+                            <label class="form-label">Comments</label>
+                            <textarea class="form-control" id="editSurveyComments" name="SurveyComments" rows="3"></textarea>
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label">Submission Date</label>
+                            <input type="date" class="form-control" id="editSurveySubmissionDate" name="SurveySubmissionDate">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="editSurveyForm" class="btn btn-primary">Update Survey</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="surveyFilterModal" tabindex="-1" aria-labelledby="surveyFilterModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="surveyFilterModalLabel">Filter Surveys</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="GET" action="/surveys">
+                    <div class="modal-body">
+                        <% if (searchValue) { %>
+                            <input type="hidden" name="search" value="<%= searchValue %>">
+                        <% } %>
+                        <input type="hidden" name="page" value="1">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Submission Date From</label>
+                                <input type="date" class="form-control" name="filterStartDate" value="<%= filterValues.filterStartDate || '' %>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Submission Date To</label>
+                                <input type="date" class="form-control" name="filterEndDate" value="<%= filterValues.filterEndDate || '' %>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Minimum Age</label>
+                                <input type="number" min="0" class="form-control" name="filterMinAge" value="<%= filterValues.filterMinAge || '' %>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Maximum Age</label>
+                                <input type="number" min="0" class="form-control" name="filterMaxAge" value="<%= filterValues.filterMaxAge || '' %>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">City</label>
+                                <input type="text" class="form-control" name="filterCity" value="<%= filterValues.filterCity || '' %>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">State</label>
+                                <input type="text" class="form-control" name="filterState" value="<%= filterValues.filterState || '' %>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Participant Role</label>
+                                <select class="form-select" name="filterRole">
+                                    <option value="">Any</option>
+                                    <option value="a" <%= filterValues.filterRole === 'a' ? 'selected' : '' %>>Admin</option>
+                                    <option value="p" <%= filterValues.filterRole === 'p' ? 'selected' : '' %>>Participant</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Field of Interest</label>
+                                <select class="form-select" name="filterInterest">
+                                    <option value="">Any</option>
+                                    <option value="STEM" <%= filterValues.filterInterest === 'STEM' ? 'selected' : '' %>>STEM</option>
+                                    <option value="Arts" <%= filterValues.filterInterest === 'Arts' ? 'selected' : '' %>>Arts</option>
+                                    <option value="Both" <%= filterValues.filterInterest === 'Both' ? 'selected' : '' %>>Both</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="/surveys<%= searchValue ? '?search=' + encodeURIComponent(searchValue) : '' %>" class="btn btn-outline-secondary">Clear Filters</a>
+                        <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+<% } %>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addRegistrationSearch = document.getElementById('addRegistrationSearch');
+    const addRegistrationSelect = document.getElementById('addRegistrationSelect');
+    const editSurveyIdInput = document.getElementById('editSurveyId');
+    const editSurveyRegistrationInfo = document.getElementById('editSurveyRegistrationInfo');
+    const editSatisfactionInput = document.getElementById('editSurveySatisfaction');
+    const editUsefulnessInput = document.getElementById('editSurveyUsefulness');
+    const editInstructorInput = document.getElementById('editSurveyInstructor');
+    const editRecommendationInput = document.getElementById('editSurveyRecommendation');
+    const editCommentsInput = document.getElementById('editSurveyComments');
+    const editSubmissionInput = document.getElementById('editSurveySubmissionDate');
+
+    function filterOptions(input, selectElement) {
+        if (!input || !selectElement) return;
+        input.addEventListener('input', function() {
+            const term = (input.value || '').toLowerCase();
+            Array.from(selectElement.options).forEach(function(option, index) {
+                if (index === 0) {
+                    option.hidden = false;
+                    return;
+                }
+                option.hidden = term && !option.textContent.toLowerCase().includes(term);
+            });
+        });
+    }
+
+    filterOptions(addRegistrationSearch, addRegistrationSelect);
+
+    document.querySelectorAll('.edit-survey-btn').forEach(function(button) {
+        button.addEventListener('click', function() {
+            if (editSurveyIdInput) editSurveyIdInput.value = this.getAttribute('data-survey-id') || '';
+            if (editSatisfactionInput) editSatisfactionInput.value = this.getAttribute('data-satisfaction') || '';
+            if (editUsefulnessInput) editUsefulnessInput.value = this.getAttribute('data-usefulness') || '';
+            if (editInstructorInput) editInstructorInput.value = this.getAttribute('data-instructor') || '';
+            if (editRecommendationInput) editRecommendationInput.value = this.getAttribute('data-recommendation') || '';
+            if (editCommentsInput) editCommentsInput.value = this.getAttribute('data-comments') || '';
+            if (editSubmissionInput) editSubmissionInput.value = this.getAttribute('data-submission') || '';
+            if (editSurveyRegistrationInfo) {
+                editSurveyRegistrationInfo.textContent = this.getAttribute('data-registration-label') || 'Registration details unavailable';
+            }
+        });
+    });
+
+    document.querySelectorAll('.delete-survey-form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            const eventName = form.getAttribute('data-event') || 'this survey';
+            if (!confirm('Delete survey for ' + eventName + '?')) {
+                e.preventDefault();
+            }
+        });
+    });
+
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function(triggerEl) {
+        new bootstrap.Tooltip(triggerEl);
+    });
+});
+</script>
