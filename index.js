@@ -1102,6 +1102,9 @@ app.get('/surveys', async (req, res) => {
         const limit = 50;
         const filterStartDate = req.query.filterStartDate || '';
         const filterEndDate = req.query.filterEndDate || '';
+        const filterEventStartDate = req.query.filterEventStartDate || '';
+        const filterEventEndDate = req.query.filterEventEndDate || '';
+        const filterEventTitle = req.query.filterEventTitle || '';
         const filterMinAge = req.query.filterMinAge || '';
         const filterMaxAge = req.query.filterMaxAge || '';
         const filterCity = req.query.filterCity || '';
@@ -1140,6 +1143,15 @@ app.get('/surveys', async (req, res) => {
         }
         if (filterEndDate) {
             filteredQuery.andWhere('s.SurveySubmissionDate', '<=', filterEndDate);
+        }
+        if (filterEventStartDate) {
+            filteredQuery.andWhere('eo.EventDateTimeStart', '>=', filterEventStartDate);
+        }
+        if (filterEventEndDate) {
+            filteredQuery.andWhere('eo.EventDateTimeStart', '<=', filterEventEndDate);
+        }
+        if (filterEventTitle) {
+            filteredQuery.andWhere('et.EventName', filterEventTitle);
         }
 
         const today = new Date();
@@ -1276,6 +1288,15 @@ app.get('/surveys', async (req, res) => {
         if (filterInterest) {
             registrationQuery.andWhere('p.ParticipantFieldOfInterest', filterInterest);
         }
+        if (filterEventStartDate) {
+            registrationQuery.andWhere('eo.EventDateTimeStart', '>=', filterEventStartDate);
+        }
+        if (filterEventEndDate) {
+            registrationQuery.andWhere('eo.EventDateTimeStart', '<=', filterEventEndDate);
+        }
+        if (filterEventTitle) {
+            registrationQuery.andWhere('et.EventName', filterEventTitle);
+        }
 
         const registrationCountRow = await registrationQuery
             .count('* as count')
@@ -1286,6 +1307,7 @@ app.get('/surveys', async (req, res) => {
             : 0;
 
         let registrationOptions = [];
+        let eventTitles = [];
         if (req.session.isAdmin) {
             registrationOptions = await knex('Registration as r')
                 .leftJoin('Surveys as s', 'r.RegistrationID', 's.RegistrationID')
@@ -1302,12 +1324,19 @@ app.get('/surveys', async (req, res) => {
                 )
                 .whereNull('s.RegistrationID')
                 .orderBy('eo.EventDateTimeStart', 'desc');
+
+            eventTitles = await knex('Event_Templates')
+                .select('EventName')
+                .orderBy('EventName', 'asc')
+                .limit(100)
+                .pluck('EventName');
         }
 
         res.render('surveys', {
             pageTitle: 'Surveys',
             surveys,
             registrationOptions,
+            eventTitles,
             searchTerm,
             filters: {
                 filterStartDate,
@@ -1317,7 +1346,10 @@ app.get('/surveys', async (req, res) => {
                 filterCity,
                 filterState,
                 filterRole,
-                filterInterest
+                filterInterest,
+                filterEventStartDate,
+                filterEventEndDate,
+                filterEventTitle
             },
             currentPage: safePage,
             totalPages,
