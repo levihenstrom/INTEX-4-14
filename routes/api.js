@@ -28,12 +28,18 @@ router.get('/participants-by-status', async (req, res) => {
 // Milestones data endpoints
 router.get('/milestones-by-category', async (req, res) => {
     try {
-        const data = await knex('milestones')
-        .select('category')
-        .count('* as count')
-        .groupBy('category');
-        res.json(data);
+        const results = await knex.raw(`
+            SELECT
+                "MilestoneCategory" as category,
+                COUNT(*) as count
+            FROM "Participant_Milestone"
+            WHERE "MilestoneCategory" IS NOT NULL AND "MilestoneCategory" != ''
+            GROUP BY "MilestoneCategory"
+            ORDER BY count DESC
+        `);
+        res.json(results.rows);
     } catch (err) {
+        console.error('Milestones by category error:', err);
         res.status(500).json({ error: err.message });
     }
 });
