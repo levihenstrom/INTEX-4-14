@@ -1,30 +1,708 @@
-<div class="login-page">
+<div class="auth-page">
 <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-center mb-4">User Login</h2>
-                <% if (locals.error) { %>
-                    <div class="alert alert-danger"><%= error %></div>
+    <div class="col-12 col-md-10 col-lg-10 col-xl-9">
+        <!-- Toggle Buttons -->
+        <div class="auth-toggle-container">
+            <div class="auth-toggle-buttons">
+                <button type="button" class="auth-toggle-btn active" data-view="login" id="toggle-login">
+                    Login
+                </button>
+                <button type="button" class="auth-toggle-btn" data-view="register" id="toggle-register">
+                    Register
+                </button>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div class="auth-card" id="login-form">
+            <div class="auth-card-inner">
+                <div class="auth-form-side">
+                    <div class="auth-card-body">
+                        <h2 class="auth-title">User Login</h2>
+                <% if (typeof error !== 'undefined' && error && (typeof defaultView === 'undefined' || defaultView === 'login')) { %>
+                    <div class="auth-alert"><%= error %></div>
                 <% } %>
                 <form action="/login" method="POST">
-                    <div class="mb-3">
-                        <label for="ParticipantEmail" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="ParticipantEmail" name="ParticipantEmail" required autofocus>
+                    <div class="auth-form-group">
+                        <label for="ParticipantEmail" class="auth-label">Email</label>
+                        <input type="email" class="auth-input" id="ParticipantEmail" name="ParticipantEmail" required autofocus>
                     </div>
-                    <div class="mb-3">
-                        <label for="ParticipantPassword" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="ParticipantPassword" name="ParticipantPassword" required>
+                    <div class="auth-form-group">
+                        <label for="ParticipantPassword" class="auth-label">Password</label>
+                        <input type="password" class="auth-input" id="ParticipantPassword" name="ParticipantPassword" required>
                     </div>
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-success">Log In</button>
+                    <div class="auth-button-group">
+                        <button type="submit" class="auth-btn-primary">Log In</button>
                     </div>
                 </form>
-                <p class="text-center mt-3">
-                    Don't have an account? <a href="/register">Sign Up</a>
-                </p>
+                    </div>
+                </div>
+                <div class="auth-image-side">
+                    <img src="/images/ella_auth.png" alt="Ella Rises" class="auth-image">
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Form -->
+        <div class="auth-card hidden" id="register-form">
+            <div class="auth-card-inner">
+                <div class="auth-form-side">
+                    <div class="auth-card-body auth-register-body">
+                        <h2 class="auth-title">Create Your Account</h2>
+
+                <% if (typeof error !== 'undefined' && error && (typeof defaultView !== 'undefined' && defaultView === 'register')) { %>
+                    <div class="auth-alert"><%= error %></div>
+                <% } %>
+
+                <form action="/register" method="POST">
+                    <!-- Name -->
+                    <div class="auth-form-group">
+                        <label for="ParticipantFirstName" class="auth-label">First Name</label>
+                        <input 
+                            type="text" 
+                            class="auth-input" 
+                            id="ParticipantFirstName" 
+                            name="ParticipantFirstName" 
+                            autofocus 
+                            required
+                        >
+                    </div>
+                    <div class="auth-form-group">
+                        <label for="ParticipantLastName" class="auth-label">Last Name</label>
+                        <input 
+                            type="text" 
+                            class="auth-input" 
+                            id="ParticipantLastName" 
+                            name="ParticipantLastName" 
+                            required
+                        >
+                    </div>
+
+                    <!-- Email & Password -->
+                    <div class="auth-form-group">
+                        <label for="RegisterParticipantEmail" class="auth-label">Email</label>
+                        <input 
+                            type="email" 
+                            class="auth-input" 
+                            id="RegisterParticipantEmail" 
+                            name="ParticipantEmail" 
+                            required
+                            pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
+                            oninvalid="this.setCustomValidity('Please input a valid email')"
+                            oninput="this.setCustomValidity('')"
+                        >
+                    </div>
+                    <div class="auth-form-group">
+                        <label for="RegisterParticipantPassword" class="auth-label">Password</label>
+                        <input 
+                            type="password" 
+                            class="auth-input" 
+                            id="RegisterParticipantPassword" 
+                            name="ParticipantPassword" 
+                            required
+                        >
+                    </div>
+
+                    <!-- DOB -->
+                    <div class="auth-form-group">
+                        <label for="ParticipantDOB" class="auth-label">Date of Birth</label>
+                        <input 
+                            type="date" 
+                            class="auth-input" 
+                            id="ParticipantDOB" 
+                            name="ParticipantDOB" 
+                            required
+                        >
+                    </div>
+
+                    <!-- Contact -->
+                    <div class="auth-form-group">
+                        <label for="ParticipantPhone" class="auth-label">Phone Number</label>
+                        <input 
+                            type="tel" 
+                            class="auth-input" 
+                            id="ParticipantPhone" 
+                            name="ParticipantPhone"
+                            inputmode="numeric"
+                            maxlength="12"
+                            pattern="\d{3}-\d{3}-\d{4}"
+                            title="Phone must be in the format 111-111-1111"
+                        >
+                    </div>
+
+                    <!-- Location -->
+                    <div class="auth-form-group">
+                        <label for="ParticipantCity" class="auth-label">City</label>
+                        <input 
+                            type="text" 
+                            class="auth-input" 
+                            id="ParticipantCity" 
+                            name="ParticipantCity"
+                        >
+                    </div>
+                    <div class="auth-form-group">
+                        <label for="ParticipantState" class="auth-label">State</label>
+                        <input 
+                            type="text" 
+                            class="auth-input" 
+                            id="ParticipantState" 
+                            name="ParticipantState"
+                        >
+                    </div>
+                    <div class="auth-form-group">
+                        <label for="ParticipantZip" class="auth-label">ZIP Code</label>
+                        <input 
+                            type="text" 
+                            class="auth-input" 
+                            id="ParticipantZip" 
+                            name="ParticipantZip"
+                        >
+                    </div>
+
+                    <!-- School/Employer -->
+                    <div class="auth-form-group">
+                        <label for="ParticipantSchoolOrEmployer" class="auth-label">
+                            School or Employer
+                        </label>
+                        <input 
+                            type="text" 
+                            class="auth-input" 
+                            id="ParticipantSchoolOrEmployer" 
+                            name="ParticipantSchoolOrEmployer"
+                        >
+                    </div>
+
+                    <!-- Field of Interest -->
+                    <div class="auth-form-group">
+                        <label class="auth-label">Field of Interest</label>
+                        <div class="auth-radio-group">
+                            <div class="auth-radio-item">
+                                <input 
+                                    class="auth-radio" 
+                                    type="radio" 
+                                    name="ParticipantFieldOfInterest" 
+                                    id="interest_stem" 
+                                    value="STEM"
+                                >
+                                <label class="auth-radio-label" for="interest_stem">STEM</label>
+                            </div>
+                            <div class="auth-radio-item">
+                                <input 
+                                    class="auth-radio" 
+                                    type="radio" 
+                                    name="ParticipantFieldOfInterest" 
+                                    id="interest_arts" 
+                                    value="Arts"
+                                >
+                                <label class="auth-radio-label" for="interest_arts">Arts</label>
+                            </div>
+                            <div class="auth-radio-item">
+                                <input 
+                                    class="auth-radio" 
+                                    type="radio" 
+                                    name="ParticipantFieldOfInterest" 
+                                    id="interest_both" 
+                                    value="Both"
+                                >
+                                <label class="auth-radio-label" for="interest_both">Both</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="auth-button-group">
+                        <button type="submit" class="auth-btn-primary">
+                            Register Account
+                        </button>
+                    </div>
+                </form>
+                    </div>
+                </div>
+                <div class="auth-image-side">
+                    <img src="/images/ella_register.jpeg" alt="Ella Rises" class="auth-image">
+                </div>
             </div>
         </div>
     </div>
 </div>
 </div>
+
+<style>
+/* ====================================================== */
+/*                    AUTH PAGE STYLING                   */
+/* ====================================================== */
+
+.auth-page {
+    padding: 2rem 0 4rem;
+    min-height: calc(100vh - 200px);
+}
+
+.auth-toggle-container {
+    margin-bottom: 1.5rem;
+}
+
+.auth-toggle-buttons {
+    display: flex;
+    background: #FFFFFF;
+    border-radius: 50px;
+    padding: 0.4rem;
+    box-shadow: 0 8px 25px rgba(58, 63, 59, 0.12);
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.auth-toggle-btn {
+    flex: 1;
+    padding: 0.75rem 2rem;
+    border: none;
+    background: transparent;
+    color: #3A3F3B;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.auth-toggle-btn.active {
+    background: #9AB59D;
+    color: #FFFFFF;
+    box-shadow: 0 4px 15px rgba(154, 181, 157, 0.3);
+}
+
+.auth-toggle-btn:hover:not(.active) {
+    background: #F9F5EA;
+    color: #3A3F3B;
+}
+
+.auth-card {
+    background: #FFFFFF;
+    border-radius: 28px;
+    box-shadow: 0 12px 40px rgba(58, 63, 59, 0.12);
+    overflow: hidden;
+    animation: fadeInScale 0.6s ease both;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.auth-card.hidden {
+    display: none;
+}
+
+.auth-card.visible {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.auth-card.fade-out {
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+}
+
+.auth-card.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.auth-card-inner {
+    display: flex;
+    min-height: 600px;
+    align-items: stretch;
+}
+
+.auth-image-side {
+    flex: 0 0 40%;
+    background: linear-gradient(135deg, #FFD8D1 0%, #F9AFB1 100%);
+    position: relative;
+    overflow: hidden;
+    order: 2;
+    min-height: 600px;
+    align-self: stretch;
+}
+
+.auth-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.auth-form-side {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem;
+    order: 1;
+    min-height: 600px;
+}
+
+.auth-card-body {
+    width: 100%;
+    max-width: 500px;
+    padding: 0;
+}
+
+.auth-register-body {
+    max-width: 550px;
+}
+
+.auth-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.5rem;
+    color: #3A3F3B;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-alert {
+    background: #FFD8D1;
+    color: #9AB59D;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    border-left: 4px solid #9AB59D;
+}
+
+.auth-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.auth-label {
+    display: block;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #3A3F3B;
+    margin-bottom: 0.5rem;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    border: 2px solid #E5E5E5;
+    border-radius: 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    color: #3A3F3B;
+    background: #FFFFFF;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.auth-input:focus {
+    outline: none;
+    border-color: #9AB59D;
+    box-shadow: 0 0 0 3px rgba(154, 181, 157, 0.1);
+}
+
+.auth-input::placeholder {
+    color: #9A9A9A;
+}
+
+.auth-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.auth-radio-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.auth-radio {
+    width: 20px;
+    height: 20px;
+    accent-color: #9AB59D;
+    cursor: pointer;
+}
+
+.auth-radio-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    color: #3A3F3B;
+    cursor: pointer;
+    margin: 0;
+}
+
+.auth-button-group {
+    margin-top: 2rem;
+}
+
+.auth-btn-primary {
+    width: 100%;
+    padding: 1rem 2rem;
+    background: #9AB59D;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(154, 181, 157, 0.3);
+}
+
+.auth-btn-primary:hover {
+    background: #7fa082;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(154, 181, 157, 0.4);
+}
+
+.auth-btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Register form specific styling */
+.auth-register-body {
+    padding: 0.5rem 0;
+}
+
+.auth-register-body .auth-form-group {
+    margin-bottom: 1.25rem;
+}
+
+.auth-register-body .auth-title {
+    margin-bottom: 1.5rem;
+}
+
+/* Two column layout for register form on larger screens */
+@media (min-width: 992px) {
+    .auth-register-body form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 1.5rem;
+    }
+    
+    /* First Name and Last Name side by side */
+    .auth-register-body .auth-form-group:nth-of-type(1),
+    .auth-register-body .auth-form-group:nth-of-type(2) {
+        grid-column: span 1;
+    }
+    
+    /* Email and Password side by side */
+    .auth-register-body .auth-form-group:nth-of-type(3),
+    .auth-register-body .auth-form-group:nth-of-type(4) {
+        grid-column: span 1;
+    }
+    
+    /* DOB and Phone side by side */
+    .auth-register-body .auth-form-group:nth-of-type(5),
+    .auth-register-body .auth-form-group:nth-of-type(6) {
+        grid-column: span 1;
+    }
+    
+    /* City, State, ZIP - City and State in 2 columns, ZIP full width below */
+    .auth-register-body .auth-form-group:nth-of-type(7),
+    .auth-register-body .auth-form-group:nth-of-type(8) {
+        grid-column: span 1;
+    }
+    
+    .auth-register-body .auth-form-group:nth-of-type(9) {
+        grid-column: span 2;
+    }
+    
+    /* School/Employer and Field of Interest full width */
+    .auth-register-body .auth-form-group:nth-of-type(10),
+    .auth-register-body .auth-form-group:nth-of-type(11) {
+        grid-column: span 2;
+    }
+    
+    .auth-register-body .auth-button-group {
+        grid-column: span 2;
+        margin-top: 1.5rem;
+    }
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .auth-card-inner {
+        flex-direction: column;
+        min-height: auto;
+        align-items: stretch;
+    }
+    
+    .auth-image-side {
+        flex: 0 0 auto;
+        min-height: 250px;
+        max-height: 300px;
+        order: 1;
+        position: relative;
+    }
+    
+    .auth-image {
+        object-fit: cover;
+        object-position: center;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .auth-form-side {
+        padding: 2rem 1.5rem;
+        order: 2;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .auth-card-body {
+        padding: 0;
+    }
+    
+    .auth-title {
+        font-size: 2rem;
+    }
+    
+    .auth-toggle-buttons {
+        max-width: 100%;
+    }
+    
+    .auth-toggle-btn {
+        padding: 0.65rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .auth-image-side {
+        min-height: 200px;
+        max-height: 250px;
+    }
+    
+    .auth-form-side {
+        padding: 1.5rem 1rem;
+    }
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Get default view from server (passed as EJS variable)
+        const defaultView = '<%= typeof defaultView !== "undefined" ? defaultView : "login" %>';
+        
+        // Toggle function with smooth transitions
+        function toggleView(view) {
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const loginBtn = document.getElementById('toggle-login');
+            const registerBtn = document.getElementById('toggle-register');
+            
+            if (view === 'login') {
+                // Fade out register, fade in login
+                registerForm.classList.add('fade-out');
+                setTimeout(() => {
+                    registerForm.classList.add('hidden');
+                    registerForm.classList.remove('fade-out', 'fade-in');
+                    
+                    loginForm.classList.remove('hidden', 'fade-out');
+                    loginForm.classList.add('fade-in');
+                    setTimeout(() => {
+                        loginForm.classList.remove('fade-in');
+                    }, 50);
+                }, 200);
+                
+                loginBtn.classList.add('active');
+                registerBtn.classList.remove('active');
+                // Update URL without reload
+                window.history.replaceState({}, '', '/login');
+            } else {
+                // Fade out login, fade in register
+                loginForm.classList.add('fade-out');
+                setTimeout(() => {
+                    loginForm.classList.add('hidden');
+                    loginForm.classList.remove('fade-out', 'fade-in');
+                    
+                    registerForm.classList.remove('hidden', 'fade-out');
+                    registerForm.classList.add('fade-in');
+                    setTimeout(() => {
+                        registerForm.classList.remove('fade-in');
+                    }, 50);
+                }, 200);
+                
+                loginBtn.classList.remove('active');
+                registerBtn.classList.add('active');
+                // Update URL without reload
+                window.history.replaceState({}, '', '/register');
+            }
+        }
+        
+        // Set initial view based on route
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const loginBtn = document.getElementById('toggle-login');
+        const registerBtn = document.getElementById('toggle-register');
+        
+        // Set initial state without animation
+        if (defaultView === 'login') {
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            loginBtn.classList.add('active');
+            registerBtn.classList.remove('active');
+        } else {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            loginBtn.classList.remove('active');
+            registerBtn.classList.add('active');
+        }
+        
+        // Add event listeners to toggle buttons
+        document.getElementById('toggle-login').addEventListener('click', function() {
+            toggleView('login');
+        });
+        
+        document.getElementById('toggle-register').addEventListener('click', function() {
+            toggleView('register');
+        });
+
+        // Live phone formatting: 111-111-1111
+        const phoneInput = document.getElementById('ParticipantPhone');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function () {
+                // Strip all non-digits
+                let digits = phoneInput.value.replace(/\D/g, '');
+
+                // Limit to 10 digits
+                if (digits.length > 10) {
+                    digits = digits.slice(0, 10);
+                }
+
+                let formatted = '';
+                if (digits.length > 0) {
+                    formatted = digits.substring(0, 3);
+                }
+                if (digits.length >= 4) {
+                    formatted += '-' + digits.substring(3, 6);
+                }
+                if (digits.length >= 7) {
+                    formatted += '-' + digits.substring(6, 10);
+                }
+
+                phoneInput.value = formatted;
+            });
+        }
+    });
+</script>
