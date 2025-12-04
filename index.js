@@ -122,8 +122,9 @@ app.use((req, res, next) => {
     return res.status(418).render("login", {
         layout: 'public',
         pageTitle: 'Login',
+        defaultView: 'login',
         hasHero: false,
-        error_message: "Please log in to access this page"
+        error: "Please log in to access this page"
     });
 });
 
@@ -154,7 +155,7 @@ app.get('/', (req, res) => {
 
 // GET /login: Show login form
 app.get('/login', (req, res) => {
-    res.render('login', { layout: 'public', pageTitle: 'Login' });
+    res.render('login', { layout: 'public', pageTitle: 'Login', defaultView: 'login' });
 });
 
 app.post('/login', async (req, res) => {
@@ -170,6 +171,7 @@ app.post('/login', async (req, res) => {
             return res.render('login', { 
             layout: 'public', 
             pageTitle: 'Login',
+            defaultView: 'login',
             error: 'Invalid login' 
             });
         }
@@ -186,6 +188,7 @@ app.post('/login', async (req, res) => {
         return res.render('login', { 
             layout: 'public', 
             pageTitle: 'Login',
+            defaultView: 'login',
             error: 'Something went wrong. Please try again.' 
         });
         }
@@ -193,9 +196,10 @@ app.post('/login', async (req, res) => {
     
   // GET /register: Show registration form
 app.get('/register', (req, res) => {
-    res.render('register', { 
+    res.render('login', { 
     layout: 'public',
     pageTitle: 'Register',
+    defaultView: 'register',
     error: null
     });
 });
@@ -224,9 +228,10 @@ try {
 
     // 2. If email exists & password is already set → block registration
     if (existingParticipant && existingParticipant.ParticipantPassword) {
-    return res.render('register', {
+    return res.render('login', {
         layout: 'public',
         pageTitle: 'Register',
+        defaultView: 'register',
         error: 'An account with that email already exists. Please log in.'
     });
     }
@@ -278,9 +283,10 @@ try {
 } catch (err) {
     console.error('Registration error:', err);
 
-    return res.render('register', {
+    return res.render('login', {
     layout: 'public',
     pageTitle: 'Register',
+    defaultView: 'register',
     error: 'Something went wrong. Please try again.'
     });
 }
@@ -483,8 +489,7 @@ app.get('/donations', async (req, res) => {
                 count: totalDonations
             },
             error: req.query.error || null,
-            success: req.query.success || null,
-            hasHero: !user
+            success: req.query.success || null
         });
     } catch (err) {
         console.error('Error loading donations:', err);
