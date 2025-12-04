@@ -2,11 +2,17 @@
 const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
+const helmet = require('helmet');
 // const { Pool } = require('pg'); // For Database Engineer - Alex
 
 // 2. Initial Setup
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Security middleware - Helmet (placed early, before other middleware)
+app.use(helmet({
+    contentSecurityPolicy: false, // Disabled to allow embedded content (charts, external scripts)
+}));
 
 // 3. knex Configuration
 const knexConfig = require("./knexfile");
