@@ -59,17 +59,7 @@ router.get('/events-attendance', async (req, res) => {
     }
 });
 
-// Donations data endpoints
-router.get('/donations-by-month', async (req, res) => {
-    try {
-        const data = await knex('donations')
-        // Add your query for monthly totals
-        res.json(data);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
+// Donations total endpoint
 router.get('/donations-total', async (req, res) => {
     try {
         const data = await knex('donations')
@@ -131,6 +121,33 @@ router.get('/participants-by-year', async (req, res) => {
         res.json(data);
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+// Donations by month
+router.get('/donations-by-month', async (req, res) => {
+    try {
+        // First, let's check what columns exist
+        const testQuery = await knex('Participant_Donation').limit(1);
+        console.log('Sample donation record:', testQuery[0]);
+
+        const results = await knex.raw(`
+            SELECT
+                EXTRACT(YEAR FROM "DonationDate")::integer as year,
+                EXTRACT(MONTH FROM "DonationDate")::integer as month,
+                SUM("DonationAmount") as total
+            FROM "Participant_Donation"
+            WHERE "DonationDate" IS NOT NULL
+            GROUP BY EXTRACT(YEAR FROM "DonationDate"), EXTRACT(MONTH FROM "DonationDate")
+            ORDER BY year ASC, month ASC
+        `);
+
+        console.log('Query results:', results.rows);
+        res.json(results.rows);
+    } catch (err) {
+        console.error('Donations by month error:', err);
+        console.error('Error stack:', err.stack);
+        res.status(500).json({ error: err.message, stack: err.stack });
     }
 });
 
