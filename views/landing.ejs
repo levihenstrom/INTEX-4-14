@@ -5,16 +5,14 @@
 <section class="hero hero-video">
 
     <!-- Background video -->
-    <video class="hero-video-bg" autoplay muted playsinline loop preload="auto" defaultMuted>
-    <source src="/images/ella-hero.mp4" type="video/mp4">
+<video class="hero-video-bg" autoplay muted playsinline loop preload="auto" poster="/images/poster.png" defaultMuted>
+  <source src="/images/ella-hero.mp4" type="video/mp4">
+  <!-- fallback text -->
+  Your browser does not support the video tag.
 </video>
 
-        <!-- fallback text -->
-        Your browser does not support the video tag.
-    </video>
-
-    <button class="hero-video-toggle" id="heroVideoToggle">
-    <i class="fa-solid fa-pause"></i>
+<button class="hero-video-toggle" id="heroVideoToggle">
+  <i class="fa-solid fa-pause"></i>
 </button>
 
     <!-- Centered hero text/buttons -->
@@ -28,8 +26,12 @@
     </p>
 
     <div class="hero-buttons">
-        <a href="/film" class="hero-btn-watch">Watch the film</a>
-        <a href="/register" class="hero-btn-secondary">Get Started</a>
+        <a href="/info" class="hero-btn-watch">Watch the film</a>
+        <% if (user) { %>
+          <a href="/donations" class="hero-btn-secondary">Donate</a>
+        <% } else { %>
+          <a href="/register" class="hero-btn-secondary">Get Started</a>
+        <% } %>
     </div>
 
 </div>
