@@ -106,7 +106,8 @@ app.use((req, res, next) => {
         '/login',
         '/register',
         '/logout',
-        '/donations/add/visitor'
+        '/donations/add/visitor',
+        '/info'
     ]
     if (openPaths.includes(req.path)) {
         return next();
@@ -2569,6 +2570,10 @@ app.post('/participants/add', async (req, res) => {
 //app.use('/api', apiRoutes);
 app.get('/dashboard', (req, res) => {
     res.render('dashboard', { layout: 'public', pageTitle: 'Dashboard' });
+});
+
+app.get('/info', (req, res) => {
+    res.render('info', { layout: 'public', pageTitle: 'Info' });
 });
 
 // 6. Start Server
