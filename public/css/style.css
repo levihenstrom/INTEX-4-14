@@ -373,7 +373,7 @@ p, li, a, .nav-link {
     display: flex !important;
     justify-content: flex-end !important; /* push links to right */
     align-items: center !important;
-    gap: 0.5rem !important;
+    gap: 0 !important;
     margin: 0 !important;
     padding: 0.25rem !important;
     background: rgba(255, 255, 255, 0.6);
@@ -442,6 +442,27 @@ p, li, a, .nav-link {
     display: none;
 }
 
+/* Ensure nav items have relative positioning for separator */
+.nav-item {
+    position: relative;
+    margin: 0 0.25rem;
+}
+
+/* Vertical separator between nav items - applies to all nav items including dropdowns */
+.navbar-nav > .nav-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -0.125rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 70%;
+    background: rgba(58, 63, 59, 0.3);
+    pointer-events: none;
+    z-index: 10;
+    display: block !important;
+}
+
 /* Dropdown arrow icon */
 .dropdown-arrow {
     font-size: 0.7rem;
@@ -459,8 +480,8 @@ p, li, a, .nav-link {
     position: relative;
 }
 
-/* Extended hover bridge area */
-.nav-item.dropdown::after {
+/* Extended hover bridge area - use ::before instead to avoid conflict with separator */
+.nav-item.dropdown::before {
     content: "";
     position: absolute;
     top: 100%;
@@ -547,12 +568,12 @@ p, li, a, .nav-link {
     }
     
     /* Keep dropdown visible when hovering bridge area */
-    .nav-item.dropdown:hover::after {
+    .nav-item.dropdown:hover::before {
         display: block;
     }
     
     /* Keep dropdown open when hovering the bridge */
-    .nav-item.dropdown::after:hover + .dropdown-menu,
+    .nav-item.dropdown::before:hover + .dropdown-menu,
     .nav-item.dropdown:hover .dropdown-menu {
         display: block !important;
     }
