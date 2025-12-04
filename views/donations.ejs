@@ -686,7 +686,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="addDonationDate" class="form-label">Donation Date</label>
-                                <input type="date" class="form-control" id="addDonationDate" name="DonationDate">
+                                <input type="date" class="form-control" id="addDonationDate" name="DonationDate" value="<%= new Date().toISOString().split('T')[0] %>">
                             </div>
                         </form>
                     </div>
