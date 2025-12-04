@@ -21,6 +21,12 @@ body {
 main {
     overflow-x: hidden;
     flex: 1;
+    padding-top: 100px; /* Space for fixed transparent navbar */
+}
+
+/* Remove padding for pages with hero (landing page) */
+body.has-hero main {
+    padding-top: 0;
 }
 
 /* ====================================================== */
@@ -934,6 +940,7 @@ p, li, a, .nav-link {
 /* Removed conflicting footer rules */
 
 /* Default padding so navbar doesn't overlap content */
+/* Note: Spacing is now handled by main element padding-top above */
 body {
     padding-top: 0 !important;
 }
