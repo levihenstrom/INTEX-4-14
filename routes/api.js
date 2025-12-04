@@ -101,4 +101,37 @@ router.get('/surveys-responses', async (req, res) => {
     }
 });
 
+// New participants by year (based on first event registration)
+router.get('/participants-by-year', async (req, res) => {
+    try {
+        const data = await knex('Registration as r')
+        .join('Participants as p', 'r.ParticipantID', 'p.ParticipantID')
+        .select(knex.raw("EXTRACT(YEAR FROM MIN(r.\"RegistrationCreatedAt\")) as year"))
+        .select('r.ParticipantID')
+        .groupBy('r.ParticipantID')
+        .then(results => {
+            // Group by year and count participants
+            const yearCounts = {};
+            results.forEach(row => {
+                const year = row.year;
+                if (year) {
+                    yearCounts[year] = (yearCounts[year] || 0) + 1;
+                }
+            });
+
+            // Convert to array format for chart
+            return Object.keys(yearCounts)
+                .sort()
+                .map(year => ({
+                    year: year,
+                    count: yearCounts[year]
+                }));
+        });
+
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

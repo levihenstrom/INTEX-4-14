@@ -154,6 +154,14 @@
                 <% } %>
             </div>
         </div>
+
+        <!-- Participant Analytics -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="mb-3">Participant Analytics</h3>
+                <canvas id="participantsByYearChart" height="100"></canvas>
+            </div>
+        </div>
     </div>
 
     <!-- Add Participant Modal -->
@@ -185,17 +193,17 @@
                         <div class="col-md-6 mb-3">
                             <label for="modalParticipantEmail" class="form-label">Email *</label>
                             <input type="email" class="form-control" id="modalParticipantEmail" 
-                                   name="ParticipantEmail" required
-                                   pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
-                                   oninvalid="this.setCustomValidity('Please input a valid email')"
-                                   oninput="this.setCustomValidity('')">
+                                    name="ParticipantEmail" required
+                                    pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
+                                    oninvalid="this.setCustomValidity('Please input a valid email')"
+                                    oninput="this.setCustomValidity('')">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="modalParticipantPhone" class="form-label">Phone Number</label>
                             <input type="tel" class="form-control" id="modalParticipantPhone" 
-                                   name="ParticipantPhone" inputmode="numeric" maxlength="12"
-                                   pattern="\d{3}-\d{3}-\d{4}"
-                                   title="Phone must be in the format 111-111-1111">
+                                    name="ParticipantPhone" inputmode="numeric" maxlength="12"
+                                    pattern="\d{3}-\d{3}-\d{4}"
+                                    title="Phone must be in the format 111-111-1111">
                         </div>
                     </div>
 
@@ -204,7 +212,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="modalParticipantDOB" class="form-label">Date of Birth *</label>
                             <input type="date" class="form-control" id="modalParticipantDOB" 
-                                   name="ParticipantDOB" required>
+                                    name="ParticipantDOB" required>
                         </div>
                         
                     </div>
@@ -214,17 +222,17 @@
                         <div class="col-md-4 mb-3">
                             <label for="modalParticipantCity" class="form-label">City</label>
                             <input type="text" class="form-control" id="modalParticipantCity" 
-                                   name="ParticipantCity">
+                                    name="ParticipantCity">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="modalParticipantState" class="form-label">State</label>
                             <input type="text" class="form-control" id="modalParticipantState" 
-                                   name="ParticipantState">
+                                    name="ParticipantState">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="modalParticipantZip" class="form-label">ZIP Code</label>
                             <input type="text" class="form-control" id="modalParticipantZip" 
-                                   name="ParticipantZip">
+                                    name="ParticipantZip">
                         </div>
                     </div>
 
@@ -232,7 +240,7 @@
                     <div class="mb-3">
                         <label for="modalParticipantSchoolOrEmployer" class="form-label">School or Employer</label>
                         <input type="text" class="form-control" id="modalParticipantSchoolOrEmployer" 
-                               name="ParticipantSchoolOrEmployer">
+                                name="ParticipantSchoolOrEmployer">
                     </div>
 
                     <!-- Field of Interest -->
@@ -240,17 +248,17 @@
                         <label class="form-label">Field of Interest</label>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
-                                   id="modal_interest_stem" value="STEM">
+                                    id="modal_interest_stem" value="STEM">
                             <label class="form-check-label" for="modal_interest_stem">STEM</label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
-                                   id="modal_interest_arts" value="Arts">
+                                    id="modal_interest_arts" value="Arts">
                             <label class="form-check-label" for="modal_interest_arts">Arts</label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
-                                   id="modal_interest_both" value="Both">
+                                    id="modal_interest_both" value="Both">
                             <label class="form-check-label" for="modal_interest_both">Both</label>
                         </div>
                     </div>
@@ -582,7 +590,7 @@
                     card.appendChild(meta);
                     return card;
                 });
-               
+                
                 const donationCards = (data.donations || []).map((donation) => {
                     const card = document.createElement('div');
                     card.className =
@@ -606,6 +614,9 @@
     });
 </script>
 
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/js/participants-by-year-chart.js"></script>
 
 
 
