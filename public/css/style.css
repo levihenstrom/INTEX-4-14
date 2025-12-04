@@ -601,7 +601,7 @@ p, li, a, .nav-link {
         padding-left: 2rem;
     }
     
-    .navbar-collapse {
+.navbar-collapse {
         margin-top: 1rem;
         border-top: 1px solid rgba(58, 63, 59, 0.1);
     }
@@ -975,7 +975,8 @@ body:not(.has-hero) {
 }
 
 .hero-btn-watch:hover {
-    background: #e9e9e9;
+    background: #CE325B;
+    color: white;
 }
 
 /* SECONDARY OUTLINED BUTTON (thin outline like Apple) */
@@ -993,7 +994,9 @@ body:not(.has-hero) {
 }
 
 .hero-btn-secondary:hover {
-    background: rgba(255,255,255,0.25);
+    background: #CE325B;
+    border-color: #CE325B;
+    color: white;
 }
 
 .hero-title {
@@ -1540,81 +1543,121 @@ body:not(.has-hero) {
 .upcoming-event-link {
     display: block;
     background-color: white;
-    border-radius: 16px;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
     color: inherit;
     height: 100%;
+    border: 1px solid rgba(206, 50, 91, 0.1);
+    position: relative;
 }
 
 .upcoming-event-link:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(206, 50, 91, 0.2);
     text-decoration: none;
     color: inherit;
+    border-color: rgba(206, 50, 91, 0.3);
 }
 
 .upcoming-event-image {
     width: 100%;
-    height: 200px;
+    height: 220px;
     overflow: hidden;
-    background-color: #F0F0F0;
+    background: linear-gradient(135deg, #F0F0F0 0%, #E0E0E0 100%);
     position: relative;
+}
+
+.upcoming-event-image::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.upcoming-event-link:hover .upcoming-event-image::after {
+    opacity: 1;
 }
 
 .upcoming-event-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .upcoming-event-link:hover .upcoming-event-image img {
-    transform: scale(1.05);
+    transform: scale(1.1);
 }
 
 .upcoming-event-content {
-    padding: 1.5rem;
+    padding: 1.8rem;
+    position: relative;
+    z-index: 2;
 }
 
 .upcoming-event-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 1rem;
+    margin-bottom: 1.2rem;
     gap: 1rem;
 }
 
 .upcoming-event-name {
     font-family: 'DM Serif Display', serif;
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     color: #3A3F3B;
     margin: 0;
     line-height: 1.3;
     flex: 1;
+    transition: color 0.3s ease;
+}
+
+.upcoming-event-link:hover .upcoming-event-name {
+    color: #CE325B;
 }
 
 .upcoming-event-details {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.85rem;
 }
 
 .upcoming-event-detail {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.85rem;
     font-family: 'Montserrat', sans-serif;
     font-size: 0.95rem;
     color: #4B4F4B;
+    transition: all 0.3s ease;
+    padding: 0.4rem 0;
+}
+
+.upcoming-event-link:hover .upcoming-event-detail {
+    color: #3A3F3B;
+    transform: translateX(4px);
 }
 
 .upcoming-event-detail i {
     color: #CE325B;
-    width: 18px;
+    width: 20px;
     text-align: center;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.upcoming-event-link:hover .upcoming-event-detail i {
+    color: #B02A4A;
+    transform: scale(1.1);
 }
 
 /* Carousel Buttons */
@@ -2381,10 +2424,31 @@ body:not(.has-hero) {
     width: 100%;
     margin-left: 0;
     margin-top: 10px;
-    background: #978EC4; /* Lavender Purple */
+    background: linear-gradient(135deg, #978EC4 0%, #B5A8D9 50%, #978EC4 100%);
     padding: 100px 0 120px;
     text-align: center;
     box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+}
+
+.events-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(206, 50, 91, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.events-section > * {
+    position: relative;
+    z-index: 1;
 }
 
 .events-inner {
@@ -2436,6 +2500,116 @@ body:not(.has-hero) {
     gap: 2rem;
     text-align: left;
     margin-bottom: 3rem;
+}
+
+/* Landing page events carousel - display as grid */
+.events-section .upcoming-events-section {
+    margin-bottom: 3rem;
+    display: block;
+    width: 100%;
+}
+
+.events-section .upcoming-events-carousel-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+.events-section .landing-events-carousel {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    overflow: visible;
+    scroll-behavior: auto;
+    flex: 1;
+    padding: 0;
+    width: 100%;
+}
+
+.events-section .upcoming-event-card {
+    flex: 0 0 auto;
+    min-width: 0;
+    width: 100%;
+    display: block;
+    height: auto;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.events-section .upcoming-event-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.events-section .upcoming-event-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.events-section .upcoming-event-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.events-section .upcoming-event-link {
+    display: block;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.events-section .upcoming-event-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(206, 50, 91, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.events-section .upcoming-event-link:hover::before {
+    opacity: 1;
+}
+
+/* Status badge styles */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.status-available {
+    background: linear-gradient(135deg, rgba(154, 181, 157, 0.25) 0%, rgba(154, 181, 157, 0.15) 100%);
+    color: #4A6A4D;
+    border: 1px solid rgba(154, 181, 157, 0.3);
+}
+
+.status-full {
+    background: linear-gradient(135deg, rgba(206, 50, 91, 0.2) 0%, rgba(206, 50, 91, 0.1) 100%);
+    color: #CE325B;
+    border: 1px solid rgba(206, 50, 91, 0.3);
+}
+
+.upcoming-event-link:hover .status-badge {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.status-badge i {
+    font-size: 0.7rem;
 }
 
 /* Card layout specifically for HOMEPAGE events */
@@ -3032,6 +3206,236 @@ body:not(.has-hero) {
 }
 
 /* ====================================================== */
+/*              FLOATING DONATE CARD                      */
+/* ====================================================== */
+
+.floating-donate-card {
+    position: fixed;
+    bottom: 60px;
+    right: 60px;
+    background: #FFFFFF;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(58, 63, 59, 0.2);
+    padding: 0;
+    max-width: 420px;
+    width: 420px;
+    z-index: 1000;
+    animation: slideInUp 0.5s ease-out;
+    transition: box-shadow 0.3s ease, left 0.3s ease, top 0.3s ease, right 0.3s ease, bottom 0.3s ease;
+    cursor: move;
+    overflow: hidden;
+}
+
+.floating-donate-card:hover {
+    box-shadow: 0 12px 40px rgba(58, 63, 59, 0.3);
+}
+
+.floating-donate-card.dragging {
+    cursor: grabbing;
+    transition: none;
+    user-select: none;
+}
+
+.floating-donate-card.dragging * {
+    pointer-events: none;
+}
+
+.floating-donate-card:not(.dragging) {
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                top 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                right 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s ease;
+}
+
+.floating-donate-image {
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+    position: relative;
+}
+
+.floating-donate-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.floating-donate-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(58, 63, 59, 0.1);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #3A3F3B;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.floating-donate-close:hover {
+    background: #CE325B;
+    color: white;
+    transform: rotate(90deg);
+}
+
+.floating-donate-content {
+    padding: 24px 32px 32px;
+}
+
+.floating-donate-content h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    color: #3A3F3B;
+    margin: 0 0 0.7rem 0;
+}
+
+.floating-donate-content p {
+    font-size: 1.05rem;
+    color: #5A5E5A;
+    margin: 0 0 1.3rem 0;
+    line-height: 1.5;
+}
+
+.floating-donate-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: #CE325B;
+    color: white;
+    padding: 0.9rem 1.8rem;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    width: 100%;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+.floating-donate-btn:hover {
+    background: #B02A4A;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(206, 50, 91, 0.3);
+    color: white;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ====================================================== */
+/*              FLOATING DONATE BUTTON (LANDING)          */
+/* ====================================================== */
+
+.floating-donate-button {
+    position: fixed;
+    bottom: 60px;
+    right: 60px;
+    background: transparent;
+    border-radius: 50px;
+    padding: 0;
+    z-index: 1000;
+    animation: slideInUp 0.5s ease-out;
+    transition: left 0.3s ease, top 0.3s ease, right 0.3s ease, bottom 0.3s ease;
+    cursor: move;
+    overflow: visible;
+}
+
+.floating-donate-button.dragging {
+    cursor: grabbing;
+    transition: none;
+    user-select: none;
+}
+
+.floating-donate-button.dragging * {
+    pointer-events: none;
+}
+
+.floating-donate-button:not(.dragging) {
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                top 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                right 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.floating-donate-button-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #CE325B;
+    color: white;
+    padding: 0.85rem 1.8rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    pointer-events: auto;
+    white-space: nowrap;
+    box-shadow: 0 8px 32px rgba(58, 63, 59, 0.2);
+}
+
+.floating-donate-button-link:hover {
+    background: #B02A4A;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(58, 63, 59, 0.3);
+    color: white;
+}
+
+.floating-donate-close-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #CE325B;
+    border: 2px solid white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    font-size: 0.7rem;
+    transition: all 0.2s ease;
+    pointer-events: auto;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.floating-donate-close-btn:hover {
+    background: #B02A4A;
+    transform: rotate(90deg) scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.floating-donate-button-link:hover {
+    background: #B02A4A;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(206, 50, 91, 0.3);
+    color: white;
+}
+
+/* ====================================================== */
 /*                 RESPONSIVE BREAKPOINTS                 */
 /* ====================================================== */
 
@@ -3062,6 +3466,12 @@ body:not(.has-hero) {
         max-width: 500px;
         margin-left: auto;
         margin-right: auto;
+    }
+    
+    /* Landing page events tablet */
+    .events-section .landing-events-carousel {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
     }
     
     /* Bento grid tablet */
@@ -3248,6 +3658,54 @@ body:not(.has-hero) {
         font-size: 0.95rem;
     }
     
+    /* Floating donate card mobile */
+    .floating-donate-card {
+        bottom: 20px;
+        right: 20px;
+        left: 20px;
+        max-width: none;
+        width: auto;
+    }
+    
+    .floating-donate-image {
+        height: 180px;
+    }
+    
+    .floating-donate-content {
+        padding: 20px 24px 24px;
+    }
+    
+    .floating-donate-content h3 {
+        font-size: 1.3rem;
+    }
+    
+    .floating-donate-content p {
+        font-size: 0.95rem;
+    }
+    
+    .floating-donate-btn {
+        padding: 0.8rem 1.5rem;
+        font-size: 0.95rem;
+    }
+    
+    /* Floating donate button mobile */
+    .floating-donate-button {
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    .floating-donate-button-link {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .floating-donate-close-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 0.75rem;
+        margin: 5px 0 5px 6px;
+    }
+    
     .bento-testimonial {
         padding: 20px;
     }
@@ -3287,6 +3745,12 @@ body:not(.has-hero) {
     .carousel-btn {
         width: 40px;
         height: 40px;
+    }
+    
+    /* Landing page events responsive */
+    .events-section .landing-events-carousel {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
     }
 }
 
