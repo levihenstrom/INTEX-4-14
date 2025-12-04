@@ -18,8 +18,12 @@
         multicultural activities focused on mariachi and STEAM.
     </p>
     <div class="hero-buttons">
-        <a href="/film" class="hero-btn-watch">Watch the film</a>
-        <a href="/register" class="hero-btn-secondary">Get Started</a>
+        <a href="/info" class="hero-btn-watch">Watch the film</a>
+        <% if (user) { %>
+          <a href="/donations" class="hero-btn-secondary">Donate</a>
+        <% } else { %>
+          <a href="/register" class="hero-btn-secondary">Get Started</a>
+        <% } %>
     </div>
 </div>
 </section>

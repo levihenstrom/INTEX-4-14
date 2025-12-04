@@ -1,0 +1,336 @@
+<div class="registration-page">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <!-- <div class="col-lg-11 col-xl-10"> -->
+            <div class="col-12">
+                <div class="registration-card">
+                    <div class="registration-header">
+                        <div class="registration-image">
+                            <% const imageSrc = `/images/events/event_${eventTemplate.EventID}.jpg`; %>
+                            <img src="<%- imageSrc %>" 
+                                 alt="<%= eventTemplate.EventName %>" 
+                                 onerror="this.src='/images/events/event_0_real.png'">
+                        </div>
+                        <div class="registration-header-content">
+                            <h1 class="registration-title"><%= eventTemplate.EventName %></h1>
+                            <div class="event-details">
+                                <% if (eventTemplate.EventDescription) { %>
+                            <div class="event-description">
+                                <p><%= eventTemplate.EventDescription %></p>
+                            </div>
+                        <% } %>
+                        <div class="event-labels">
+                            <% 
+                                const eventType = eventTemplate.EventType || '';
+                                let typeIcon = 'fa-tag';
+                                let typeColor = '#6B6F6B';
+                                if (eventType === 'STEM') {
+                                    typeIcon = 'fa-gear';
+                                    typeColor = '#99B7C6';
+                                } else if (eventType === 'Arts') {
+                                    typeIcon = 'fa-paintbrush';
+                                    typeColor = '#F4B092';
+                                } else if (eventType === 'Leadership') {
+                                    typeIcon = 'fa-users';
+                                    typeColor = '#9AB59D';
+                                } else if (eventType === 'Annual Conference') {
+                                    typeIcon = 'fa-calendar-star';
+                                    typeColor = '#978EC4';
+                                }
+                                
+                                const recurrence = eventTemplate.EventRecurrencePattern || '';
+                                let recurIcon = 'fa-calendar';
+                                let recurColor = '#6B6F6B';
+                                if (recurrence === 'Monthly') {
+                                    recurIcon = 'fa-calendar-days';
+                                    recurColor = '#99B7C6';
+                                } else if (recurrence === 'Weekly') {
+                                    recurIcon = 'fa-calendar-week';
+                                    recurColor = '#978EC4';
+                                } else if (recurrence === 'Annual') {
+                                    recurIcon = 'fa-calendar-check';
+                                    recurColor = '#9AB59D';
+                                }
+                            %>
+                            <% if (eventType) { %>
+                                <span class="event-label event-label-type-<%= eventType.toLowerCase().replace(/\s+/g, '-') %>">
+                                    <i class="fa-solid <%= typeIcon %>"></i>
+                                    <%= eventType %>
+                                </span>
+                            <% } %>
+                            <% if (recurrence) { %>
+                                <span class="event-label event-label-recurrence-<%= recurrence.toLowerCase() %>">
+                                    <i class="fa-solid <%= recurIcon %>"></i>
+                                    <%= recurrence %>
+                                </span>
+                            <% } %>
+                        </div>
+                       
+                            </div>
+                            <div class="occurrences-section">
+                                <h2><%= typeof isAdmin !== 'undefined' && isAdmin ? 'All Sessions' : 'Available Sessions' %></h2>
+                                <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+                                    <div class="occurrence-toggle" id="occurrence-toggle">
+                                        <button type="button" class="toggle-btn active" data-filter="future">Future</button>
+                                        <button type="button" class="toggle-btn" data-filter="past">Past</button>
+                                    </div>
+                                <% } %>
+                                <% if (occurrences && occurrences.length > 0) { %>
+                                    <div class="occurrences-list-container">
+                                        <div class="occurrences-list">
+                                        <% occurrences.forEach(occurrence => { %>
+                                            <% const isRegistered = typeof registeredOccurrenceIds !== 'undefined' && registeredOccurrenceIds.includes(occurrence.OccurrenceID); %>
+                                            <% const isPast = typeof occurrence.isPast !== 'undefined' && occurrence.isPast; %>
+                                            <% const isFull = typeof occurrence.isFull !== 'undefined' && occurrence.isFull; %>
+                                            <% const disableRegister = isFull && !isRegistered; %>
+                                            <div class="occurrence-card <%= typeof focusedOccurrenceId !== 'undefined' && focusedOccurrenceId === occurrence.OccurrenceID ? 'occurrence-focused' : '' %> <%= isPast ? 'occurrence-past' : '' %>" 
+                                                id="<%= typeof focusedOccurrenceId !== 'undefined' && focusedOccurrenceId === occurrence.OccurrenceID ? 'focused-occurrence' : '' %>"
+                                                data-occurrence-id="<%= occurrence.OccurrenceID %>"
+                                                data-is-past="<%= isPast %>">
+                                           
+                                               <div class="occurrence-info">
+                                                   <div class="occurrence-main-row">
+                                                       <!-- LEFT: date, time, status -->
+                                                       <div class="occurrence-date-time">
+                                                           <div class="occurrence-date">
+                                                               <% 
+                                                                   const d = new Date(occurrence.EventDateTimeStart);
+                                                                   const isToday = d.toDateString() === new Date().toDateString();
+                                                                    const isThisYear = d.getFullYear() === new Date().getFullYear();
+                                                                %>
+                                                               <%= isToday
+                                                                   ? 'Today'
+                                                                   : d.toLocaleDateString(
+                                                                       'en-US',
+                                                                       isThisYear
+                                                                           ? { weekday: 'short', month: 'short', day: 'numeric' }
+                                                                           : { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }
+                                                                   )
+                                                               %>
+                                                           </div>
+                                           
+                                                           <div class="occurrence-time">
+                                                               <i class="fa-solid fa-clock"></i>
+                                                               <%= new Date(occurrence.EventDateTimeStart).toLocaleTimeString('en-US', { 
+                                                                   hour: 'numeric', 
+                                                                   minute: '2-digit',
+                                                                   hour12: true 
+                                                               }) %>
+                                                               <% if (occurrence.EventDateTimeEnd) { %>
+                                                                   - <%= new Date(occurrence.EventDateTimeEnd).toLocaleTimeString('en-US', { 
+                                                                       hour: 'numeric', 
+                                                                       minute: '2-digit',
+                                                                       hour12: true 
+                                                                   }) %>
+                                                               <% } %>
+                                                           </div>
+                                           
+                                                           <% if (!isPast) { %>
+                                                               <span class="status-badge <%= occurrence.isFull ? 'status-full' : 'status-available' %>">
+                                                                   <i class="fa-solid fa-users"></i>
+                                                                   <%= occurrence.isFull ? 'Full' : 'Space Available' %>
+                                                               </span>
+                                                           <% } else if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+                                                               <span class="status-badge status-past">
+                                                                   <i class="fa-solid fa-clock"></i>
+                                                                   Past
+                                                               </span>
+                                                           <% } %>
+                                                       </div>
+                                           
+                                                       <!-- MIDDLE: location, capacity, attended -->
+                                                       <div class="occurrence-details-row">
+                                                           <% if (occurrence.EventLocation) { %>
+                                                               <div class="occurrence-detail-item">
+                                                                   <i class="fa-solid fa-location-dot"></i>
+                                                                   <span><%= occurrence.EventLocation %></span>
+                                                               </div>
+                                                           <% } %>
+                                                           <% if (occurrence.EventCapacity) { %>
+                                                               <div class="occurrence-detail-item">
+                                                                   <i class="fa-solid fa-users"></i>
+                                                                   <span><%= occurrence.EventCapacity %> slots</span>
+                                                               </div>
+                                                           <% } %>
+                                                           <% if (isPast && typeof isAdmin !== 'undefined' && isAdmin && typeof occurrence.attendanceCount !== 'undefined') { %>
+                                                               <div class="occurrence-detail-item">
+                                                                   <i class="fa-solid fa-check-circle"></i>
+                                                                   <span><%= occurrence.attendanceCount %> attended</span>
+                                                               </div>
+                                                           <% } %>
+                                                       </div>
+                                                   </div>
+                                               </div>
+                                           
+                                               <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+                                                   <button type="button" class="btn btn-secondary details-btn" data-occurrence-id="<%= occurrence.OccurrenceID %>">
+                                                       Details
+                                                   </button>
+                                               <% } else if (typeof user !== 'undefined' && user && !isPast) { %>
+                                                   <button type="button" 
+                                                           class="btn register-toggle-btn <%= disableRegister ? 'btn-disabled' : (isRegistered ? 'btn-secondary' : 'btn-primary') %>"
+                                                           data-occurrence-id="<%= occurrence.OccurrenceID %>"
+                                                           data-is-registered="<%= isRegistered %>"
+                                                           data-is-full="<%= isFull %>"
+                                                           <%= disableRegister ? 'disabled aria-disabled=\"true\"' : '' %>>
+                                                       <%= disableRegister ? 'Full' : (isRegistered ? 'Unregister' : 'Register') %>
+                                                   </button>
+                                               <% } else if (!isPast && (typeof isAdmin === 'undefined' || !isAdmin)) { %>
+                                                   <a href="/login?redirect=/registration/<%= eventTemplate.EventID %>" class="btn btn-primary">
+                                                       Login to Register
+                                                   </a>
+                                               <% } %>
+                                           </div>
+                                           
+                                        <% }); %>
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="registration-actions">
+                                        <a href="/events" class="btn btn-outline-secondary">Back to Events</a>
+                                    </div>
+                                <% } else { %>
+                                    <div class="no-occurrences">
+                                        <p>No upcoming sessions available for this event at this time.</p>
+                                        <a href="/events" class="btn btn-secondary">Back to Events</a>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+
+</style>
+
+<script>
+    // Scroll to focused occurrence on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const isAdminView = "<%= typeof isAdmin !== 'undefined' && isAdmin ? 'true' : 'false' %>;"
+        const focusedOccurrence = document.getElementById('focused-occurrence');
+        if (focusedOccurrence) {
+            setTimeout(() => {
+                focusedOccurrence.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+
+        // Admin toggle for past/future
+        if (isAdminView) {
+            const toggle = document.getElementById('occurrence-toggle');
+            const cards = Array.from(document.querySelectorAll('.occurrence-card'));
+
+            const applyFilter = (filter) => {
+                cards.forEach(card => {
+                    const cardIsPast = card.getAttribute('data-is-past') === 'true';
+                    const showCard = filter === 'past' ? cardIsPast : !cardIsPast;
+                    card.style.display = showCard ? '' : 'none';
+                });
+            };
+
+            if (toggle) {
+                toggle.querySelectorAll('.toggle-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        toggle.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        applyFilter(btn.getAttribute('data-filter'));
+                    });
+                });
+                applyFilter('future');
+            }
+
+            // Admin details modal placeholder
+            const modalBackdrop = document.querySelector('.reg-modal-backdrop');
+            const modalClose = document.querySelector('.reg-modal-close');
+
+            const openModal = () => {
+                if (modalBackdrop) modalBackdrop.classList.add('active');
+            };
+
+            const closeModal = () => {
+                if (modalBackdrop) modalBackdrop.classList.remove('active');
+            };
+
+            document.querySelectorAll('.details-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    openModal();
+                });
+            });
+
+            if (modalBackdrop) {
+                modalBackdrop.addEventListener('click', (e) => {
+                    if (e.target === modalBackdrop) {
+                        closeModal();
+                    }
+                });
+            }
+
+            if (modalClose) {
+                modalClose.addEventListener('click', closeModal);
+            }
+        }
+
+        // Handle register/unregister toggle
+        document.querySelectorAll('.register-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const occurrenceId = this.getAttribute('data-occurrence-id');
+                const isRegistered = this.getAttribute('data-is-registered') === 'true';
+                const originalText = this.textContent;
+                
+                // Disable button during request
+                this.disabled = true;
+                this.textContent = 'Processing...';
+
+                try {
+                    const endpoint = isRegistered ? '/unregister-occurrence' : '/register-occurrence';
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ occurrenceId: parseInt(occurrenceId, 10) })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Toggle button state
+                        const newIsRegistered = !isRegistered;
+                        this.setAttribute('data-is-registered', newIsRegistered);
+                        this.textContent = newIsRegistered ? 'Unregister' : 'Register';
+                        this.className = newIsRegistered ? 'btn btn-secondary register-toggle-btn' : 'btn btn-primary register-toggle-btn';
+                        
+                        // Show success message (optional - you can add a toast notification here)
+                        console.log(data.message);
+                    } else {
+                        alert(data.error || 'An error occurred');
+                        this.textContent = originalText;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                    this.textContent = originalText;
+                } finally {
+                    this.disabled = false;
+                }
+            });
+        });
+    });
+</script>
+
+<div class="reg-modal-backdrop">
+    <div class="reg-modal">
+        <div class="reg-modal-header">
+            <h3>Occurrence Details</h3>
+            <button type="button" class="reg-modal-close" aria-label="Close">&times;</button>
+        </div>
+        <p>This is a placeholder for occurrence details.</p>
+    </div>
+</div>

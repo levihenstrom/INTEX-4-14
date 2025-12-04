@@ -106,7 +106,8 @@ app.use((req, res, next) => {
         '/login',
         '/register',
         '/logout',
-        '/donations/add/visitor'
+        '/donations/add/visitor',
+        '/info'
     ]
     if (openPaths.includes(req.path)) {
         return next();
@@ -121,8 +122,9 @@ app.use((req, res, next) => {
     return res.status(418).render("login", {
         layout: 'public',
         pageTitle: 'Login',
+        defaultView: 'login',
         hasHero: false,
-        error_message: "Please log in to access this page"
+        error: "Please log in to access this page"
     });
 });
 
@@ -153,7 +155,7 @@ app.get('/', (req, res) => {
 
 // GET /login: Show login form
 app.get('/login', (req, res) => {
-    res.render('login', { layout: 'public', pageTitle: 'Login' });
+    res.render('login', { layout: 'public', pageTitle: 'Login', defaultView: 'login' });
 });
 
 app.post('/login', async (req, res) => {
@@ -169,6 +171,7 @@ app.post('/login', async (req, res) => {
             return res.render('login', { 
             layout: 'public', 
             pageTitle: 'Login',
+            defaultView: 'login',
             error: 'Invalid login' 
             });
         }
@@ -185,6 +188,7 @@ app.post('/login', async (req, res) => {
         return res.render('login', { 
             layout: 'public', 
             pageTitle: 'Login',
+            defaultView: 'login',
             error: 'Something went wrong. Please try again.' 
         });
         }
@@ -192,9 +196,10 @@ app.post('/login', async (req, res) => {
     
   // GET /register: Show registration form
 app.get('/register', (req, res) => {
-    res.render('register', { 
+    res.render('login', { 
     layout: 'public',
     pageTitle: 'Register',
+    defaultView: 'register',
     error: null
     });
 });
@@ -223,9 +228,10 @@ try {
 
     // 2. If email exists & password is already set → block registration
     if (existingParticipant && existingParticipant.ParticipantPassword) {
-    return res.render('register', {
+    return res.render('login', {
         layout: 'public',
         pageTitle: 'Register',
+        defaultView: 'register',
         error: 'An account with that email already exists. Please log in.'
     });
     }
@@ -277,9 +283,10 @@ try {
 } catch (err) {
     console.error('Registration error:', err);
 
-    return res.render('register', {
+    return res.render('login', {
     layout: 'public',
     pageTitle: 'Register',
+    defaultView: 'register',
     error: 'Something went wrong. Please try again.'
     });
 }
@@ -482,8 +489,7 @@ app.get('/donations', async (req, res) => {
                 count: totalDonations
             },
             error: req.query.error || null,
-            success: req.query.success || null,
-            hasHero: !user
+            success: req.query.success || null
         });
     } catch (err) {
         console.error('Error loading donations:', err);
@@ -722,55 +728,319 @@ app.post('/donations/delete', async (req, res) => {
 
 app.get('/events', async (req, res) => {
     try {
-        if (req.session.isAdmin) {
-            // Show all events
-            const events = await knex('Event_Occurrence')
-            .join('Event_Templates', 'Event_Occurrence.EventID', 'Event_Templates.EventID')
+        // Get all event templates for the grid
+        const event_templates = await knex('Event_Templates')
             .select(
+                'Event_Templates.EventID',
                 'Event_Templates.EventName',
                 'Event_Templates.EventType',
                 'Event_Templates.EventDescription',
                 'Event_Templates.EventRecurrencePattern',
                 'Event_Templates.EventDefaultCapacity',
-                'Event_Occurrence.EventDateTimeStart',
-                'Event_Occurrence.EventDateTimeEnd',
-                'Event_Occurrence.EventLocation',
-                'Event_Occurrence.EventCapacity',
-                'Event_Occurrence.EventRegistrationDeadline'
             )
-            .orderBy('Event_Occurrence.EventDateTimeStart', 'asc');
+            .orderBy('Event_Templates.EventID', 'asc');
 
-            res.render('events', {
-            pageTitle: 'Events',
-            events,
-            });
-        } else {
-            // Show future events
-            const events = await knex('Event_Occurrence')
-            .join('Event_Templates', 'Event_Occurrence.EventID', 'Event_Templates.EventID')
+        // Get upcoming occurrences with template data and registration counts
+        const now = new Date();
+        const upcomingOccurrences = await knex('Event_Occurrence as eo')
+            .join('Event_Templates as et', 'eo.EventID', 'et.EventID')
+            .leftJoin('Registration as r', 'eo.OccurrenceID', 'r.OccurrenceID')
             .select(
-                'Event_Templates.EventName',
-                'Event_Templates.EventType',
-                'Event_Templates.EventDescription',
-                'Event_Templates.EventRecurrencePattern',
-                'Event_Templates.EventDefaultCapacity',
-                'Event_Occurrence.EventDateTimeStart',
-                'Event_Occurrence.EventDateTimeEnd',
-                'Event_Occurrence.EventLocation',
-                'Event_Occurrence.EventCapacity',
-                'Event_Occurrence.EventRegistrationDeadline'
+                'eo.OccurrenceID',
+                'eo.EventID',
+                'eo.EventDateTimeStart',
+                'eo.EventDateTimeEnd',
+                'eo.EventLocation',
+                'eo.EventCapacity',
+                'eo.EventRegistrationDeadline',
+                'et.EventName',
+                'et.EventType',
+                'et.EventDescription',
+                'et.EventRecurrencePattern',
+                'et.EventDefaultCapacity',
+                knex.raw('COALESCE(COUNT(DISTINCT "r"."RegistrationID"), 0) as registration_count')
             )
-            .where('Event_Occurrence.EventDateTimeEnd', '>=', new Date())
-            .orderBy('Event_Occurrence.EventDateTimeEnd', 'asc');
+            .where('eo.EventDateTimeStart', '>=', knex.fn.now())
+            .groupBy(
+                'eo.OccurrenceID',
+                'eo.EventID',
+                'eo.EventDateTimeStart',
+                'eo.EventDateTimeEnd',
+                'eo.EventLocation',
+                'eo.EventCapacity',
+                'eo.EventRegistrationDeadline',
+                'et.EventName',
+                'et.EventType',
+                'et.EventDescription',
+                'et.EventRecurrencePattern',
+                'et.EventDefaultCapacity'
+            )
+            .orderBy('eo.EventDateTimeStart', 'asc');
 
-            res.render('events', {
+        // Calculate if each occurrence is full
+        const upcomingEvents = upcomingOccurrences.map(occurrence => {
+            const capacity = occurrence.EventCapacity || occurrence.EventDefaultCapacity;
+            // Handle registration_count which might be a string, number, or bigint
+            let registrationCount = 0;
+            if (occurrence.registration_count !== null && occurrence.registration_count !== undefined) {
+                registrationCount = typeof occurrence.registration_count === 'string' 
+                    ? parseInt(occurrence.registration_count, 10) 
+                    : Number(occurrence.registration_count);
+                if (isNaN(registrationCount)) registrationCount = 0;
+            }
+            const isFull = capacity ? registrationCount >= capacity : false;
+            
+            return {
+                ...occurrence,
+                registrationCount,
+                isFull,
+                hasSpace: !isFull
+            };
+        });
+
+        res.render('events', {
             pageTitle: 'Events',
-            events,
-            });
-        }
+            event_templates,
+            upcomingEvents,
+        });
     } catch (err) {
         console.error('Error loading events:', err);
-        res.status(500).send('Error loading events');
+        console.error('Error stack:', err.stack);
+        res.status(500).send(`Error loading events: ${err.message}`);
+    }
+});
+
+app.get('/registration/:id', async (req, res) => {
+    try {
+        const eventId = parseInt(req.params.id, 10);
+        const focusedOccurrenceId = req.query.occurrence ? parseInt(req.query.occurrence, 10) : null;
+        
+        if (isNaN(eventId)) {
+            return res.status(400).send('Invalid event ID');
+        }
+
+        // Get event template details
+        const eventTemplate = await knex('Event_Templates')
+            .where('EventID', eventId)
+            .first();
+
+        if (!eventTemplate) {
+            return res.status(404).send('Event not found');
+        }
+
+        // Get event occurrences - all for admins, future only for regular users
+        const now = new Date();
+        let occurrences;
+        
+        if (req.session.isAdmin) {
+            // For admins: get all occurrences, then sort - future first (ascending), past last (descending)
+            const allOccurrences = await knex('Event_Occurrence')
+                .join('Event_Templates', 'Event_Occurrence.EventID', 'Event_Templates.EventID')
+                .select(
+                    'Event_Occurrence.OccurrenceID',
+                    'Event_Templates.EventName',
+                    'Event_Templates.EventType',
+                    'Event_Templates.EventDescription',
+                    'Event_Templates.EventRecurrencePattern',
+                    'Event_Templates.EventDefaultCapacity',
+                    'Event_Occurrence.EventDateTimeStart',
+                    'Event_Occurrence.EventDateTimeEnd',
+                    'Event_Occurrence.EventLocation',
+                    'Event_Occurrence.EventCapacity',
+                    'Event_Occurrence.EventRegistrationDeadline'
+                )
+                .where('Event_Occurrence.EventID', eventId)
+                .orderBy('Event_Occurrence.EventDateTimeStart', 'asc');
+            
+            // Separate future and past, then reorder
+            const futureOccurrences = allOccurrences.filter(o => new Date(o.EventDateTimeStart) >= now);
+            const pastOccurrences = allOccurrences.filter(o => new Date(o.EventDateTimeStart) < now).reverse();
+            
+            occurrences = [...futureOccurrences, ...pastOccurrences];
+        } else {
+            // For regular users: only future events, ascending
+            occurrences = await knex('Event_Occurrence')
+                .join('Event_Templates', 'Event_Occurrence.EventID', 'Event_Templates.EventID')
+                .select(
+                    'Event_Occurrence.OccurrenceID',
+                    'Event_Templates.EventName',
+                    'Event_Templates.EventType',
+                    'Event_Templates.EventDescription',
+                    'Event_Templates.EventRecurrencePattern',
+                    'Event_Templates.EventDefaultCapacity',
+                    'Event_Occurrence.EventDateTimeStart',
+                    'Event_Occurrence.EventDateTimeEnd',
+                    'Event_Occurrence.EventLocation',
+                    'Event_Occurrence.EventCapacity',
+                    'Event_Occurrence.EventRegistrationDeadline'
+                )
+                .where('Event_Occurrence.EventID', eventId)
+                .where('Event_Occurrence.EventDateTimeStart', '>=', now)
+                .orderBy('Event_Occurrence.EventDateTimeStart', 'asc');
+        }
+
+        // Get registration counts and attendance for each occurrence
+        const occurrenceIds = occurrences.map(o => o.OccurrenceID);
+        let registrationCounts = {};
+        let attendanceCounts = {};
+
+        if (occurrenceIds.length > 0) {
+            // Get registration counts
+            const regCounts = await knex('Registration as r')
+                .select('r.OccurrenceID')
+                .count('r.RegistrationID as count')
+                .whereIn('r.OccurrenceID', occurrenceIds)
+                .groupBy('r.OccurrenceID');
+
+            regCounts.forEach(row => {
+                registrationCounts[row.OccurrenceID] = parseInt(row.count, 10) || 0;
+            });
+
+            // Get attendance counts (for past events, admins only)
+            if (req.session.isAdmin) {
+                const attCounts = await knex('Registration as r')
+                    .select('r.OccurrenceID')
+                    .count('r.RegistrationID as count')
+                    .whereIn('r.OccurrenceID', occurrenceIds)
+                    .where('r.RegistrationAttendedFlag', true)
+                    .groupBy('r.OccurrenceID');
+
+                attCounts.forEach(row => {
+                    attendanceCounts[row.OccurrenceID] = parseInt(row.count, 10) || 0;
+                });
+            }
+        }
+
+        // Initialize counts for occurrences with no registrations
+        occurrenceIds.forEach(id => {
+            if (!registrationCounts[id]) registrationCounts[id] = 0;
+            if (!attendanceCounts[id]) attendanceCounts[id] = 0;
+        });
+
+        // Add registration/attendance data to occurrences
+        const occurrencesWithData = occurrences.map(occurrence => {
+            const regCount = registrationCounts[occurrence.OccurrenceID] || 0;
+            const capacity = occurrence.EventCapacity || occurrence.EventDefaultCapacity;
+            const isFull = capacity ? regCount >= capacity : false;
+            const isPast = new Date(occurrence.EventDateTimeStart) < now;
+            const attCount = attendanceCounts[occurrence.OccurrenceID] || 0;
+
+            return {
+                ...occurrence,
+                registrationCount: regCount,
+                attendanceCount: attCount,
+                isFull,
+                hasSpace: !isFull,
+                isPast
+            };
+        });
+
+        // Check which occurrences the user is already registered for
+        let registeredOccurrenceIds = [];
+        if (req.session.user && req.session.user.ParticipantID && occurrencesWithData.length > 0) {
+            const registrations = await knex('Registration')
+                .where('ParticipantID', req.session.user.ParticipantID)
+                .whereIn('OccurrenceID', occurrencesWithData.map(o => o.OccurrenceID))
+                .select('OccurrenceID');
+            registeredOccurrenceIds = registrations.map(r => r.OccurrenceID);
+        }
+
+        res.render('registration', {
+            pageTitle: `Register for ${eventTemplate.EventName}`,
+            eventTemplate,
+            occurrences: occurrencesWithData,
+            focusedOccurrenceId,
+            registeredOccurrenceIds,
+        });
+    } catch (err) {
+        console.error('Error loading registration page:', err);
+        res.status(500).send('Error loading registration page');
+    }
+});
+
+// POST /register-occurrence: Register user for an occurrence
+app.post('/register-occurrence', async (req, res) => {
+    try {
+        if (!req.session.user || !req.session.user.ParticipantID) {
+            return res.status(401).json({ success: false, error: 'Please log in to register' });
+        }
+
+        const { occurrenceId } = req.body;
+        const participantId = req.session.user.ParticipantID;
+
+        if (!occurrenceId) {
+            return res.status(400).json({ success: false, error: 'Occurrence ID is required' });
+        }
+
+        // Check if occurrence exists and is in the future
+        const occurrence = await knex('Event_Occurrence')
+            .where('OccurrenceID', occurrenceId)
+            .where('EventDateTimeStart', '>=', knex.fn.now())
+            .first();
+
+        if (!occurrence) {
+            return res.status(404).json({ success: false, error: 'Occurrence not found or has already passed' });
+        }
+
+        // Check if already registered
+        const existingRegistration = await knex('Registration')
+            .where('ParticipantID', participantId)
+            .where('OccurrenceID', occurrenceId)
+            .first();
+
+        if (existingRegistration) {
+            return res.status(400).json({ success: false, error: 'Already registered for this occurrence' });
+        }
+
+        // Register
+        await knex('Registration').insert({
+            ParticipantID: participantId,
+            OccurrenceID: occurrenceId,
+            RegistrationStatus: 'Registered',
+            RegistrationCreatedAt: knex.fn.now()
+        });
+
+        return res.json({ success: true, message: 'Successfully registered!' });
+    } catch (err) {
+        console.error('Error registering for occurrence:', err);
+        return res.status(500).json({ success: false, error: 'Error registering for occurrence' });
+    }
+});
+
+// POST /unregister-occurrence: Unregister user from an occurrence
+app.post('/unregister-occurrence', async (req, res) => {
+    try {
+        if (!req.session.user || !req.session.user.ParticipantID) {
+            return res.status(401).json({ success: false, error: 'Please log in to unregister' });
+        }
+
+        const { occurrenceId } = req.body;
+        const participantId = req.session.user.ParticipantID;
+
+        if (!occurrenceId) {
+            return res.status(400).json({ success: false, error: 'Occurrence ID is required' });
+        }
+
+        // Check if registered
+        const existingRegistration = await knex('Registration')
+            .where('ParticipantID', participantId)
+            .where('OccurrenceID', occurrenceId)
+            .first();
+
+        if (!existingRegistration) {
+            return res.status(404).json({ success: false, error: 'Not registered for this occurrence' });
+        }
+
+        // Unregister
+        await knex('Registration')
+            .where('ParticipantID', participantId)
+            .where('OccurrenceID', occurrenceId)
+            .delete();
+
+        return res.json({ success: true, message: 'Successfully unregistered!' });
+    } catch (err) {
+        console.error('Error unregistering from occurrence:', err);
+        return res.status(500).json({ success: false, error: 'Error unregistering from occurrence' });
     }
 });
 
@@ -2305,6 +2575,10 @@ app.post('/participants/add', async (req, res) => {
 //app.use('/api', apiRoutes);
 app.get('/dashboard', (req, res) => {
     res.render('dashboard', { layout: 'public', pageTitle: 'Dashboard' });
+});
+
+app.get('/info', (req, res) => {
+    res.render('info', { layout: 'public', pageTitle: 'Info' });
 });
 
 // 6. Start Server
