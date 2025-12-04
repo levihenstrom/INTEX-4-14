@@ -1,7 +1,212 @@
-<% pageTitle = 'Events' %>
-
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Events</h1>
+<!-- Events Header -->
+<div class="events-header">
+    <h1>EVENTS</h1>
+    <p>Join us for inspiring workshops, creative experiences, and leadership opportunities that empower the rising
+        generation of women in STEAM fields.</p>
 </div>
 
-<%= JSON.stringify(events) %>
+<!-- Upcoming Events Carousel -->
+<% if (upcomingEvents && upcomingEvents.length > 0) { %>
+<div class="upcoming-events-section">
+    <h2 class="upcoming-events-title">Upcoming Events</h2>
+    <div class="upcoming-events-carousel-container">
+        <button class="carousel-btn carousel-btn-prev" onclick="scrollCarousel('prev')" aria-label="Previous">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div class="upcoming-events-carousel" id="upcomingEventsCarousel">
+            <% upcomingEvents.forEach(event => { %>
+                <div class="upcoming-event-card">
+                    <a href="/registration/<%= event.EventID %>?occurrence=<%= event.OccurrenceID %>" class="upcoming-event-link">
+                        <div class="upcoming-event-image">
+                            <% const imageSrc = `/images/events/event_${event.EventID}_real.jpg`; %>
+                            <img src="<%- imageSrc %>" 
+                                 alt="<%= event.EventName %>" 
+                                 onerror="this.src='/images/events/event_0_real.png'">
+                        </div>
+                        <div class="upcoming-event-content">
+                            <div class="upcoming-event-header">
+                                <h3 class="upcoming-event-name"><%= event.EventName %></h3>
+                                <span class="status-badge <%= event.isFull ? 'status-full' : 'status-available' %>">
+                                    <i class="fa-solid fa-users"></i>
+                                    <%= event.isFull ? 'Full' : 'Space Available' %>
+                                </span>
+                            </div>
+                            <div class="upcoming-event-details">
+                                <% if (event.EventLocation) { %>
+                                    <div class="upcoming-event-detail">
+                                        <i class="fa-solid fa-location-dot"></i>
+                                        <span><%= event.EventLocation %></span>
+                                    </div>
+                                <% } %>
+                                <div class="upcoming-event-detail">
+                                    <i class="fa-solid fa-calendar"></i>
+                                    <span>
+                                        <%= new Date(event.EventDateTimeStart).toLocaleDateString('en-US', { 
+                                            weekday: 'short', 
+                                            month: 'short', 
+                                            day: 'numeric',
+                                            year: 'numeric'
+                                        }) %>
+                                    </span>
+                                </div>
+                                <div class="upcoming-event-detail">
+                                    <i class="fa-solid fa-clock"></i>
+                                    <span>
+                                        <%= new Date(event.EventDateTimeStart).toLocaleTimeString('en-US', { 
+                                            hour: 'numeric', 
+                                            minute: '2-digit',
+                                            hour12: true 
+                                        }) %>
+                                        <% if (event.EventDateTimeEnd) { %>
+                                            - <%= new Date(event.EventDateTimeEnd).toLocaleTimeString('en-US', { 
+                                                hour: 'numeric', 
+                                                minute: '2-digit',
+                                                hour12: true 
+                                            }) %>
+                                        <% } %>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            <% }); %>
+        </div>
+        <button class="carousel-btn carousel-btn-next" onclick="scrollCarousel('next')" aria-label="Next">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </div>
+</div>
+<% } %>
+
+<!-- Events Filters -->
+<div class="events-filters">
+    <div class="filters-title">Filter Events</div>
+    <div class="filters-row">
+        <div class="filter-group">
+            <label for="event-type">Event Type</label>
+            <select id="event-type" class="event-filter">
+                <option value="all">All Event Types</option>
+                <option value="Leadership">Leadership</option>
+                <option value="STEM">STEM</option>
+                <option value="Arts">Arts</option>
+                <option value="Annual Conference">Annual Conference</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="event-recurrence">Recurrence Pattern</label>
+            <select id="event-recurrence" class="event-filter">
+                <option value="all">All Patterns</option>
+                <option value="Monthly">Monthly</option>
+                <option value="Weekly">Weekly</option>
+                <option value="Annual">Annual</option>
+            </select>
+        </div>
+        <div class="filter-buttons">
+            <button class="filter-btn" onclick="clearFilters()">Clear Filters</button>
+        </div>
+    </div>
+</div>
+
+<!-- Events Grid -->
+<div class="events-container">
+    <div class="events-grid">
+        <% event_templates.forEach(event => { %>
+            <div class="event-card-wrapper" 
+                 data-event-id="<%= event.EventID %>" 
+                 data-event-type="<%= event.EventType || '' %>" 
+                 data-event-recurrence="<%= event.EventRecurrencePattern || '' %>" 
+                 data-event-capacity="<%= event.EventDefaultCapacity || '' %>">
+                <a href="/registration/<%= event.EventID %>" class="event-card">
+                    <div class="event-image">
+                        <% const imageSrc = `/images/events/event_${event.EventID}_real.jpg`;
+                        %>
+                        <img src="<%- imageSrc %>" 
+                             alt="<%= event.EventName %>" 
+                             style="width: 100%; height: 100%; object-fit: cover;"
+                             onerror="this.src='/images/events/event_0_real.png'">
+                    </div>
+                    <div class="event-content">
+                        <div class="event-name">
+                            <%= event.EventName %>
+                        </div>
+                        <div class="event-description">
+                            <span class="event-description-text">
+                                <%= event.EventDescription || 'Join us for this exciting event!' %>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        <% }); %>
+    </div>
+</div>
+
+<!-- Filter Functionality -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const eventTypeFilter = document.getElementById('event-type');
+        const eventRecurrenceFilter = document.getElementById('event-recurrence');
+        const eventCardWrappers = document.querySelectorAll('.event-card-wrapper');
+
+        function filterEvents() {
+            const typeValue = eventTypeFilter.value.trim();
+            const recurrenceValue = eventRecurrenceFilter.value.trim();
+
+            eventCardWrappers.forEach(wrapper => {
+                const cardType = (wrapper.getAttribute('data-event-type') || '').trim();
+                const cardRecurrence = (wrapper.getAttribute('data-event-recurrence') || '').trim();
+
+                let showCard = true;
+
+                // Filter by event type (exact match, case-sensitive)
+                if (typeValue !== 'all') {
+                    if (cardType !== typeValue) {
+                        showCard = false;
+                    }
+                }
+
+                // Filter by recurrence pattern (exact match, case-sensitive)
+                if (recurrenceValue !== 'all') {
+                    if (cardRecurrence !== recurrenceValue) {
+                        showCard = false;
+                    }
+                }
+
+                // Show or hide card
+                if (showCard) {
+                    wrapper.style.display = 'block';
+                } else {
+                    wrapper.style.display = 'none';
+                }
+            });
+        }
+
+        // Add event listeners
+        eventTypeFilter.addEventListener('change', filterEvents);
+        eventRecurrenceFilter.addEventListener('change', filterEvents);
+
+        // Clear filters function
+        window.clearFilters = function () {
+            eventTypeFilter.value = 'all';
+            eventRecurrenceFilter.value = 'all';
+            filterEvents();
+        };
+    });
+
+    // Carousel functionality
+    function scrollCarousel(direction) {
+        const carousel = document.getElementById('upcomingEventsCarousel');
+        if (!carousel) return;
+        
+        const cardWidth = carousel.querySelector('.upcoming-event-card').offsetWidth;
+        const gap = 32; // 2rem gap
+        const scrollAmount = cardWidth + gap;
+        
+        if (direction === 'prev') {
+            carousel.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        } else {
+            carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+    }
+</script>
