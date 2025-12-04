@@ -1,30 +1,22 @@
 <% hasHero = true; %>
 
-<% hasHero = true; %>
-
+<!-- ==================== HERO SECTION ==================== -->
 <section class="hero hero-video">
+    <video class="hero-video-bg" autoplay muted playsinline loop preload="auto" defaultMuted>
+    <source src="/images/ella-hero.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
 
-    <!-- Background video -->
-<video class="hero-video-bg" autoplay muted playsinline loop preload="auto" poster="/images/poster.png" defaultMuted>
-  <source src="/images/ella-hero.mp4" type="video/mp4">
-  <!-- fallback text -->
-  Your browser does not support the video tag.
-</video>
-
-<button class="hero-video-toggle" id="heroVideoToggle">
-  <i class="fa-solid fa-pause"></i>
+    <button class="hero-video-toggle" id="heroVideoToggle">
+    <i class="fa-solid fa-pause"></i>
 </button>
 
-    <!-- Centered hero text/buttons -->
     <div class="hero-text">
-
     <h1 class="hero-title">Ella Rises</h1>
-
     <p class="hero-subtitle">
         Empowering young women to pursue higher education through high-impact
         multicultural activities focused on mariachi and STEAM.
     </p>
-
     <div class="hero-buttons">
         <a href="/info" class="hero-btn-watch">Watch the film</a>
         <% if (user) { %>
@@ -33,97 +25,291 @@
           <a href="/register" class="hero-btn-secondary">Get Started</a>
         <% } %>
     </div>
-
 </div>
-
 </section>
 
-<section class="impact-section">
+<!-- ==================== IMPACT SECTION ==================== -->
+<section class="impact-container">
   <div class="impact-inner">
-
-    <h2 class="impact-title">Our Impact</h2>
-
-    <div class="impact-grid-clean">
-
-      <div class="impact-item">
-        <i class="fa-solid fa-user-group impact-icon peach"></i>
-        <h3>130</h3>
+        <div class="impact-header-card">
+            <span class="impact-label">Making a Difference</span>
+    <h2>Our Impact</h2>
+            <p class="impact-subtitle">Together, we're creating opportunities for young women to thrive through education, art, and community.</p>
+        </div>
+    <div class="impact-grid">
+      <div class="impact-card">
+        <i class="fas fa-users" style="color:#F4B092;"></i>
+        <span class="impact-number">130</span>
         <p>Youth Participants</p>
       </div>
-
-      <div class="impact-item">
-        <i class="fa-solid fa-file-circle-check impact-icon lavender"></i>
-        <h3>254</h3>
+      <div class="impact-card">
+        <i class="fas fa-file-alt" style="color:#99B7C6;"></i>
+        <span class="impact-number">254</span>
         <p>Applications Received</p>
       </div>
-
-      <div class="impact-item">
-        <i class="fa-solid fa-seedling impact-icon sage"></i>
-        <h3>$49,600</h3>
+      <div class="impact-card">
+        <i class="fas fa-seedling" style="color:#9AB59D;"></i>
+        <span class="impact-number">$49,600</span>
         <p>Funds Distributed</p>
       </div>
-
-      <div class="impact-item">
-        <i class="fa-solid fa-people-group impact-icon rose"></i>
-        <h3>6,051</h3>
+      <div class="impact-card">
+        <i class="fas fa-people-group" style="color:#CE325B;"></i>
+        <span class="impact-number">6,051</span>
         <p>Youth Engaged</p>
       </div>
-
-      <div class="impact-item">
-        <i class="fa-solid fa-chalkboard-user impact-icon mint"></i>
-        <h3>52</h3>
+      <div class="impact-card">
+        <i class="fas fa-chalkboard" style="color:#978EC4;"></i>
+        <span class="impact-number">52</span>
         <p>Workshops Hosted</p>
       </div>
-
-      <div class="impact-item">
-        <i class="fa-solid fa-handshake-angle impact-icon charcoal"></i>
-        <h3>87</h3>
-        <p>Mentors & Volunteers</p>
-      </div>
-
     </div>
   </div>
 </section>
 
-<!-- Features Section -->
-<section class="stats-section">
-    <div class="stat-card">
-        <i class="fa-solid fa-users"></i>
-        <h2>130</h2>
-        <p>Youth Participants</p>
-    </div>
-
-    <div class="stat-card">
-        <i class="fa-solid fa-hand-holding-heart"></i>
-        <h2>254</h2>
-        <p>Applications Received</p>
-    </div>
-
-    <div class="stat-card">
-        <i class="fa-solid fa-seedling"></i>
-        <h2>$49,600</h2>
-        <p>Funds Distributed</p>
-    </div>
-
-    <div class="stat-card">
-        <i class="fa-solid fa-people-line"></i>
-        <h2>6,051</h2>
-        <p>Youth Engaged</p>
+<!-- ==================== SPONSORS SECTION ==================== -->
+<section class="sponsors-section">
+    <div class="sponsors-inner">
+        <div class="sponsors-header-card">
+            <span class="sponsors-label">Proudly Supported By</span>
+            <h2>Our Partners & Sponsors</h2>
+            <p class="sponsors-subtitle">
+                These incredible organizations believe in our mission and help us empower 
+                young women through education, art, and community.
+            </p>
+        </div>
+        <div class="sponsors-grid">
+            <div class="sponsor-card">
+                <div class="sponsor-logo">
+                    <i class="fas fa-university"></i>
+                </div>
+                <span class="sponsor-name">BYU</span>
+            </div>
+            <div class="sponsor-card">
+                <div class="sponsor-logo">
+                    <i class="fas fa-building"></i>
+                </div>
+                <span class="sponsor-name">Community Foundation</span>
+            </div>
+            <div class="sponsor-card">
+                <div class="sponsor-logo">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <span class="sponsor-name">United Way</span>
+            </div>
+            <div class="sponsor-card">
+                <div class="sponsor-logo">
+                    <i class="fas fa-music"></i>
+                </div>
+                <span class="sponsor-name">Arts Council</span>
+            </div>
+            <div class="sponsor-card">
+                <div class="sponsor-logo">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <span class="sponsor-name">Education First</span>
+            </div>
+        </div>
+        <a href="/sponsors" class="sponsors-cta">Become a Partner <i class="fas fa-arrow-right"></i></a>
     </div>
 </section>
 
-<!-- Gallery Section -->
+<!-- ==================== UPCOMING EVENTS SECTION ==================== -->
+<section class="events-section">
+    <div class="events-inner">
+        <div class="events-header-card">
+            <span class="events-label">Join Us</span>
+            <h2>Upcoming Events</h2>
+            <p class="events-subtitle">
+                Be part of our community. Join a workshop, attend a performance, or volunteer at one of our upcoming events.
+            </p>
+        </div>
+        <div class="events-grid">
+            <article class="event-card event-featured">
+                <div class="event-date">
+                    <span class="event-month">JAN</span>
+                    <span class="event-day">15</span>
+                </div>
+                <div class="event-content">
+                    <span class="event-tag">Workshop</span>
+                    <h3>Mariachi Workshop for Beginners</h3>
+                    <p>Learn the basics of mariachi music in this hands-on workshop for young women ages 10-18.</p>
+                    <div class="event-meta">
+                        <span><i class="fas fa-clock"></i> 2:00 PM - 5:00 PM</span>
+                        <span><i class="fas fa-map-marker-alt"></i> Provo Community Center</span>
+                    </div>
+                    <a href="/events" class="event-btn">Register Now</a>
+                </div>
+            </article>
+            <article class="event-card">
+                <div class="event-date">
+                    <span class="event-month">JAN</span>
+                    <span class="event-day">22</span>
+                </div>
+                <div class="event-content">
+                    <span class="event-tag tag-steam">STEAM</span>
+                    <h3>Girls in Engineering Day</h3>
+                    <p>Interactive STEAM activities and mentorship with local engineers.</p>
+                    <div class="event-meta">
+                        <span><i class="fas fa-clock"></i> 10:00 AM - 2:00 PM</span>
+                        <span><i class="fas fa-map-marker-alt"></i> BYU Campus</span>
+                    </div>
+                    <a href="/events" class="event-btn">Learn More</a>
+                </div>
+            </article>
+            <article class="event-card">
+                <div class="event-date">
+                    <span class="event-month">FEB</span>
+                    <span class="event-day">08</span>
+                </div>
+                <div class="event-content">
+                    <span class="event-tag tag-performance">Performance</span>
+                    <h3>Annual Showcase Concert</h3>
+                    <p>Our young artists perform mariachi, dance, and original compositions.</p>
+                    <div class="event-meta">
+                        <span><i class="fas fa-clock"></i> 7:00 PM</span>
+                        <span><i class="fas fa-map-marker-alt"></i> Covey Center for the Arts</span>
+                    </div>
+                    <a href="/events" class="event-btn">Get Tickets</a>
+                </div>
+            </article>
+        </div>
+        <a href="/events" class="events-view-all">View All Events <i class="fas fa-arrow-right"></i></a>
+    </div>
+</section>
+
+<!-- ==================== PHOTO GALLERY SECTION ==================== -->
 <section class="gallery-section">
-    <h2>Our Community in Action</h2>
-    <div class="gallery-grid">
-        <img src="/images/ella_art.jpeg" />
-        <img src="/images/gallery2.jpg" />
-        <img src="/images/gallery3.jpg" />
-        <img src="/images/gallery4.jpg" />
-        <img src="/images/gallery5.jpg" />
-        <img src="/images/gallery6.jpg" />
+    <div class="gallery-inner">
+        <span class="gallery-label">Our Community</span>
+        <h2>In Action</h2>
+        <p class="gallery-subtitle">
+            Moments of growth, creativity, and joy from our workshops, performances, and community events.
+        </p>
+        <div class="gallery-grid-masonry">
+            <div class="gallery-item gallery-large">
+                <img src="/images/ella_bigmural.jpg" alt="Ella Rises mural project" />
+                <div class="gallery-overlay">
+                    <span>Mural Project 2024</span>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <img src="/images/ella_workshop.jpg" alt="Workshop session" />
+                <div class="gallery-overlay">
+                    <span>Workshop</span>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <img src="/images/ella_trumpet.jpeg" alt="Mariachi performance" />
+                <div class="gallery-overlay">
+                    <span>Mariachi</span>
+                </div>
+            </div>
+            <div class="gallery-item gallery-tall">
+                <img src="/images/ella_dance.jpeg" alt="Dance performance" />
+                <div class="gallery-overlay">
+                    <span>Dance</span>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <img src="/images/ella_art.jpeg" alt="Art workshop" />
+                <div class="gallery-overlay">
+                    <span>Art</span>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <img src="/images/ella_group.jpeg" alt="Group photo" />
+                <div class="gallery-overlay">
+                    <span>Community</span>
+                </div>
+            </div>
+            <div class="gallery-item gallery-wide">
+                <img src="/images/ella_band.jpeg" alt="Band performance" />
+                <div class="gallery-overlay">
+                    <span>Performance</span>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <img src="/images/ella_workshop3.jpg" alt="STEAM workshop" />
+                <div class="gallery-overlay">
+                    <span>STEAM</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== CALL TO ACTION SECTION ==================== -->
+<section class="cta-section">
+    <div class="cta-inner">
+        <div class="cta-header-card">
+            <h2>Ready to Make a Difference?</h2>
+            <p>Join our community of supporters, volunteers, and advocates helping young women rise to their full potential.</p>
+            <div class="cta-buttons">
+                <a href="/register" class="cta-btn-primary">
+                    <i class="fas fa-hand-holding-heart"></i> Donate Now
+                </a>
+                <a href="/register" class="cta-btn-secondary">
+                    <i class="fas fa-users"></i> Become a Volunteer
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== FOOTER SECTION ==================== -->
+<footer class="site-footer">
+    <div class="footer-main">
+        <div class="footer-brand">
+            <img src="/images/Ella_Rises_Logo.PNG" alt="Ella Rises" class="footer-logo" />
+            <p class="footer-tagline">Empowering young women through education, music, and community.</p>
+            <div class="footer-social">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+        </div>
+        <div class="footer-links">
+            <div class="footer-column">
+                <h4>Programs</h4>
+                <ul>
+                    <li><a href="/programs">Mariachi Academy</a></li>
+                    <li><a href="/programs">STEAM Workshops</a></li>
+                    <li><a href="/programs">Dance Classes</a></li>
+                    <li><a href="/programs">Art Programs</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Get Involved</h4>
+                <ul>
+                    <li><a href="/register">Volunteer</a></li>
+                    <li><a href="/register">Donate</a></li>
+                    <li><a href="/sponsors">Become a Sponsor</a></li>
+                    <li><a href="/events">Attend an Event</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>About</h4>
+                <ul>
+                    <li><a href="/about">Our Story</a></li>
+                    <li><a href="/about">Our Team</a></li>
+                    <li><a href="/about">Impact Report</a></li>
+                    <li><a href="/contact">Contact Us</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2024 Ella Rises Foundation. All rights reserved.</p>
+        <div class="footer-legal">
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/terms">Terms of Use</a>
+        </div>
+    </div>
+</footer>
 
         <script>
+    // Hero video play/pause toggle
     const heroVideo = document.querySelector('.hero-video-bg');
     const toggleBtn = document.getElementById('heroVideoToggle');
     const icon = toggleBtn.querySelector('i');
@@ -139,9 +325,102 @@
             icon.classList.add('fa-play');
         }
     });
+
+    // ========== SCROLL ANIMATIONS ==========
+    const scrollObserverOptions = {
+        threshold: 0.15,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    // Observer for cards and elements
+    const scrollAnimationObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animated');
+                scrollAnimationObserver.unobserve(entry.target);
+            }
+        });
+    }, scrollObserverOptions);
+
+    // Observe all impact cards
+    document.querySelectorAll('.impact-card').forEach(card => {
+        scrollAnimationObserver.observe(card);
+    });
+
+    // Observe all sponsor cards
+    document.querySelectorAll('.sponsor-card').forEach(card => {
+        scrollAnimationObserver.observe(card);
+    });
+
+    // Observe all event cards
+    document.querySelectorAll('.event-card').forEach(card => {
+        scrollAnimationObserver.observe(card);
+    });
+
+    // Observe all gallery items
+    document.querySelectorAll('.gallery-item').forEach(item => {
+        scrollAnimationObserver.observe(item);
+    });
+
+    // ========== NUMBER COUNTER ANIMATION ==========
+    const numberObserverOptions = {
+        threshold: 0.5,
+        rootMargin: '0px'
+    };
+
+    const animateNumbers = (entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const numbers = entry.target.querySelectorAll('.impact-number');
+                numbers.forEach(num => {
+                    const target = num.innerText;
+                    const isPrice = target.includes('$');
+                    const cleanNum = parseInt(target.replace(/[^0-9]/g, ''));
+                    let current = 0;
+                    const increment = cleanNum / 50;
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= cleanNum) {
+                            num.innerText = target;
+                            clearInterval(timer);
+                        } else {
+                            num.innerText = isPrice 
+                                ? '$' + Math.floor(current).toLocaleString()
+                                : Math.floor(current).toLocaleString();
+                        }
+                    }, 30);
+                });
+                observer.unobserve(entry.target);
+            }
+        });
+    };
+
+    const impactObserver = new IntersectionObserver(animateNumbers, numberObserverOptions);
+    const impactSection = document.querySelector('.impact-container');
+    if (impactSection) impactObserver.observe(impactSection);
+
+    // ========== SMOOTH SCROLL FOR INTERNAL LINKS ==========
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // ========== PARALLAX EFFECT ON HERO (subtle) ==========
+    window.addEventListener('scroll', () => {
+        const scrolled = window.pageYOffset;
+        const heroText = document.querySelector('.hero-text');
+        if (heroText && scrolled < 800) {
+            // Keep centered with translate(-50%, -50%) while adding parallax offset
+            heroText.style.transform = `translate(-50%, -50%) translateY(${scrolled * 0.15}px)`;
+            heroText.style.opacity = Math.max(0, 1 - (scrolled * 0.0012));
+        }
+    });
 </script>
-
-
-
-    </div>
-</section>
