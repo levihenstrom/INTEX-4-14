@@ -271,6 +271,13 @@ p, li, a, .nav-link {
     box-shadow: 0 2px 10px rgba(0,0,0,0.06);
 }
 
+/* Mobile navbar padding */
+@media (max-width: 991.98px) {
+    .navbar {
+        padding: 0.75rem 0;
+    }
+}
+
 /* Navbar container: logo left, nav items right */
 .navbar .container-fluid {
     display: flex !important;
@@ -278,6 +285,18 @@ p, li, a, .nav-link {
     align-items: center !important;
     gap: 0; /* optional, spacing handled inside nav */
     padding: 0 2rem; /* optional horizontal padding */
+}
+
+/* Mobile navbar container adjustments */
+@media (max-width: 991.98px) {
+    .navbar .container-fluid {
+        padding: 0 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .navbar-brand {
+        flex-shrink: 0;
+    }
 }
 
 /* Navbar brand stays on left */
@@ -289,7 +308,30 @@ p, li, a, .nav-link {
     justify-content: flex-start;
 }
 
-/* Navbar links aligned right */
+.navbar-brand img {
+    height: 60px;
+    width: auto;
+    transition: transform 0.2s ease;
+}
+
+.navbar-brand:hover img {
+    transform: scale(1.05);
+}
+
+/* Mobile logo sizing */
+@media (max-width: 991.98px) {
+    .navbar-brand img {
+        height: 50px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .navbar-brand img {
+        height: 45px;
+    }
+}
+
+/* Navbar links aligned right - Desktop */
 .navbar-nav {
     flex-direction: row !important;
     display: flex !important;
@@ -306,26 +348,263 @@ p, li, a, .nav-link {
     justify-content: flex-end !important;
 }
 
+/* Navbar toggler button styling */
+.navbar-toggler {
+    border: 1px solid rgba(58, 63, 59, 0.2);
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+}
 
-/* Custom CSS to enable dropdown on hover */
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 0.2rem rgba(58, 63, 59, 0.25);
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2858, 63, 59, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* Nav link wrapper for dropdown items */
+.nav-link-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+/* Make nav links obviously clickable */
+.nav-link {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: #3A3F3B;
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+}
+
+.nav-link:hover {
+    color: #CE325B;
+    background-color: rgba(206, 50, 91, 0.08);
+    transform: translateY(-1px);
+}
+
+.nav-link:active {
+    transform: translateY(0);
+    background-color: rgba(206, 50, 91, 0.15);
+}
+
+/* Add underline effect on hover for non-dropdown links */
+.nav-item:not(.dropdown) .nav-link::after {
+    content: "";
+    position: absolute;
+    bottom: 0.25rem;
+    left: 0.75rem;
+    right: 0.75rem;
+    height: 2px;
+    background-color: #CE325B;
+    transform: scaleX(0);
+    transition: transform 0.2s ease;
+}
+
+.nav-item:not(.dropdown) .nav-link:hover::after {
+    transform: scaleX(1);
+}
+
+/* Dropdown arrow icon */
+.dropdown-arrow {
+    font-size: 0.7rem;
+    transition: transform 0.2s ease;
+    opacity: 0.7;
+}
+
+.nav-item.dropdown:hover .dropdown-arrow {
+    transform: rotate(180deg);
+    opacity: 1;
+}
+
+/* Create a hover bridge between nav item and dropdown */
+.nav-item.dropdown {
+    position: relative;
+}
+
+/* Custom CSS to enable dropdown on hover - Desktop only */
 .dropdown-menu {
     /* Hide the dropdown menu initially */
     display: none;
-    /* (Optional) Adjust position if needed */
+    /* Positioned directly below nav item with minimal gap */
     margin-top: 0;
     right: 0;
     left: auto;
+    background-color: #F9F5EA;
+    border: 1px solid rgba(58, 63, 59, 0.1);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    padding: 0.75rem 0 0.5rem 0;
+    min-width: 180px;
+    position: absolute;
+    top: 100%;
+    z-index: 1000;
 }
 
-/* Show the dropdown menu when the parent list item is hovered */
-.nav-item.dropdown:hover .dropdown-menu {
+/* Add padding at top of dropdown to create hover bridge */
+.dropdown-menu::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 0.5rem;
+    background: transparent;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    color: #3A3F3B;
+    transition: all 0.2s ease;
+    text-decoration: none;
     display: block;
 }
 
-/* (Optional) Hide the dropdown arrow/caret on the nav-link */
-/* since the click/toggle functionality is removed */
-.nav-item.dropdown .dropdown-toggle::after {
-    display: none;
+.dropdown-item:hover {
+    background-color: rgba(58, 63, 59, 0.1);
+    color: #CE325B;
+    padding-left: 1.25rem;
+}
+
+/* Show the dropdown menu when the parent list item is hovered - Desktop only */
+@media (min-width: 992px) {
+    /* Show dropdown when hovering nav item */
+    .nav-item.dropdown:hover .dropdown-menu {
+        display: block;
+        animation: fadeInDown 0.15s ease;
+    }
+    
+    /* Keep dropdown visible when hovering over the dropdown menu itself */
+    .nav-item.dropdown .dropdown-menu:hover {
+        display: block !important;
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile: Show dropdown arrow and use Bootstrap's click functionality */
+@media (max-width: 991.98px) {
+    /* Mobile navbar adjustments */
+    .navbar-nav {
+        flex-direction: column !important;
+        gap: 0 !important;
+        width: 100%;
+        padding: 1rem 0;
+    }
+    
+    .nav-item {
+        width: 100%;
+        border-bottom: 1px solid rgba(58, 63, 59, 0.1);
+    }
+    
+    .nav-item:last-child {
+        border-bottom: none;
+    }
+    
+    .nav-link-wrapper {
+        width: 100%;
+    }
+    
+    .nav-link {
+        padding: 0.75rem 1rem !important;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        font-weight: 600;
+        border-radius: 0;
+    }
+    
+    .nav-link:hover {
+        background-color: rgba(206, 50, 91, 0.1);
+        color: #CE325B;
+        transform: none;
+    }
+    
+    .nav-link:active {
+        background-color: rgba(206, 50, 91, 0.15);
+    }
+    
+    .dropdown-arrow {
+        font-size: 0.8rem;
+    }
+    
+    /* Mobile dropdown toggle - click to expand */
+    .nav-item.dropdown {
+        position: relative;
+    }
+    
+    /* Visual indicator for clickable arrow area on mobile */
+    .nav-item.dropdown .nav-link {
+        position: relative;
+    }
+    
+    .nav-item.dropdown .nav-link::before {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 50px;
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    /* Show dropdown menu when active class is applied (via JavaScript) */
+    .nav-item.dropdown.active .dropdown-menu {
+        display: block;
+    }
+    
+    .nav-item.dropdown.active .dropdown-arrow {
+        transform: rotate(180deg);
+    }
+    
+    .dropdown-menu {
+        position: static !important;
+        float: none;
+        width: 100%;
+        margin-top: 0;
+        background-color: rgba(58, 63, 59, 0.03);
+        border: none;
+        border-top: 1px solid rgba(58, 63, 59, 0.1);
+        box-shadow: none;
+        padding: 0;
+        display: none;
+    }
+    
+    .dropdown-item {
+        padding: 0.75rem 2rem;
+        border-bottom: 1px solid rgba(58, 63, 59, 0.05);
+    }
+    
+    .dropdown-item:last-child {
+        border-bottom: none;
+    }
+    
+    .dropdown-item:hover {
+        padding-left: 2rem;
+    }
+    
+    .navbar-collapse {
+        margin-top: 1rem;
+        border-top: 1px solid rgba(58, 63, 59, 0.1);
+    }
 }
 
 
@@ -1180,15 +1459,17 @@ body:not(.has-hero) {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.4rem 0.9rem;
+    padding: 0.45rem 1rem;
     border-radius: 20px;
     font-family: 'Montserrat', sans-serif;
     font-size: 0.85rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    width: fit-content;    
     white-space: nowrap;
     flex-shrink: 0;
+    line-height: 1.1;
 }
 
 .status-badge i {
@@ -1451,6 +1732,52 @@ body:not(.has-hero) {
 
 .event-label i {
     font-size: 0.85rem;
+}
+
+.filter-labels .filter-pill {
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.filter-labels .filter-pill.filter-selected {
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+    color: white;
+}
+
+.filter-labels .filter-pill.filter-selected.event-label-type-stem {
+    background-color: #99B7C6;
+    border-color: #99B7C6;
+}
+
+.filter-labels .filter-pill.filter-selected.event-label-type-arts {
+    background-color: #F4B092;
+    border-color: #F4B092;
+}
+
+.filter-labels .filter-pill.filter-selected.event-label-type-leadership {
+    background-color: #9AB59D;
+    border-color: #9AB59D;
+}
+
+.filter-labels .filter-pill.filter-selected.event-label-type-annual-conference {
+    background-color: #978EC4;
+    border-color: #978EC4;
+}
+
+.filter-labels .filter-pill.filter-selected.event-label-recurrence-weekly {
+    background-color: #978EC4;
+    border-color: #978EC4;
+}
+
+.filter-labels .filter-pill.filter-selected.event-label-recurrence-monthly {
+    background-color: #99B7C6;
+    border-color: #99B7C6;
+}
+
+.filter-labels .filter-pill.filter-selected.event-label-recurrence-annual {
+    background-color: #9AB59D;
+    border-color: #9AB59D;
 }
 
 /* Event Type Label Colors */
@@ -1783,8 +2110,12 @@ body:not(.has-hero) {
     background: white;
     border-radius: 12px;
     padding: 1.5rem;
-    max-width: 500px;
-    width: 90%;
+    max-width: 640px;
+    width: 92%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
@@ -1801,6 +2132,13 @@ body:not(.has-hero) {
     font-size: 1.25rem;
     cursor: pointer;
     color: #4B4F4B;
+}
+
+.reg-form-group label {
+    font-weight: 600;
+    color: #3A3F3B;
+    margin-bottom: 0.35rem;
+    display: block;
 }
 
 /* ====================================================== */
@@ -2824,9 +3162,9 @@ body:not(.has-hero) {
         gap: 0.75rem;
     }
     
-    .occurrence-status {
+    /* .occurrence-status {
         width: 100%;
-    }
+    } */
     
     .occurrence-card .btn {
         width: 100%;

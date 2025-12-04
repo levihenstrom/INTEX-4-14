@@ -42,6 +42,15 @@
 # Extra Scope
 # -- add icon for milestone type
 # -- interest icons on profile page
-# -- event type pictures
 # -- filter modal on participant page
 # -- alert to check in to event that is registered for
+
+
+
+# Admin login: 
+# -- Email: ella.johnson0@learners.net
+# -- Password: Ellarisesadmin
+
+# User login: 
+# -- Email: lucy.allen15@studentmail.org
+# -- Password: Password11

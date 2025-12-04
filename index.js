@@ -929,6 +929,14 @@ app.get('/registration/:id', async (req, res) => {
             if (!attendanceCounts[id]) attendanceCounts[id] = 0;
         });
 
+        // Build unique location options for admin dropdown
+        const locationOptions = Array.from(new Set(
+            occurrences
+                .map(o => o.EventLocation)
+                .filter(loc => typeof loc === 'string' && loc.trim().length > 0)
+                .map(loc => loc.trim())
+        ));
+
         // Add registration/attendance data to occurrences
         const occurrencesWithData = occurrences.map(occurrence => {
             const regCount = registrationCounts[occurrence.OccurrenceID] || 0;
@@ -957,12 +965,74 @@ app.get('/registration/:id', async (req, res) => {
             registeredOccurrenceIds = registrations.map(r => r.OccurrenceID);
         }
 
+        // Build admin-only data for modal (participants per occurrence)
+        let adminOccurrenceData = {};
+        if (req.session.isAdmin) {
+            adminOccurrenceData = occurrencesWithData.reduce((acc, occurrence) => {
+                acc[occurrence.OccurrenceID] = {
+                    occurrence: {
+                        id: occurrence.OccurrenceID,
+                        title: occurrence.EventName,
+                        start: occurrence.EventDateTimeStart,
+                        end: occurrence.EventDateTimeEnd,
+                        location: occurrence.EventLocation,
+                        capacity: occurrence.EventCapacity || occurrence.EventDefaultCapacity || null,
+                        registrationCount: occurrence.registrationCount,
+                        isPast: occurrence.isPast
+                    },
+                    participants: []
+                };
+                return acc;
+            }, {});
+
+            if (occurrenceIds.length > 0) {
+                const adminRegistrations = await knex('Registration as r')
+                    .leftJoin('Participants as p', 'r.ParticipantID', 'p.ParticipantID')
+                    .leftJoin('Surveys as s', 'r.RegistrationID', 's.RegistrationID')
+                    .select(
+                        'r.OccurrenceID',
+                        'r.ParticipantID',
+                        'r.RegistrationID',
+                        'r.RegistrationStatus',
+                        'r.RegistrationAttendedFlag',
+                        'r.RegistrationCheckInTime',
+                        'r.RegistrationCreatedAt',
+                        'p.ParticipantFirstName',
+                        'p.ParticipantLastName',
+                        'p.ParticipantEmail',
+                        's.SurveyID'
+                    )
+                    .whereIn('r.OccurrenceID', occurrenceIds)
+                    .orderBy('r.RegistrationCreatedAt', 'asc');
+
+                adminRegistrations.forEach((row) => {
+                    const bucket = adminOccurrenceData[row.OccurrenceID];
+                    if (!bucket) return;
+                    const nameParts = [row.ParticipantFirstName, row.ParticipantLastName].filter(Boolean);
+                    const fullName = nameParts.length ? nameParts.join(' ') : `Participant ${row.ParticipantID}`;
+
+                    bucket.participants.push({
+                        participantId: row.ParticipantID,
+                        registrationId: row.RegistrationID,
+                        name: fullName,
+                        email: row.ParticipantEmail || 'No email',
+                        status: row.RegistrationStatus || 'Registered',
+                        attended: !!row.RegistrationAttendedFlag,
+                        checkInTime: row.RegistrationCheckInTime,
+                        surveyId: row.SurveyID || null
+                    });
+                });
+            }
+        }
+
         res.render('registration', {
             pageTitle: `Register for ${eventTemplate.EventName}`,
             eventTemplate,
             occurrences: occurrencesWithData,
             focusedOccurrenceId,
             registeredOccurrenceIds,
+            adminOccurrenceData,
+            locationOptions
         });
     } catch (err) {
         console.error('Error loading registration page:', err);
@@ -1053,6 +1123,220 @@ app.post('/unregister-occurrence', async (req, res) => {
     } catch (err) {
         console.error('Error unregistering from occurrence:', err);
         return res.status(500).json({ success: false, error: 'Error unregistering from occurrence' });
+    }
+});
+
+// POST /occurrences/:id/delete: Admin delete an occurrence (and its registrations)
+app.post('/occurrences/:id/delete', async (req, res) => {
+    try {
+        if (!req.session.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Admin access required' });
+        }
+
+        const occurrenceId = parseInt(req.params.id, 10);
+        if (!occurrenceId) {
+            return res.status(400).json({ success: false, error: 'Occurrence ID is required' });
+        }
+
+        await knex.transaction(async (trx) => {
+            await trx('Registration').where('OccurrenceID', occurrenceId).del();
+            const deleted = await trx('Event_Occurrence').where('OccurrenceID', occurrenceId).del();
+            if (!deleted) {
+                throw new Error('Occurrence not found');
+            }
+        });
+
+        return res.json({ success: true, message: 'Occurrence deleted' });
+    } catch (err) {
+        console.error('Error deleting occurrence:', err);
+        const message = err.message === 'Occurrence not found' ? err.message : 'Error deleting occurrence';
+        return res.status(500).json({ success: false, error: message });
+    }
+});
+
+// POST /occurrences/:id/update: Admin update occurrence date/time/location
+app.post('/occurrences/:id/update', async (req, res) => {
+    try {
+        if (!req.session.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Admin access required' });
+        }
+
+        const occurrenceId = parseInt(req.params.id, 10);
+        if (!occurrenceId) {
+            return res.status(400).json({ success: false, error: 'Occurrence ID is required' });
+        }
+
+        const { date, startTime, endTime, location } = req.body || {};
+        if (!date || !startTime) {
+            return res.status(400).json({ success: false, error: 'Date and start time are required' });
+        }
+
+        const start = new Date(`${date}T${startTime}`);
+        const end = endTime ? new Date(`${date}T${endTime}`) : null;
+
+        if (Number.isNaN(start.getTime()) || (endTime && Number.isNaN(end.getTime()))) {
+            return res.status(400).json({ success: false, error: 'Invalid date or time' });
+        }
+
+        await knex('Event_Occurrence')
+            .where('OccurrenceID', occurrenceId)
+            .update({
+                EventDateTimeStart: start.toISOString(),
+                EventDateTimeEnd: end ? end.toISOString() : null,
+                EventLocation: location || null
+            });
+
+        return res.json({
+            success: true,
+            message: 'Occurrence updated',
+            occurrence: {
+                EventDateTimeStart: start.toISOString(),
+                EventDateTimeEnd: end ? end.toISOString() : null,
+                EventLocation: location || null
+            }
+        });
+    } catch (err) {
+        console.error('Error updating occurrence:', err);
+        return res.status(500).json({ success: false, error: 'Error updating occurrence' });
+    }
+});
+
+// Admin: register a participant to an occurrence
+app.post('/admin/occurrences/:id/register-user', async (req, res) => {
+    try {
+        if (!req.session.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Admin access required' });
+        }
+        const occurrenceId = parseInt(req.params.id, 10);
+        const participantId = parseInt(req.body.participantId, 10);
+        if (!occurrenceId || !participantId) {
+            return res.status(400).json({ success: false, error: 'Occurrence ID and participant ID are required' });
+        }
+
+        // Check participant exists
+        const participant = await knex('Participants').where('ParticipantID', participantId).first();
+        if (!participant) {
+            return res.status(404).json({ success: false, error: 'Participant not found' });
+        }
+
+        // Check duplicate
+        const existing = await knex('Registration')
+            .where('ParticipantID', participantId)
+            .andWhere('OccurrenceID', occurrenceId)
+            .first();
+        if (existing) {
+            return res.status(400).json({ success: false, error: 'Participant already registered' });
+        }
+
+        const [registrationId] = await knex('Registration')
+            .insert({
+                ParticipantID: participantId,
+                OccurrenceID: occurrenceId,
+                RegistrationStatus: 'Registered',
+                RegistrationCreatedAt: knex.fn.now()
+            })
+            .returning('RegistrationID');
+
+        return res.json({
+            success: true,
+            registration: {
+                registrationId: registrationId?.RegistrationID || registrationId,
+                participantId,
+                name: `${participant.ParticipantFirstName || ''} ${participant.ParticipantLastName || ''}`.trim() || `Participant ${participantId}`,
+                email: participant.ParticipantEmail || 'No email',
+                status: 'Registered',
+                attended: false,
+                checkInTime: null,
+                surveyId: null
+            }
+        });
+    } catch (err) {
+        console.error('Error registering participant (admin):', err);
+        return res.status(500).json({ success: false, error: 'Error registering participant' });
+    }
+});
+
+// Admin: update registration status/attendance
+app.post('/admin/registrations/:id/update-status', async (req, res) => {
+    try {
+        if (!req.session.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Admin access required' });
+        }
+        const registrationId = parseInt(req.params.id, 10);
+        if (!registrationId) {
+            return res.status(400).json({ success: false, error: 'Registration ID is required' });
+        }
+        const { status, attended } = req.body || {};
+        const attendedFlag = attended === true || attended === 'true';
+        const newStatus = status || 'Registered';
+
+        await knex('Registration')
+            .where('RegistrationID', registrationId)
+            .update({
+                RegistrationStatus: newStatus,
+                RegistrationAttendedFlag: attendedFlag,
+                RegistrationCheckInTime: attendedFlag ? knex.fn.now() : null
+            });
+
+        return res.json({ success: true });
+    } catch (err) {
+        console.error('Error updating registration status (admin):', err);
+        return res.status(500).json({ success: false, error: 'Error updating registration status' });
+    }
+});
+
+// Admin: remove a registration
+app.post('/admin/registrations/:id/delete', async (req, res) => {
+    try {
+        if (!req.session.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Admin access required' });
+        }
+        const registrationId = parseInt(req.params.id, 10);
+        if (!registrationId) {
+            return res.status(400).json({ success: false, error: 'Registration ID is required' });
+        }
+        await knex('Surveys').where('RegistrationID', registrationId).del();
+        await knex('Registration').where('RegistrationID', registrationId).del();
+        return res.json({ success: true });
+    } catch (err) {
+        console.error('Error deleting registration (admin):', err);
+        return res.status(500).json({ success: false, error: 'Error deleting registration' });
+    }
+});
+
+// Admin: participant search (simple typeahead)
+app.get('/admin/participants/search', async (req, res) => {
+    try {
+        if (!req.session.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Admin access required' });
+        }
+        const q = (req.query.q || '').trim();
+        if (!q) {
+            return res.json({ success: true, results: [] });
+        }
+        const searchPattern = `%${q}%`;
+        const results = await knex('Participants')
+            .select('ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 'ParticipantEmail')
+            .where(function () {
+                this.where('ParticipantFirstName', 'ilike', searchPattern)
+                    .orWhere('ParticipantLastName', 'ilike', searchPattern)
+                    .orWhereRaw("(\"ParticipantFirstName\" || ' ' || \"ParticipantLastName\") ILIKE ?", [searchPattern])
+                    .orWhere('ParticipantEmail', 'ilike', searchPattern)
+                    .orWhereRaw('CAST("ParticipantID" AS TEXT) ILIKE ?', [searchPattern]);
+            })
+            .orderBy('ParticipantFirstName', 'asc')
+            .limit(10);
+        return res.json({
+            success: true,
+            results: results.map(r => ({
+                participantId: r.ParticipantID,
+                name: `${r.ParticipantFirstName || ''} ${r.ParticipantLastName || ''}`.trim() || `Participant ${r.ParticipantID}`,
+                email: r.ParticipantEmail || 'No email'
+            }))
+        });
+    } catch (err) {
+        console.error('Error searching participants (admin):', err);
+        return res.status(500).json({ success: false, error: 'Error searching participants' });
     }
 });
 
@@ -1407,6 +1691,7 @@ app.get('/surveys', async (req, res) => {
         const filterState = req.query.filterState || '';
         const filterRole = req.query.filterRole || '';
         const filterInterest = req.query.filterInterest || '';
+        const filterSurveyID = req.query.filterSurveyID ? parseInt(req.query.filterSurveyID, 10) : null;
 
         const baseQuery = knex('Surveys as s')
             .join('Registration as r', 's.RegistrationID', 'r.RegistrationID')
@@ -1477,6 +1762,9 @@ app.get('/surveys', async (req, res) => {
         if (filterInterest) {
             filteredQuery.andWhere('p.ParticipantFieldOfInterest', filterInterest);
         }
+        if (filterSurveyID) {
+            filteredQuery.andWhere('s.SurveyID', filterSurveyID);
+        }
 
         const totalRow = await knex.count('* as count')
             .from(filteredQuery.clone().as('survey_filtered'))
@@ -1536,7 +1824,8 @@ app.get('/surveys', async (req, res) => {
         const registrationQuery = knex('Registration as r')
             .join('Participants as p', 'r.ParticipantID', 'p.ParticipantID')
             .join('Event_Occurrence as eo', 'r.OccurrenceID', 'eo.OccurrenceID')
-            .join('Event_Templates as et', 'eo.EventID', 'et.EventID');
+            .join('Event_Templates as et', 'eo.EventID', 'et.EventID')
+            .leftJoin('Surveys as s', 'r.RegistrationID', 's.RegistrationID');
 
         if (!req.session.isAdmin) {
             registrationQuery.where('p.ParticipantID', req.session.user.ParticipantID);
@@ -1583,6 +1872,9 @@ app.get('/surveys', async (req, res) => {
         }
         if (filterInterest) {
             registrationQuery.andWhere('p.ParticipantFieldOfInterest', filterInterest);
+        }
+        if (filterSurveyID) {
+            registrationQuery.andWhere('s.SurveyID', filterSurveyID);
         }
         if (filterEventStartDate) {
             registrationQuery.andWhere('eo.EventDateTimeStart', '>=', filterEventStartDate);
@@ -1645,7 +1937,8 @@ app.get('/surveys', async (req, res) => {
                 filterInterest,
                 filterEventStartDate,
                 filterEventEndDate,
-                filterEventTitle
+                filterEventTitle,
+                filterSurveyID: filterSurveyID || ''
             },
             currentPage: safePage,
             totalPages,

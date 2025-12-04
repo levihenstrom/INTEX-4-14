@@ -33,28 +33,34 @@
                     <ul class="navbar-nav ms-auto">
                         <% if (isAdmin) { %>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="/events" id="profileDropdown">
-                                    Events
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="profileDropdown">
+                                <div class="nav-link-wrapper">
+                                    <a class="nav-link" href="/events">
+                                        Events <i class="fas fa-chevron-down dropdown-arrow"></i>
+                                    </a>
+                                </div>
+                                <ul class="dropdown-menu" aria-labelledby="eventsDropdown">
                                     <li><a class="dropdown-item" href="/dashboard">Stats</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="/participants" id="profileDropdown">
-                                    Participants
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="profileDropdown">
+                                <div class="nav-link-wrapper">
+                                    <a class="nav-link" href="/participants">
+                                        Participants <i class="fas fa-chevron-down dropdown-arrow"></i>
+                                    </a>
+                                </div>
+                                <ul class="dropdown-menu" aria-labelledby="participantsDropdown">
                                     <li><a class="dropdown-item" href="/milestones">Milestones</a></li>
                                     <li><a class="dropdown-item" href="/surveys">Surveys</a></li>
                                     <li><a class="dropdown-item" href="/donations">Donations</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="/profile" id="profileDropdown">
-                                    Profile
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="profileDropdown">
+                                <div class="nav-link-wrapper">
+                                    <a class="nav-link" href="/profile">
+                                        Profile <i class="fas fa-chevron-down dropdown-arrow"></i>
+                                    </a>
+                                </div>
+                                <ul class="dropdown-menu" aria-labelledby="adminProfileDropdown">
                                     <li><a class="dropdown-item" href="/users">Users</a></li>
                                     <li><a class="dropdown-item" href="/logout">Logout</a></li>
                                 </ul>
@@ -63,10 +69,12 @@
                             <li class="nav-item"><a class="nav-link" href="/events">Events</a></li>
                             <li class="nav-item"><a class="nav-link" href="/donations">Donate</a></li>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="/profile" id="profileDropdown">
-                                    Profile
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="profileDropdown">
+                                <div class="nav-link-wrapper">
+                                    <a class="nav-link" href="/profile">
+                                        Profile <i class="fas fa-chevron-down dropdown-arrow"></i>
+                                    </a>
+                                </div>
+                                <ul class="dropdown-menu" aria-labelledby="userProfileDropdown">
                                     <li><a class="dropdown-item" href="/surveys">Surveys</a></li>
                                     <li><a class="dropdown-item" href="/milestones">Milestones</a></li>
                                     <li><a class="dropdown-item" href="/logout">Logout</a></li>
@@ -142,5 +150,74 @@
                 </div>
             </footer>
 
+    
+    <script>
+        // Mobile dropdown toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownItems = document.querySelectorAll('.nav-item.dropdown');
+            
+            function isMobile() {
+                return window.innerWidth <= 991.98;
+            }
+            
+            dropdownItems.forEach(function(item) {
+                const navLink = item.querySelector('.nav-link');
+                const dropdownMenu = item.querySelector('.dropdown-menu');
+                
+                if (isMobile()) {
+                    // On mobile: clicking the link text navigates, clicking arrow toggles dropdown
+                    navLink.addEventListener('click', function(e) {
+                        // Check if click is on the arrow area (right side)
+                        const linkRect = navLink.getBoundingClientRect();
+                        const clickX = e.clientX;
+                        const arrowAreaStart = linkRect.right - 50; // Last 50px is arrow area
+                        
+                        if (clickX >= arrowAreaStart) {
+                            // Clicked on arrow area - toggle dropdown
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            const isActive = item.classList.contains('active');
+                            
+                            // Close all other dropdowns
+                            dropdownItems.forEach(function(otherItem) {
+                                if (otherItem !== item) {
+                                    otherItem.classList.remove('active');
+                                }
+                            });
+                            
+                            // Toggle current dropdown
+                            item.classList.toggle('active', !isActive);
+                        }
+                        // Otherwise, let the link navigate normally
+                    });
+                }
+            });
+            
+            // Close dropdowns when clicking outside (mobile only)
+            document.addEventListener('click', function(e) {
+                if (isMobile()) {
+                    const isClickInside = e.target.closest('.nav-item.dropdown');
+                    if (!isClickInside) {
+                        dropdownItems.forEach(function(item) {
+                            item.classList.remove('active');
+                        });
+                    }
+                }
+            });
+            
+            // Handle window resize
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function() {
+                    // Close all dropdowns on resize
+                    dropdownItems.forEach(function(item) {
+                        item.classList.remove('active');
+                    });
+                }, 250);
+            });
+        });
+    </script>
 </body>
 </html>

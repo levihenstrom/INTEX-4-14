@@ -2,76 +2,99 @@
 <% if (!user) { %>
     <!-- Visitor Donation Page -->
     <div class="donate-page">
-        <div class="row justify-content-center">
-            <div class="col-12 col-md-10 col-lg-10 col-xl-9">
-                <div class="donate-card">
-                    <div class="donate-card-inner">
-                        <div class="donate-form-side">
-                            <div class="donate-card-body">
-                                <h1 class="donate-title">Rise With Ella: Empowering Futures Together</h1>
-                                <p class="donate-subtitle">We believe in the power of community and the brilliance of our youth.</p>
-                                
-                                <div class="donate-info">
-                                    <h3 class="donate-info-title">Why We're Fundraising</h3>
-                                    <p class="donate-info-text">Your generous contribution will impact these programs and experiences:</p>
-                                    <ul class="donate-programs">
-                                        <li><strong>Ella Rises Youth Summits:</strong> Day camps focused on the Ella Rises Experience* across the state of Utah.</li>
-                                        <li><strong>Educational tours:</strong> Visits to local universities, colleges, and businesses.</li>
-                                        <li><strong>STEM, education, and arts programs:</strong> Including the Ella Rises Mariachi band and Ballet Folklorico.</li>
-                                    </ul>
-                                    <p class="donate-note"><em>*The Ella Rises Experience is a joyful blend of art, STEM, and educational exploration — designed to build confidence in each girl's divine worth and purpose.</em></p>
+        <!-- Cover Image -->
+        <div class="donate-cover-image">
+            <img src="/images/ella_donate.jpg" alt="Ella Rises Campaign" class="donate-cover-img">
+        </div>
+
+        <!-- Title Section -->
+        <div class="donate-header-card">
+            <div class="donate-header-card-body">
+                <h1 class="donate-main-title">Rise With Ella: Empowering Futures Together</h1>
+                <p class="donate-main-subtitle">We believe in the power of community and the brilliance of our youth.</p>
+            </div>
+        </div>
+
+        <!-- Two Cards Layout -->
+        <div class="row justify-content-center g-3">
+            <!-- First Card: Information Card -->
+            <div class="col-12 col-lg-7">
+                <div class="donate-info-card">
+                    <div class="donate-info-card-body">
+                        <div class="donate-section">
+                            <h3 class="donate-section-title">Why We're Fundraising</h3>
+                            <p class="donate-section-text">Your generous contribution will impact these programs and experiences:</p>
+                            <ul class="donate-programs">
+                                <li><strong>Ella Rises Youth Summits:</strong> Day camps focused on the Ella Rises Experience* across the state of Utah.</li>
+                                <li><strong>Educational tours:</strong> Visits to local universities, colleges, and businesses.</li>
+                                <li><strong>STEM, education, and arts programs:</strong> Including the Ella Rises Mariachi band and Ballet Folklorico.</li>
+                            </ul>
+                            <p class="donate-note"><em>*The Ella Rises Experience is a joyful blend of art, STEM, and educational exploration — designed to build confidence in each girl's divine worth and purpose.</em></p>
+                        </div>
+
+                        <div class="donate-section">
+                            <h3 class="donate-section-title">Here's How You Can Help Today</h3>
+                            <ul class="donate-help-list">
+                                <li><strong>Donate</strong> — Make a one-time or monthly gift.</li>
+                                <li><strong>Share</strong> — Post our campaign on your social platforms.</li>
+                                <li><strong>Join</strong> — Become a mentor, volunteer, or community partner.</li>
+                            </ul>
+                            <p class="donate-closing">With your support, <strong>Ella Rises.</strong></p>
+                            <p class="donate-signature">With gratitude,<br><em>Nadia Cates, Founder of Ella Rises</em></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second Card: Donation Form Card -->
+            <div class="col-12 col-lg-5">
+                <div class="donate-form-card">
+                    <div class="donate-form-card-body">
+                        <% if (typeof error !== 'undefined' && error) { %>
+                            <div class="donate-alert"><%= error %></div>
+                        <% } %>
+                        <% if (typeof success !== 'undefined' && success) { %>
+                            <div class="donate-success"><%= success %></div>
+                        <% } %>
+
+                        <form id="VisitorDonateForm" action="/donations/add/visitor" method="POST" class="donate-form">
+                            <h3 class="donate-form-title">Make a Donation</h3>
+                            
+                            <div class="donate-amount-section">
+                                <label class="donate-label">Donation Amount</label>
+                                <div class="donate-quick-amounts">
+                                    <button type="button" class="donate-quick-btn" data-amount="25">$25</button>
+                                    <button type="button" class="donate-quick-btn" data-amount="50">$50</button>
+                                    <button type="button" class="donate-quick-btn" data-amount="100">$100</button>
+                                    <button type="button" class="donate-quick-btn" data-amount="250">$250</button>
                                 </div>
-
-                                <% if (typeof error !== 'undefined' && error) { %>
-                                    <div class="donate-alert"><%= error %></div>
-                                <% } %>
-                                <% if (typeof success !== 'undefined' && success) { %>
-                                    <div class="donate-success"><%= success %></div>
-                                <% } %>
-
-                                <form id="VisitorDonateForm" action="/donations/add/visitor" method="POST" class="donate-form">
-                                    <h3 class="donate-form-title">Make a Donation</h3>
-                                    
-                                    <div class="donate-amount-section">
-                                        <label class="donate-label">Donation Amount</label>
-                                        <div class="donate-quick-amounts">
-                                            <button type="button" class="donate-quick-btn" data-amount="25">$25</button>
-                                            <button type="button" class="donate-quick-btn" data-amount="50">$50</button>
-                                            <button type="button" class="donate-quick-btn" data-amount="100">$100</button>
-                                            <button type="button" class="donate-quick-btn" data-amount="250">$250</button>
-                                        </div>
-                                        <div class="donate-amount-input-group">
-                                            <span class="donate-currency">$</span>
-                                            <input type="number" step="0.01" min="0.01" class="donate-amount-input" id="VisitorDonateAmount" name="DonationAmount" placeholder="0.00" required>
-                                        </div>
-                                    </div>
-
-                                    <div class="donate-form-group">
-                                        <label for="FirstName" class="donate-label">First Name *</label>
-                                        <input type="text" class="donate-input" id="FirstName" name="FirstName" required>
-                                    </div>
-                                    <div class="donate-form-group">
-                                        <label for="LastName" class="donate-label">Last Name *</label>
-                                        <input type="text" class="donate-input" id="LastName" name="LastName" required>
-                                    </div>
-                                    <div class="donate-form-group">
-                                        <label for="Email" class="donate-label">Email *</label>
-                                        <input type="email" class="donate-input" id="Email" name="Email" required>
-                                    </div>
-                                    
-                                    <input type="hidden" id="addDonationDate" name="DonationDate" value="<%= new Date().toISOString().split('T')[0] %>">
-                                    
-                                    <div class="donate-button-group">
-                                        <button type="submit" class="donate-btn-primary">Donate Now</button>
-                                    </div>
-                                    
-                                    <p class="donate-footer-note">By donating, you'll be redirected to our secure payment processor to complete your contribution.</p>
-                                </form>
+                                <div class="donate-amount-input-group">
+                                    <span class="donate-currency">$</span>
+                                    <input type="number" step="0.01" min="0.01" class="donate-amount-input" id="VisitorDonateAmount" name="DonationAmount" placeholder="0.00" required>
+                                </div>
                             </div>
-                        </div>
-                        <div class="donate-image-side">
-                            <img src="/images/ella_donate.jpg" alt="Ella Rises" class="donate-image">
-                        </div>
+
+                            <div class="donate-form-group">
+                                <label for="FirstName" class="donate-label">First Name *</label>
+                                <input type="text" class="donate-input" id="FirstName" name="FirstName" required>
+                            </div>
+                            <div class="donate-form-group">
+                                <label for="LastName" class="donate-label">Last Name *</label>
+                                <input type="text" class="donate-input" id="LastName" name="LastName" required>
+                            </div>
+                            <div class="donate-form-group">
+                                <label for="Email" class="donate-label">Email *</label>
+                                <input type="email" class="donate-input" id="Email" name="Email" required>
+                            </div>
+                            
+                            <input type="hidden" id="addDonationDate" name="DonationDate" value="<%= new Date().toISOString().split('T')[0] %>">
+                            
+                            <div class="donate-button-group">
+                                <button type="submit" class="donate-btn-primary">Donate Now</button>
+                            </div>
+                            
+                            <p class="donate-footer-note">By donating, you'll be redirected to our secure payment processor to complete your contribution.</p>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -84,128 +107,138 @@
     /* ====================================================== */
 
     .donate-page {
-        padding: 2rem 0 4rem;
-        min-height: calc(100vh - 200px);
+        padding: 0 0 2rem 0;
+        max-width: 1200px;
+        margin: 0 auto;
     }
 
-    .donate-card {
-        background: #FFFFFF;
-        border-radius: 28px;
-        box-shadow: 0 12px 40px rgba(58, 63, 59, 0.12);
+    /* Cover Image */
+    .donate-cover-image {
+        width: 100%;
+        height: 300px;
         overflow: hidden;
-        animation: fadeInScale 0.6s ease both;
+        margin-bottom: 2rem;
+        border-radius: 12px;
     }
 
-    .donate-card-inner {
-        display: flex;
-        min-height: 600px;
-        align-items: stretch;
-    }
-
-    .donate-image-side {
-        flex: 0 0 40%;
-        background: linear-gradient(135deg, #FFD8D1 0%, #F9AFB1 100%);
-        position: relative;
-        overflow: hidden;
-        order: 2;
-        min-height: 600px;
-        align-self: stretch;
-    }
-
-    .donate-image {
+    .donate-cover-img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         object-position: center;
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
     }
 
-    .donate-form-side {
-        flex: 1;
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
-        padding: 3rem 2.5rem;
-        order: 1;
-        min-height: 600px;
-        overflow-y: auto;
+    /* Header Card Section */
+    .donate-header-card {
+        background: linear-gradient(135deg, #9AB59D 0%, #7fa082 100%);
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(154, 181, 157, 0.25);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        animation: fadeInScale 0.6s ease both;
     }
 
-    .donate-form-side::-webkit-scrollbar {
-        width: 8px;
+    .donate-header-card-body {
+        text-align: center;
+        padding: 1.5rem 2rem;
     }
 
-    .donate-form-side::-webkit-scrollbar-track {
-        background: #F9F5EA;
-        border-radius: 4px;
-    }
-
-    .donate-form-side::-webkit-scrollbar-thumb {
-        background: #9AB59D;
-        border-radius: 4px;
-    }
-
-    .donate-form-side::-webkit-scrollbar-thumb:hover {
-        background: #7fa082;
-    }
-
-    .donate-card-body {
-        width: 100%;
-        max-width: 600px;
-        padding: 0;
-    }
-
-    .donate-title {
+    .donate-main-title {
         font-family: 'DM Serif Display', serif;
-        font-size: 2.8rem;
-        color: #3A3F3B;
-        margin-bottom: 1rem;
+        font-size: 1.75rem;
+        color: #FFFFFF;
+        margin-bottom: 0.5rem;
         line-height: 1.2;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    .donate-subtitle {
+    .donate-main-subtitle {
         font-family: 'Montserrat', sans-serif;
-        font-size: 1.2rem;
-        color: #5A5E5A;
-        margin-bottom: 2rem;
-        line-height: 1.6;
+        font-size: 0.95rem;
+        color: #FFFFFF;
+        margin-bottom: 0;
+        line-height: 1.5;
+        opacity: 0.95;
     }
 
-    .donate-info {
-        background: #F9F5EA;
-        border-radius: 16px;
+    /* Information Card */
+    .donate-info-card {
+        background: #FFFFFF;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(58, 63, 59, 0.08);
+        overflow: hidden;
+        animation: fadeInScale 0.6s ease both;
+        height: 100%;
+    }
+
+    .donate-info-card-body {
         padding: 1.5rem;
-        margin-bottom: 2rem;
     }
 
-    .donate-info-title {
+    /* Form Card */
+    .donate-form-card {
+        background: #FFFFFF;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(58, 63, 59, 0.08);
+        overflow: hidden;
+        animation: fadeInScale 0.6s ease 0.2s both;
+        height: fit-content;
+    }
+
+    .donate-form-card-body {
+        padding: 1.25rem;
+    }
+
+    .donate-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .donate-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .donate-section-title {
         font-family: 'DM Serif Display', serif;
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         color: #3A3F3B;
         margin-bottom: 0.75rem;
+        font-weight: 600;
     }
 
-    .donate-info-text {
+    .donate-section-text {
         font-family: 'Montserrat', sans-serif;
         font-size: 1rem;
         color: #5A5E5A;
-        margin-bottom: 1rem;
+        margin-bottom: 0.75rem;
+        line-height: 1.6;
     }
 
     .donate-programs {
         font-family: 'Montserrat', sans-serif;
         font-size: 0.95rem;
         color: #3A3F3B;
-        margin-left: 1.5rem;
-        margin-bottom: 1rem;
-        line-height: 1.8;
+        margin-left: 1.25rem;
+        margin-bottom: 0.75rem;
+        line-height: 1.7;
+        list-style: disc;
     }
 
     .donate-programs li {
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.65rem;
+    }
+
+    .donate-help-list {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.85rem;
+        color: #3A3F3B;
+        margin-left: 1.25rem;
+        margin-bottom: 1rem;
+        line-height: 1.6;
+        list-style: disc;
+    }
+
+    .donate-help-list li {
+        margin-bottom: 0.5rem;
     }
 
     .donate-note {
@@ -213,9 +246,28 @@
         font-size: 0.9rem;
         color: #7A7E7A;
         font-style: italic;
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #E5E5E5;
+        line-height: 1.6;
+    }
+
+    .donate-closing {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.9rem;
+        color: #3A3F3B;
+        margin-bottom: 1rem;
+        line-height: 1.5;
+    }
+
+    .donate-signature {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.85rem;
+        color: #5A5E5A;
         margin-top: 1rem;
         padding-top: 1rem;
         border-top: 1px solid #E5E5E5;
+        line-height: 1.5;
     }
 
     .donate-alert {
@@ -240,21 +292,20 @@
     }
 
     .donate-form {
-        background: #FFFFFF;
-        border-radius: 16px;
-        padding: 2rem;
-        border: 2px solid #F9F5EA;
+        background: transparent;
+        border: none;
+        padding: 0;
     }
 
     .donate-form-title {
         font-family: 'DM Serif Display', serif;
-        font-size: 1.8rem;
+        font-size: 1.35rem;
         color: #3A3F3B;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
     }
 
     .donate-amount-section {
-        margin-bottom: 2rem;
+        margin-bottom: 1.25rem;
     }
 
     .donate-quick-amounts {
@@ -325,7 +376,7 @@
     }
 
     .donate-form-group {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
     }
 
     .donate-label {
@@ -362,14 +413,14 @@
 
     .donate-btn-primary {
         width: 100%;
-        padding: 1.2rem 2rem;
+        padding: 0.875rem 1.5rem;
         background: #9AB59D;
         color: #FFFFFF;
         border: none;
-        border-radius: 50px;
+        border-radius: 12px;
         font-family: 'Montserrat', sans-serif;
         font-weight: 600;
-        font-size: 1.1rem;
+        font-size: 1rem;
         cursor: pointer;
         transition: all 0.3s ease;
         box-shadow: 0 8px 25px rgba(154, 181, 157, 0.3);
@@ -383,58 +434,90 @@
 
     .donate-footer-note {
         font-family: 'Montserrat', sans-serif;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         color: #7A7E7A;
         text-align: center;
-        margin-top: 1.5rem;
-        line-height: 1.5;
+        margin-top: 1rem;
+        line-height: 1.4;
     }
 
     /* Responsive */
-    @media (max-width: 992px) {
-        .donate-card-inner {
-            flex-direction: column;
-            min-height: auto;
-            align-items: stretch;
-        }
-        
-        .donate-image-side {
-            flex: 0 0 auto;
-            min-height: 250px;
-            max-height: 300px;
-            order: 1;
-            position: relative;
-        }
-        
-        .donate-image {
-            object-fit: cover;
-            object-position: center;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        
-        .donate-form-side {
-            padding: 2rem 1.5rem;
-            order: 2;
-            align-items: flex-start;
-            min-height: auto;
+    @media (max-width: 991.98px) {
+        .donate-cover-image {
+            height: 250px;
+            margin-bottom: 1.5rem;
         }
 
-        .donate-title {
-            font-size: 2.2rem;
+        .donate-header-card-body {
+            padding: 1.25rem 1.5rem;
+        }
+
+        .donate-main-title {
+            font-size: 1.5rem;
+        }
+
+        .donate-main-subtitle {
+            font-size: 0.9rem;
+        }
+
+        .donate-section-title {
+            font-size: 1.3rem;
+        }
+
+        .donate-info-card-body,
+        .donate-form-card-body {
+            padding: 1.25rem;
+        }
+
+        .donate-section-title {
+            font-size: 1.15rem;
         }
     }
 
-    @media (max-width: 768px) {
-        .donate-form-side {
-            padding: 1.5rem 1rem;
+    @media (max-width: 575.98px) {
+        .donate-cover-image {
+            height: 200px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .donate-header-card-body {
+            padding: 1rem 1.25rem;
+        }
+
+        .donate-main-title {
+            font-size: 1.35rem;
+        }
+
+        .donate-main-subtitle {
+            font-size: 0.85rem;
+        }
+
+        .donate-section-title {
+            font-size: 1.2rem;
+        }
+
+        .donate-section-text {
+            font-size: 0.95rem;
+        }
+
+        .donate-programs {
+            font-size: 0.9rem;
+        }
+
+        .donate-info-card-body,
+        .donate-form-card-body {
+            padding: 1rem;
         }
         
-        .donate-title {
-            font-size: 1.8rem;
+        .donate-section-title {
+            font-size: 1.1rem;
+        }
+
+        .donate-section-text,
+        .donate-programs,
+        .donate-help-list {
+            font-size: 0.8rem;
         }
         
         .donate-image-side {
@@ -686,7 +769,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="addDonationDate" class="form-label">Donation Date</label>
-                                <input type="date" class="form-control" id="addDonationDate" name="DonationDate">
+                                <input type="date" class="form-control" id="addDonationDate" name="DonationDate" value="<%= new Date().toISOString().split('T')[0] %>">
                             </div>
                         </form>
                     </div>
