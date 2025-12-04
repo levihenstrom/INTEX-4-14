@@ -147,12 +147,81 @@ app.use((req, res, next) => {
 
 // Public Routes (Handles landing, login, register)
 // GET /: Landing page
-app.get('/', (req, res) => {
-    res.render('landing', { 
-        layout: 'public',
-        pageTitle: 'Welcome',
-        hasHero: true
-    });
+app.get('/', async (req, res) => {
+    try {
+        // Get top 3 upcoming events
+        const now = new Date();
+        const upcomingOccurrences = await knex('Event_Occurrence as eo')
+            .join('Event_Templates as et', 'eo.EventID', 'et.EventID')
+            .leftJoin('Registration as r', 'eo.OccurrenceID', 'r.OccurrenceID')
+            .select(
+                'eo.OccurrenceID',
+                'eo.EventID',
+                'eo.EventDateTimeStart',
+                'eo.EventDateTimeEnd',
+                'eo.EventLocation',
+                'eo.EventCapacity',
+                'eo.EventRegistrationDeadline',
+                'et.EventName',
+                'et.EventType',
+                'et.EventDescription',
+                'et.EventRecurrencePattern',
+                'et.EventDefaultCapacity',
+                knex.raw('COALESCE(COUNT(DISTINCT "r"."RegistrationID"), 0) as registration_count')
+            )
+            .where('eo.EventDateTimeStart', '>=', knex.fn.now())
+            .groupBy(
+                'eo.OccurrenceID',
+                'eo.EventID',
+                'eo.EventDateTimeStart',
+                'eo.EventDateTimeEnd',
+                'eo.EventLocation',
+                'eo.EventCapacity',
+                'eo.EventRegistrationDeadline',
+                'et.EventName',
+                'et.EventType',
+                'et.EventDescription',
+                'et.EventRecurrencePattern',
+                'et.EventDefaultCapacity'
+            )
+            .orderBy('eo.EventDateTimeStart', 'asc')
+            .limit(3);
+
+        // Calculate if each occurrence is full
+        const upcomingEvents = upcomingOccurrences.map(occurrence => {
+            const capacity = occurrence.EventCapacity || occurrence.EventDefaultCapacity;
+            let registrationCount = 0;
+            if (occurrence.registration_count !== null && occurrence.registration_count !== undefined) {
+                registrationCount = typeof occurrence.registration_count === 'string' 
+                    ? parseInt(occurrence.registration_count, 10) 
+                    : Number(occurrence.registration_count);
+                if (isNaN(registrationCount)) registrationCount = 0;
+            }
+            const isFull = capacity ? registrationCount >= capacity : false;
+            
+            return {
+                ...occurrence,
+                registrationCount,
+                isFull,
+                hasSpace: !isFull
+            };
+        });
+
+        res.render('landing', { 
+            layout: 'public',
+            pageTitle: 'Welcome',
+            hasHero: true,
+            upcomingEvents: upcomingEvents || []
+        });
+    } catch (err) {
+        console.error('Error loading landing page:', err);
+        res.render('landing', { 
+            layout: 'public',
+            pageTitle: 'Welcome',
+            hasHero: true,
+            upcomingEvents: []
+        });
+    }
 });
 
 // GET /login: Show login form

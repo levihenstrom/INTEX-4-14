@@ -1,1 +1,159 @@
 <% pageTitle = 'Info'; %>
+
+<!-- ==================== FLOATING DONATE CARD ==================== -->
+<div id="floatingDonate" class="floating-donate-card">
+    <button class="floating-donate-close" id="closeDonate" aria-label="Close">
+        <i class="fas fa-times"></i>
+    </button>
+    <div class="floating-donate-image">
+        <img src="/images/ella_donate.jpg" alt="Ella Rises" />
+    </div>
+    <div class="floating-donate-content">
+        <h3>Make a Difference</h3>
+        <p>Support young women's education</p>
+        <a href="/donations" class="floating-donate-btn">
+            <i class="fas fa-hand-holding-heart"></i> Donate Now
+        </a>
+    </div>
+</div>
+
+<script>
+    // Floating Donate Card - Draggable (side edges only)
+    const floatingDonate = document.getElementById('floatingDonate');
+    const closeDonate = document.getElementById('closeDonate');
+    
+    if (closeDonate) {
+        closeDonate.addEventListener('click', function(e) {
+            e.stopPropagation();
+            floatingDonate.style.display = 'none';
+        });
+    }
+    
+    if (floatingDonate) {
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+        
+        // Get initial position
+        const rect = floatingDonate.getBoundingClientRect();
+        xOffset = rect.left;
+        yOffset = rect.top;
+        
+        floatingDonate.addEventListener('mousedown', dragStart);
+        floatingDonate.addEventListener('touchstart', dragStart);
+        
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag);
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('touchend', dragEnd);
+        
+        function dragStart(e) {
+            // Don't drag if clicking on close button or donate button
+            if (e.target.closest('.floating-donate-close') || e.target.closest('.floating-donate-btn')) {
+                return;
+            }
+            
+            if (e.type === 'touchstart') {
+                initialX = e.touches[0].clientX - xOffset;
+                initialY = e.touches[0].clientY - yOffset;
+            } else {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+            }
+            
+            if (e.target === floatingDonate || floatingDonate.contains(e.target)) {
+                isDragging = true;
+                floatingDonate.classList.add('dragging');
+            }
+        }
+        
+        function drag(e) {
+            if (!isDragging) return;
+            
+            e.preventDefault();
+            
+            if (e.type === 'touchmove') {
+                currentX = e.touches[0].clientX - initialX;
+                currentY = e.touches[0].clientY - initialY;
+            } else {
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+            }
+            
+            // Get viewport dimensions
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const cardWidth = floatingDonate.offsetWidth;
+            const cardHeight = floatingDonate.offsetHeight;
+            
+            // Constrain to viewport bounds - allow vertical movement, constrain horizontal
+            const minX = 0;
+            const maxX = viewportWidth - cardWidth;
+            const minY = 0;
+            const maxY = viewportHeight - cardHeight;
+            
+            // Clamp position - allow it to be anywhere while dragging
+            let newX = Math.max(minX, Math.min(maxX, currentX));
+            let newY = Math.max(minY, Math.min(maxY, currentY));
+            
+            xOffset = newX;
+            yOffset = newY;
+            
+            setTranslate(newX, newY, floatingDonate);
+        }
+        
+        function dragEnd() {
+            if (isDragging) {
+                isDragging = false;
+                floatingDonate.classList.remove('dragging');
+                
+                // Check if card is in center zone and snap to nearest side edge (left or right only)
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                const cardWidth = floatingDonate.offsetWidth;
+                const cardHeight = floatingDonate.offsetHeight;
+                
+                // Define center exclusion zone (middle 40% of screen horizontally)
+                const centerZoneWidth = viewportWidth * 0.4;
+                const centerZoneLeft = (viewportWidth - centerZoneWidth) / 2;
+                
+                const cardCenterX = xOffset + cardWidth / 2;
+                
+                const inCenterZoneX = cardCenterX >= centerZoneLeft && cardCenterX <= centerZoneLeft + centerZoneWidth;
+                
+                // If in center zone horizontally, snap to nearest side edge (left or right)
+                if (inCenterZoneX) {
+                    const distToLeft = xOffset;
+                    const distToRight = viewportWidth - (xOffset + cardWidth);
+                    
+                    let snapX = xOffset;
+                    
+                    // Always snap to the closer side (left or right)
+                    if (distToLeft < distToRight) {
+                        snapX = 0;
+                    } else {
+                        snapX = viewportWidth - cardWidth;
+                    }
+                    
+                    xOffset = snapX;
+                    
+                    setTranslate(snapX, yOffset, floatingDonate);
+                }
+            }
+        }
+        
+        function setTranslate(xPos, yPos, el) {
+            el.style.left = xPos + 'px';
+            el.style.top = yPos + 'px';
+            el.style.right = 'auto';
+            el.style.bottom = 'auto';
+        }
+        
+        // Initialize position
+        setTranslate(xOffset, yOffset, floatingDonate);
+    }
+</script>

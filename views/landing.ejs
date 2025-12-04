@@ -191,55 +191,66 @@
                 Be part of our community. Join a workshop, attend a performance, or volunteer at one of our upcoming events.
             </p>
         </div>
-        <div class="events-grid">
-            <article class="event-card event-featured">
-                <div class="event-date">
-                    <span class="event-month">JAN</span>
-                    <span class="event-day">15</span>
+        <div class="upcoming-events-section">
+            <% if (typeof upcomingEvents !== 'undefined' && upcomingEvents && upcomingEvents.length > 0) { %>
+            <div class="upcoming-events-carousel-container">
+                <div class="upcoming-events-carousel landing-events-carousel">
+                    <% upcomingEvents.forEach(event => { %>
+                        <div class="upcoming-event-card">
+                            <a href="/registration/<%= event.EventID %>?occurrence=<%= event.OccurrenceID %>" class="upcoming-event-link">
+                                <div class="upcoming-event-image">
+                                    <% const imageSrc = `/images/events/event_${event.EventID}_real.jpg`; %>
+                                    <img src="<%- imageSrc %>" 
+                                         alt="<%= event.EventName %>" 
+                                         onerror="this.src='/images/events/event_0_real.png'">
+                                </div>
+                                <div class="upcoming-event-content">
+                                    <div class="upcoming-event-header">
+                                        <h3 class="upcoming-event-name"><%= event.EventName %></h3>
+                                        <span class="status-badge <%= event.isFull ? 'status-full' : 'status-available' %>">
+                                            <i class="fa-solid fa-users"></i>
+                                            <%= event.isFull ? 'Full' : 'Space Available' %>
+                                        </span>
+                                    </div>
+                                    <div class="upcoming-event-details">
+                                        <div class="upcoming-event-detail">
+                                            <i class="fa-solid fa-calendar"></i>
+                                            <span>
+                                                <%= new Date(event.EventDateTimeStart).toLocaleDateString('en-US', { 
+                                                    weekday: 'short', 
+                                                    month: 'short', 
+                                                    day: 'numeric',
+                                                    year: 'numeric'
+                                                }) %>
+                                            </span>
+                                        </div>
+                                        <div class="upcoming-event-detail">
+                                            <i class="fa-solid fa-clock"></i>
+                                            <span>
+                                                <%= new Date(event.EventDateTimeStart).toLocaleTimeString('en-US', { 
+                                                    hour: 'numeric', 
+                                                    minute: '2-digit',
+                                                    hour12: true 
+                                                }) %>
+                                                <% if (event.EventDateTimeEnd) { %>
+                                                    - <%= new Date(event.EventDateTimeEnd).toLocaleTimeString('en-US', { 
+                                                        hour: 'numeric', 
+                                                        minute: '2-digit',
+                                                        hour12: true 
+                                                    }) %>
+                                                <% } %>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    <% }); %>
                 </div>
-                <div class="event-content">
-                    <span class="event-tag">Workshop</span>
-                    <h3>Mariachi Workshop for Beginners</h3>
-                    <p>Learn the basics of mariachi music in this hands-on workshop for young women ages 10-18.</p>
-                    <div class="event-meta">
-                        <span><i class="fas fa-clock"></i> 2:00 PM - 5:00 PM</span>
-                        <span><i class="fas fa-map-marker-alt"></i> Provo Community Center</span>
-                    </div>
-                    <a href="/events" class="event-btn">Register Now</a>
-                </div>
-            </article>
-            <article class="event-card">
-                <div class="event-date">
-                    <span class="event-month">JAN</span>
-                    <span class="event-day">22</span>
-                </div>
-                <div class="event-content">
-                    <span class="event-tag tag-steam">STEAM</span>
-                    <h3>Girls in Engineering Day</h3>
-                    <p>Interactive STEAM activities and mentorship with local engineers.</p>
-                    <div class="event-meta">
-                        <span><i class="fas fa-clock"></i> 10:00 AM - 2:00 PM</span>
-                        <span><i class="fas fa-map-marker-alt"></i> BYU Campus</span>
-                    </div>
-                    <a href="/events" class="event-btn">Learn More</a>
-                </div>
-            </article>
-            <article class="event-card">
-                <div class="event-date">
-                    <span class="event-month">FEB</span>
-                    <span class="event-day">08</span>
-                </div>
-                <div class="event-content">
-                    <span class="event-tag tag-performance">Performance</span>
-                    <h3>Annual Showcase Concert</h3>
-                    <p>Our young artists perform mariachi, dance, and original compositions.</p>
-                    <div class="event-meta">
-                        <span><i class="fas fa-clock"></i> 7:00 PM</span>
-                        <span><i class="fas fa-map-marker-alt"></i> Covey Center for the Arts</span>
-                    </div>
-                    <a href="/events" class="event-btn">Get Tickets</a>
-                </div>
-            </article>
+            </div>
+            <% } else { %>
+            <p style="text-align: center; color: #5A5E5A; padding: 2rem;">No upcoming events at this time. Check back soon!</p>
+            <% } %>
         </div>
         <a href="/events" class="events-view-all">View All Events <i class="fas fa-arrow-right"></i></a>
     </div>
@@ -388,6 +399,16 @@
     </div>
 </section>
 
+<!-- ==================== FLOATING DONATE BUTTON ==================== -->
+<div id="floatingDonateBtn" class="floating-donate-button">
+    <a href="/donations" class="floating-donate-button-link">
+        <button class="floating-donate-close-btn" id="closeDonateBtn" aria-label="Close">
+            <i class="fas fa-times"></i>
+        </button>
+        <i class="fas fa-hand-holding-heart"></i> Donate
+    </a>
+</div>
+
 <!-- ==================== FOOTER SECTION ==================== -->
 
 
@@ -505,4 +526,145 @@
             heroText.style.opacity = Math.max(0, 1 - (scrolled * 0.0012));
         }
     });
+
+    // Floating Donate Button - Draggable (side edges only)
+    const floatingDonateBtn = document.getElementById('floatingDonateBtn');
+    const closeDonateBtn = document.getElementById('closeDonateBtn');
+    
+    if (closeDonateBtn) {
+        closeDonateBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            floatingDonateBtn.style.display = 'none';
+        });
+    }
+    
+    if (floatingDonateBtn) {
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+        
+        // Get initial position
+        const rect = floatingDonateBtn.getBoundingClientRect();
+        xOffset = rect.left;
+        yOffset = rect.top;
+        
+        floatingDonateBtn.addEventListener('mousedown', dragStart);
+        floatingDonateBtn.addEventListener('touchstart', dragStart);
+        
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag);
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('touchend', dragEnd);
+        
+        function dragStart(e) {
+            // Don't drag if clicking on close button or donate button
+            if (e.target.closest('.floating-donate-close-btn') || e.target.closest('.floating-donate-button-link')) {
+                return;
+            }
+            
+            if (e.type === 'touchstart') {
+                initialX = e.touches[0].clientX - xOffset;
+                initialY = e.touches[0].clientY - yOffset;
+            } else {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+            }
+            
+            if (e.target === floatingDonateBtn || floatingDonateBtn.contains(e.target)) {
+                isDragging = true;
+                floatingDonateBtn.classList.add('dragging');
+            }
+        }
+        
+        function drag(e) {
+            if (!isDragging) return;
+            
+            e.preventDefault();
+            
+            if (e.type === 'touchmove') {
+                currentX = e.touches[0].clientX - initialX;
+                currentY = e.touches[0].clientY - initialY;
+            } else {
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+            }
+            
+            // Get viewport dimensions
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const btnWidth = floatingDonateBtn.offsetWidth;
+            const btnHeight = floatingDonateBtn.offsetHeight;
+            
+            // Constrain to viewport bounds - allow vertical movement, constrain horizontal
+            const minX = 0;
+            const maxX = viewportWidth - btnWidth;
+            const minY = 0;
+            const maxY = viewportHeight - btnHeight;
+            
+            // Clamp position - allow it to be anywhere while dragging
+            let newX = Math.max(minX, Math.min(maxX, currentX));
+            let newY = Math.max(minY, Math.min(maxY, currentY));
+            
+            xOffset = newX;
+            yOffset = newY;
+            
+            setTranslate(newX, newY, floatingDonateBtn);
+        }
+        
+        function dragEnd() {
+            if (isDragging) {
+                isDragging = false;
+                floatingDonateBtn.classList.remove('dragging');
+                
+                // Check if button is in center zone and snap to nearest side edge (left or right only)
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                const btnWidth = floatingDonateBtn.offsetWidth;
+                const btnHeight = floatingDonateBtn.offsetHeight;
+                
+                // Define center exclusion zone (middle 40% of screen horizontally)
+                const centerZoneWidth = viewportWidth * 0.4;
+                const centerZoneLeft = (viewportWidth - centerZoneWidth) / 2;
+                
+                const btnCenterX = xOffset + btnWidth / 2;
+                
+                const inCenterZoneX = btnCenterX >= centerZoneLeft && btnCenterX <= centerZoneLeft + centerZoneWidth;
+                
+                // If in center zone horizontally, snap to nearest side edge (left or right)
+                if (inCenterZoneX) {
+                    const distToLeft = xOffset;
+                    const distToRight = viewportWidth - (xOffset + btnWidth);
+                    
+                    let snapX = xOffset;
+                    
+                    // Always snap to the closer side (left or right)
+                    if (distToLeft < distToRight) {
+                        snapX = 0;
+                    } else {
+                        snapX = viewportWidth - btnWidth;
+                    }
+                    
+                    xOffset = snapX;
+                    
+                    setTranslate(snapX, yOffset, floatingDonateBtn);
+                }
+            }
+        }
+        
+        function setTranslate(xPos, yPos, el) {
+            el.style.left = xPos + 'px';
+            el.style.top = yPos + 'px';
+            el.style.right = 'auto';
+            el.style.bottom = 'auto';
+        }
+        
+        // Initialize position
+        setTranslate(xOffset, yOffset, floatingDonateBtn);
+    }
+
 </script>
