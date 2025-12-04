@@ -4,15 +4,15 @@ fetch('/api/participants-by-year')
     .then(data => {
         const ctx = document.getElementById('participantsByYearChart').getContext('2d');
 
-        new Chart(ctx, {
+        const chart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: data.map(item => item.year),
                 datasets: [{
                     label: 'New Participants',
                     data: data.map(item => item.count),
-                    backgroundColor: '#CE325B',
-                    borderColor: '#CE325B',
+                    backgroundColor: '#9AB59D',
+                    borderColor: '#7fa082',
                     borderWidth: 1
                 }]
             },
@@ -37,7 +37,7 @@ fetch('/api/participants-by-year')
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1
+                            stepSize: 25
                         },
                         grid: {
                             display: false
@@ -51,6 +51,25 @@ fetch('/api/participants-by-year')
                         grid: {
                             display: false
                         }
+                    }
+                },
+                onHover: (event, activeElements) => {
+                    if (activeElements.length > 0) {
+                        const datasetIndex = activeElements[0].datasetIndex;
+                        const index = activeElements[0].index;
+                        const dataset = chart.data.datasets[datasetIndex];
+
+                        // Create array of colors - gray for non-hovered, original color for hovered
+                        const colors = dataset.data.map((_, i) =>
+                            i === index ? '#9AB59D' : 'rgba(154, 181, 157, 0.3)'
+                        );
+
+                        dataset.backgroundColor = colors;
+                        chart.update('none'); // Update without animation for smooth hover
+                    } else {
+                        // Reset all bars to original color when not hovering
+                        chart.data.datasets[0].backgroundColor = '#9AB59D';
+                        chart.update('none');
                     }
                 }
             }
