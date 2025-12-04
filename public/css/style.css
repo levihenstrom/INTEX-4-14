@@ -2020,6 +2020,8 @@ body:not(.has-hero) {
 /* Logo styling - transparent, floating */
 .marquee-content a {
     display: inline-flex;
+}
+
 .sponsor-logo {
     width: 80px;
     height: 80px;
