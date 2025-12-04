@@ -2583,8 +2583,9 @@ app.post('/participants/add', async (req, res) => {
 
 //will have to be uncommeted out at somepoint
 // route for interactive tables 
-//const apiRoutes = require('./routes/api');
-//app.use('/api', apiRoutes);
+const apiRoutes = require('./routes/api');
+app.use('/api', apiRoutes);
+
 app.get('/dashboard', (req, res) => {
     res.render('dashboard', { layout: 'public', pageTitle: 'Dashboard' });
 });
