@@ -34,6 +34,13 @@ const formatDateForInput = (dateValue) => {
     return `${year}-${month}-${day}`;
 };
 
+const formatMonthYear = (dateValue) => {
+    if (!dateValue) return null;
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+};
+
 const calculateAge = (dateValue) => {
     if (!dateValue) return null;
     const birthDate = new Date(dateValue);
@@ -821,7 +828,7 @@ app.get('/events', async (req, res) => {
             )
             .orderBy('Event_Templates.EventID', 'asc');
 
-        // Get upcoming occurrences with template data and registration counts
+        // Get upcoming occurrences (including current events) with template data and registration counts
         const now = new Date();
         const upcomingOccurrences = await knex('Event_Occurrence as eo')
             .join('Event_Templates as et', 'eo.EventID', 'et.EventID')
@@ -841,7 +848,16 @@ app.get('/events', async (req, res) => {
                 'et.EventDefaultCapacity',
                 knex.raw('COALESCE(COUNT(DISTINCT "r"."RegistrationID"), 0) as registration_count')
             )
-            .where('eo.EventDateTimeStart', '>=', knex.fn.now())
+            .where(function() {
+                // Include events that haven't ended yet (or haven't started if no end time)
+                this.where(function() {
+                    this.whereNotNull('eo.EventDateTimeEnd')
+                        .where('eo.EventDateTimeEnd', '>=', knex.fn.now());
+                }).orWhere(function() {
+                    this.whereNull('eo.EventDateTimeEnd')
+                        .where('eo.EventDateTimeStart', '>=', knex.fn.now());
+                });
+            })
             .groupBy(
                 'eo.OccurrenceID',
                 'eo.EventID',
@@ -933,11 +949,20 @@ app.get('/registration/:id', async (req, res) => {
                 .where('Event_Occurrence.EventID', eventId)
                 .orderBy('Event_Occurrence.EventDateTimeStart', 'asc');
             
-            // Separate future and past, then reorder
-            const futureOccurrences = allOccurrences.filter(o => new Date(o.EventDateTimeStart) >= now);
-            const pastOccurrences = allOccurrences.filter(o => new Date(o.EventDateTimeStart) < now).reverse();
+            // Separate upcoming and past, then reorder
+            // Upcoming: events that haven't ended yet (or haven't started if no end time)
+            const upcomingOccurrences = allOccurrences.filter(o => {
+                const start = new Date(o.EventDateTimeStart);
+                const end = o.EventDateTimeEnd ? new Date(o.EventDateTimeEnd) : null;
+                return end ? end >= now : start >= now;
+            });
+            const pastOccurrences = allOccurrences.filter(o => {
+                const start = new Date(o.EventDateTimeStart);
+                const end = o.EventDateTimeEnd ? new Date(o.EventDateTimeEnd) : null;
+                return end ? end < now : start < now;
+            }).reverse();
             
-            occurrences = [...futureOccurrences, ...pastOccurrences];
+            occurrences = [...upcomingOccurrences, ...pastOccurrences];
         } else {
             // For regular users: only future events, ascending
             occurrences = await knex('Event_Occurrence')
@@ -1011,7 +1036,10 @@ app.get('/registration/:id', async (req, res) => {
             const regCount = registrationCounts[occurrence.OccurrenceID] || 0;
             const capacity = occurrence.EventCapacity || occurrence.EventDefaultCapacity;
             const isFull = capacity ? regCount >= capacity : false;
-            const isPast = new Date(occurrence.EventDateTimeStart) < now;
+            // Event is past only if end time has passed (or if no end time, if start has passed)
+            const start = new Date(occurrence.EventDateTimeStart);
+            const end = occurrence.EventDateTimeEnd ? new Date(occurrence.EventDateTimeEnd) : null;
+            const isPast = end ? end < now : start < now;
             const attCount = attendanceCounts[occurrence.OccurrenceID] || 0;
 
             return {
@@ -1195,6 +1223,64 @@ app.post('/unregister-occurrence', async (req, res) => {
     }
 });
 
+// POST /registrations/:id/cancel - user cancel before event start
+app.post('/registrations/:id/cancel', async (req, res) => {
+    try {
+        if (!req.session.user || !req.session.user.ParticipantID) {
+            return res.status(401).json({ success: false, error: 'Please log in' });
+        }
+        const registrationId = parseInt(req.params.id, 10);
+        if (!registrationId) {
+            return res.status(400).json({ success: false, error: 'Registration ID is required' });
+        }
+        const registration = await knex('Registration')
+            .where('RegistrationID', registrationId)
+            .andWhere('ParticipantID', req.session.user.ParticipantID)
+            .first();
+        if (!registration) {
+            return res.status(404).json({ success: false, error: 'Registration not found' });
+        }
+        await knex('Registration')
+            .where('RegistrationID', registrationId)
+            .update({ RegistrationStatus: 'Cancelled', RegistrationAttendedFlag: false, RegistrationCheckInTime: null });
+        return res.json({ success: true, message: 'Registration cancelled' });
+    } catch (err) {
+        console.error('Error cancelling registration:', err);
+        return res.status(500).json({ success: false, error: 'Error cancelling registration' });
+    }
+});
+
+// POST /registrations/:id/check-in - user self check-in during event
+app.post('/registrations/:id/check-in', async (req, res) => {
+    try {
+        if (!req.session.user || !req.session.user.ParticipantID) {
+            return res.status(401).json({ success: false, error: 'Please log in' });
+        }
+        const registrationId = parseInt(req.params.id, 10);
+        if (!registrationId) {
+            return res.status(400).json({ success: false, error: 'Registration ID is required' });
+        }
+        const registration = await knex('Registration')
+            .where('RegistrationID', registrationId)
+            .andWhere('ParticipantID', req.session.user.ParticipantID)
+            .first();
+        if (!registration) {
+            return res.status(404).json({ success: false, error: 'Registration not found' });
+        }
+        await knex('Registration')
+            .where('RegistrationID', registrationId)
+            .update({
+                RegistrationStatus: 'Registered',
+                RegistrationAttendedFlag: true,
+                RegistrationCheckInTime: knex.fn.now()
+            });
+        return res.json({ success: true, message: 'Checked in' });
+    } catch (err) {
+        console.error('Error checking in:', err);
+        return res.status(500).json({ success: false, error: 'Error checking in' });
+    }
+});
+
 // POST /occurrences/:id/delete: Admin delete an occurrence (and its registrations)
 app.post('/occurrences/:id/delete', async (req, res) => {
     try {
@@ -1267,6 +1353,62 @@ app.post('/occurrences/:id/update', async (req, res) => {
     } catch (err) {
         console.error('Error updating occurrence:', err);
         return res.status(500).json({ success: false, error: 'Error updating occurrence' });
+    }
+});
+
+// POST /admin/occurrences/create: Admin create a new occurrence
+app.post('/admin/occurrences/create', async (req, res) => {
+    try {
+        if (!req.session.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Admin access required' });
+        }
+
+        const { eventId, date, startTime, endTime, location, capacity } = req.body || {};
+        
+        if (!eventId || !date || !startTime || !capacity || capacity < 1) {
+            return res.status(400).json({ success: false, error: 'Event ID, date, start time, and capacity are required' });
+        }
+
+        // Validate event template exists
+        const eventTemplate = await knex('Event_Templates')
+            .where('EventID', parseInt(eventId, 10))
+            .first();
+
+        if (!eventTemplate) {
+            return res.status(404).json({ success: false, error: 'Event template not found' });
+        }
+
+        const start = new Date(`${date}T${startTime}`);
+        const end = endTime ? new Date(`${date}T${endTime}`) : null;
+
+        if (Number.isNaN(start.getTime()) || (endTime && Number.isNaN(end.getTime()))) {
+            return res.status(400).json({ success: false, error: 'Invalid date or time' });
+        }
+
+        // Check if end is before start
+        if (end && end <= start) {
+            return res.status(400).json({ success: false, error: 'End time must be after start time' });
+        }
+
+        // Create the occurrence
+        const [occurrenceId] = await knex('Event_Occurrence')
+            .insert({
+                EventID: parseInt(eventId, 10),
+                EventDateTimeStart: start.toISOString(),
+                EventDateTimeEnd: end ? end.toISOString() : null,
+                EventLocation: location || null,
+                EventCapacity: parseInt(capacity, 10)
+            })
+            .returning('OccurrenceID');
+
+        return res.json({
+            success: true,
+            message: 'Event occurrence created successfully',
+            occurrenceId: occurrenceId.OccurrenceID || occurrenceId
+        });
+    } catch (err) {
+        console.error('Error creating occurrence:', err);
+        return res.status(500).json({ success: false, error: 'Error creating occurrence' });
     }
 });
 
@@ -1980,6 +2122,7 @@ app.get('/surveys', async (req, res) => {
                     'eo.EventDateTimeStart'
                 )
                 .whereNull('s.RegistrationID')
+                .where('r.RegistrationAttendedFlag', true)
                 .orderBy('eo.EventDateTimeStart', 'desc');
 
             eventTitles = await knex('Event_Templates')
@@ -2025,6 +2168,106 @@ app.get('/surveys', async (req, res) => {
     } catch (err) {
         console.error('Error loading surveys:', err);
         res.status(500).send('Error loading surveys');
+    }
+});
+
+// GET /api/occurrence/:id/survey-info: Get event info for survey modal
+app.get('/api/occurrence/:id/survey-info', async (req, res) => {
+    try {
+        const occurrenceId = parseInt(req.params.id, 10);
+        if (!occurrenceId) {
+            return res.status(400).json({ success: false, error: 'Occurrence ID is required' });
+        }
+
+        const occurrence = await knex('Event_Occurrence as eo')
+            .join('Event_Templates as et', 'eo.EventID', 'et.EventID')
+            .select(
+                'et.EventName',
+                'eo.EventDateTimeStart'
+            )
+            .where('eo.OccurrenceID', occurrenceId)
+            .first();
+
+        if (!occurrence) {
+            return res.status(404).json({ success: false, error: 'Occurrence not found' });
+        }
+
+        return res.json({
+            success: true,
+            eventName: occurrence.EventName,
+            eventStart: occurrence.EventDateTimeStart
+        });
+    } catch (err) {
+        console.error('Error fetching occurrence info:', err);
+        return res.status(500).json({ success: false, error: 'Error fetching occurrence information' });
+    }
+});
+
+// POST /surveys/create: Create survey from profile page
+app.post('/surveys/create', async (req, res) => {
+    try {
+        if (!req.session.user || !req.session.user.ParticipantID) {
+            return res.status(401).json({ success: false, error: 'Authentication required' });
+        }
+
+        const { registrationId, satisfaction, usefulness, instructor, recommendation, comments } = req.body || {};
+
+        if (!registrationId || satisfaction === undefined || usefulness === undefined || 
+            instructor === undefined || recommendation === undefined) {
+            return res.status(400).json({ success: false, error: 'All required fields must be provided' });
+        }
+
+        // Verify registration belongs to current user
+        const registration = await knex('Registration')
+            .where('RegistrationID', parseInt(registrationId, 10))
+            .where('ParticipantID', req.session.user.ParticipantID)
+            .first();
+
+        if (!registration) {
+            return res.status(403).json({ success: false, error: 'Registration not found or access denied' });
+        }
+
+        // Check if survey already exists
+        const existingSurvey = await knex('Surveys')
+            .where('RegistrationID', registration.RegistrationID)
+            .first();
+
+        if (existingSurvey) {
+            return res.status(400).json({ success: false, error: 'Survey already exists for this registration' });
+        }
+
+        const sat = clampSurveyScore(satisfaction);
+        const useful = clampSurveyScore(usefulness);
+        const instructorScore = clampSurveyScore(instructor);
+        const recommend = clampSurveyScore(recommendation);
+
+        if ([sat, useful, instructorScore, recommend].some((score) => score === null)) {
+            return res.status(400).json({ success: false, error: 'All survey scores must be between 0 and 5' });
+        }
+
+        const overall = computeSurveyAverage([sat, useful, instructorScore, recommend]);
+        const npsBucket = determineNpsBucket(recommend) || 'Passive';
+
+        const [surveyId] = await knex('Surveys').insert({
+            RegistrationID: registration.RegistrationID,
+            SurveySatisfactionScore: sat,
+            SurveyUsefulnessScore: useful,
+            SurveyInstructorScore: instructorScore,
+            SurveyRecommendationScore: recommend,
+            SurveyOverallScore: overall,
+            SurveyNPSBucket: npsBucket,
+            SurveyComments: comments || null,
+            SurveySubmissionDate: knex.fn.now()
+        }).returning('SurveyID');
+
+        return res.json({
+            success: true,
+            message: 'Survey created successfully',
+            surveyId: surveyId.SurveyID || surveyId
+        });
+    } catch (err) {
+        console.error('Error creating survey:', err);
+        return res.status(500).json({ success: false, error: 'Error creating survey' });
     }
 });
 
@@ -2527,6 +2770,73 @@ app.get('/profile', async (req, res) => {
             const totalDonationsDisplay = totalDonations.toFixed(2);
             const profileDOBDisplay = formatDateForDisplay(participant.ParticipantDOB);
             const profileDOBInput = formatDateForInput(participant.ParticipantDOB);
+            const memberSinceDisplay = formatMonthYear(participant.AccountCreatedDate);
+            const userEventsRows = await knex('Registration as r')
+                .leftJoin('Event_Occurrence as o', 'r.OccurrenceID', 'o.OccurrenceID')
+                .leftJoin('Event_Templates as e', 'o.EventID', 'e.EventID')
+                .leftJoin('Surveys as s', 'r.RegistrationID', 's.RegistrationID')
+                .select(
+                    'r.RegistrationID',
+                    'r.RegistrationStatus',
+                    'r.RegistrationAttendedFlag',
+                    'r.RegistrationCheckInTime',
+                    'r.RegistrationCreatedAt',
+                    'o.OccurrenceID',
+                    'o.EventDateTimeStart',
+                    'o.EventDateTimeEnd',
+                    'o.EventRegistrationDeadline',
+                    'o.EventLocation',
+                    'o.EventCapacity',
+                    'e.EventID',
+                    'e.EventName',
+                    'e.EventType',
+                    'e.EventRecurrencePattern',
+                    's.SurveyID'
+                )
+                .where('r.ParticipantID', participant.ParticipantID)
+                .orderBy('o.EventDateTimeStart', 'asc');
+
+            const profileNow = new Date();
+            const userEvents = userEventsRows.map(row => {
+                const start = row.EventDateTimeStart ? new Date(row.EventDateTimeStart) : null;
+                const end = row.EventDateTimeEnd ? new Date(row.EventDateTimeEnd) : null;
+                const deadline = row.EventRegistrationDeadline ? new Date(row.EventRegistrationDeadline) : null;
+                // Event is past only if end time has passed (or if no end time, if start has passed)
+                const isPast = end ? end < profileNow : (start ? start < profileNow : false);
+                return {
+                    registrationId: row.RegistrationID,
+                    status: row.RegistrationStatus || 'Registered',
+                    attended: !!row.RegistrationAttendedFlag,
+                    checkInTime: row.RegistrationCheckInTime,
+                    occurrenceId: row.OccurrenceID,
+                    start,
+                    end,
+                    deadline,
+                    location: row.EventLocation,
+                    capacity: row.EventCapacity,
+                    eventId: row.EventID,
+                    eventName: row.EventName,
+                    eventType: row.EventType,
+                    recurrence: row.EventRecurrencePattern,
+                    surveyId: row.SurveyID,
+                    isPast
+                };
+            });
+
+            // Mark past unattended registrations as no show
+            const noShowIds = userEvents
+                .filter(ev => ev.isPast && !ev.attended && (!ev.status || ev.status.toLowerCase() !== 'cancelled'))
+                .map(ev => ev.registrationId);
+            if (noShowIds.length) {
+                await knex('Registration')
+                    .whereIn('RegistrationID', noShowIds)
+                    .update({ RegistrationStatus: 'No Show', RegistrationAttendedFlag: false });
+                userEvents.forEach(ev => {
+                    if (noShowIds.includes(ev.registrationId)) {
+                        ev.status = 'No Show';
+                    }
+                });
+            }
 
             res.render('profile', { 
                 layout: 'public', 
@@ -2539,7 +2849,9 @@ app.get('/profile', async (req, res) => {
                     totalDonationsDisplay
                 },
                 profileDOBDisplay,
-                profileDOBInput
+                profileDOBInput,
+                memberSinceDisplay,
+                userEvents
             });
         } catch (err) {
             console.error('Error fetching profile:', err);
@@ -2549,7 +2861,8 @@ app.get('/profile', async (req, res) => {
                 participant: null,
                 error: 'Error loading your profile. Please try again.',
                 profileDOBDisplay: null,
-                profileDOBInput: null
+                profileDOBInput: null,
+                memberSinceDisplay: null
             });
         }
 });

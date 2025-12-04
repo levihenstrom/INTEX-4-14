@@ -81,8 +81,10 @@
 
 <!-- Events Filters -->
 <div class="events-filters">
-    <div class="filters-title">Filter Events</div>
-    <div class="filters-row">
+    <div class="filters-title" id="filterEventsTitle" style="cursor: pointer; user-select: none;">
+        <i class="fa-solid fa-filter"></i> Filter Events
+    </div>
+    <div class="filters-row" id="filtersRow" style="display: none;">
         <div class="filter-group">
             <label>Event Type</label>
             <div class="event-labels filter-labels" id="event-type-pills">
@@ -119,9 +121,6 @@
                     <i class="fa-solid fa-calendar-check"></i>Annual
                 </span>
             </div>
-        </div>
-        <div class="filter-buttons">
-            <button class="filter-btn" onclick="clearFilters()">Clear Filters</button>
         </div>
     </div>
 </div>
@@ -208,13 +207,23 @@
             });
         });
 
-        window.clearFilters = function () {
-            currentType = 'all';
-            currentRecurrence = 'all';
-            setActive(typePills, 'all');
-            setActive(recurPills, 'all');
-            filterEvents();
-        };
+        // Toggle filter visibility
+        const filterTitle = document.getElementById('filterEventsTitle');
+        const filtersRow = document.getElementById('filtersRow');
+        
+        if (filterTitle && filtersRow) {
+            filterTitle.addEventListener('click', () => {
+                const isHidden = filtersRow.style.display === 'none';
+                filtersRow.style.display = isHidden ? 'block' : 'none';
+                
+                // Rotate icon
+                const icon = filterTitle.querySelector('i');
+                if (icon) {
+                    icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+                    icon.style.transition = 'transform 0.3s ease';
+                }
+            });
+        }
 
         // initialize selection
         setActive(typePills, 'all');
