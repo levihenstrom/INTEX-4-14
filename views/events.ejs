@@ -84,23 +84,41 @@
     <div class="filters-title">Filter Events</div>
     <div class="filters-row">
         <div class="filter-group">
-            <label for="event-type">Event Type</label>
-            <select id="event-type" class="event-filter">
-                <option value="all">All Event Types</option>
-                <option value="Leadership">Leadership</option>
-                <option value="STEM">STEM</option>
-                <option value="Arts">Arts</option>
-                <option value="Annual Conference">Annual Conference</option>
-            </select>
+            <label>Event Type</label>
+            <div class="event-labels filter-labels" id="event-type-pills">
+                <span class="event-label event-label-type-stem filter-pill" data-filter-type="eventType" data-filter-value="all">
+                    <i class="fa-solid fa-sliders"></i>All Types
+                </span>
+                <span class="event-label event-label-type-leadership filter-pill" data-filter-type="eventType" data-filter-value="Leadership">
+                    <i class="fa-solid fa-users"></i>Leadership
+                </span>
+                <span class="event-label event-label-type-stem filter-pill" data-filter-type="eventType" data-filter-value="STEM">
+                    <i class="fa-solid fa-gear"></i>STEM
+                </span>
+                <span class="event-label event-label-type-arts filter-pill" data-filter-type="eventType" data-filter-value="Arts">
+                    <i class="fa-solid fa-paintbrush"></i>Arts
+                </span>
+                <span class="event-label event-label-type-annual-conference filter-pill" data-filter-type="eventType" data-filter-value="Annual Conference">
+                    <i class="fa-solid fa-calendar-star"></i>Annual Conference
+                </span>
+            </div>
         </div>
         <div class="filter-group">
-            <label for="event-recurrence">Recurrence Pattern</label>
-            <select id="event-recurrence" class="event-filter">
-                <option value="all">All Patterns</option>
-                <option value="Monthly">Monthly</option>
-                <option value="Weekly">Weekly</option>
-                <option value="Annual">Annual</option>
-            </select>
+            <label>Recurrence</label>
+            <div class="event-labels filter-labels" id="event-recurrence-pills">
+                <span class="event-label event-label-recurrence-monthly filter-pill" data-filter-type="eventRecurrence" data-filter-value="all">
+                    <i class="fa-solid fa-sliders"></i>All Patterns
+                </span>
+                <span class="event-label event-label-recurrence-weekly filter-pill" data-filter-type="eventRecurrence" data-filter-value="Weekly">
+                    <i class="fa-solid fa-calendar-week"></i>Weekly
+                </span>
+                <span class="event-label event-label-recurrence-monthly filter-pill" data-filter-type="eventRecurrence" data-filter-value="Monthly">
+                    <i class="fa-solid fa-calendar-days"></i>Monthly
+                </span>
+                <span class="event-label event-label-recurrence-annual filter-pill" data-filter-type="eventRecurrence" data-filter-value="Annual">
+                    <i class="fa-solid fa-calendar-check"></i>Annual
+                </span>
+            </div>
         </div>
         <div class="filter-buttons">
             <button class="filter-btn" onclick="clearFilters()">Clear Filters</button>
@@ -145,53 +163,63 @@
 <!-- Filter Functionality -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const eventTypeFilter = document.getElementById('event-type');
-        const eventRecurrenceFilter = document.getElementById('event-recurrence');
         const eventCardWrappers = document.querySelectorAll('.event-card-wrapper');
+        const typePills = Array.from(document.querySelectorAll('#event-type-pills .filter-pill'));
+        const recurPills = Array.from(document.querySelectorAll('#event-recurrence-pills .filter-pill'));
+        let currentType = 'all';
+        let currentRecurrence = 'all';
 
-        function filterEvents() {
-            const typeValue = eventTypeFilter.value.trim();
-            const recurrenceValue = eventRecurrenceFilter.value.trim();
-
-            eventCardWrappers.forEach(wrapper => {
-                const cardType = (wrapper.getAttribute('data-event-type') || '').trim();
-                const cardRecurrence = (wrapper.getAttribute('data-event-recurrence') || '').trim();
-
-                let showCard = true;
-
-                // Filter by event type (exact match, case-sensitive)
-                if (typeValue !== 'all') {
-                    if (cardType !== typeValue) {
-                        showCard = false;
-                    }
-                }
-
-                // Filter by recurrence pattern (exact match, case-sensitive)
-                if (recurrenceValue !== 'all') {
-                    if (cardRecurrence !== recurrenceValue) {
-                        showCard = false;
-                    }
-                }
-
-                // Show or hide card
-                if (showCard) {
-                    wrapper.style.display = 'block';
+        function setActive(pills, value) {
+            pills.forEach(p => {
+                if (p.getAttribute('data-filter-value') === value) {
+                    p.classList.add('filter-selected');
                 } else {
-                    wrapper.style.display = 'none';
+                    p.classList.remove('filter-selected');
                 }
             });
         }
 
-        // Add event listeners
-        eventTypeFilter.addEventListener('change', filterEvents);
-        eventRecurrenceFilter.addEventListener('change', filterEvents);
+        function filterEvents() {
+            eventCardWrappers.forEach(wrapper => {
+                const cardType = (wrapper.getAttribute('data-event-type') || '').trim();
+                const cardRecurrence = (wrapper.getAttribute('data-event-recurrence') || '').trim();
 
-        // Clear filters function
+                const typeOk = currentType === 'all' || cardType === currentType;
+                const recurOk = currentRecurrence === 'all' || cardRecurrence === currentRecurrence;
+                wrapper.style.display = typeOk && recurOk ? 'block' : 'none';
+            });
+        }
+
+        typePills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                const value = pill.getAttribute('data-filter-value');
+                currentType = value;
+                setActive(typePills, value);
+                filterEvents();
+            });
+        });
+
+        recurPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                const value = pill.getAttribute('data-filter-value');
+                currentRecurrence = value;
+                setActive(recurPills, value);
+                filterEvents();
+            });
+        });
+
         window.clearFilters = function () {
-            eventTypeFilter.value = 'all';
-            eventRecurrenceFilter.value = 'all';
+            currentType = 'all';
+            currentRecurrence = 'all';
+            setActive(typePills, 'all');
+            setActive(recurPills, 'all');
             filterEvents();
         };
+
+        // initialize selection
+        setActive(typePills, 'all');
+        setActive(recurPills, 'all');
+        filterEvents();
     });
 
     // Carousel functionality
