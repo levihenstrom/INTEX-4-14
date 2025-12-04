@@ -1,39 +1,34 @@
-// Milestones by Category - Stacked Percentage Bar Chart
+// Survey NPS Distribution - Stacked Bar Chart
 document.addEventListener('DOMContentLoaded', function() {
     let chart;
     let fullData = [];
-    let selectedCategory = null;
+    let selectedBucket = null;
 
-    // Color palette from the design
-    const categoryColors = [
-        '#9AB59D',  // Sage green
-        '#978EC4',  // Purple
-        '#F9AFB1',  // Pink
-        '#99B7C6',  // Blue
-        '#F4B092',  // Peach
-        '#CE325B',  // Magenta
-        '#FFD8D1',  // Light pink
-        '#3A3F3B',  // Dark gray
-    ];
+    // NPS Colors - Green for Promoters, Yellow for Passive, Red for Detractors
+    const npsColors = {
+        'Promoter': '#9AB59D',   // Sage green
+        'Passive': '#F4B092',    // Peach/Orange
+        'Detractor': '#CE325B'   // Magenta/Red
+    };
 
-    // Greyed out color for non-selected categories
+    // Greyed out color
     const greyedOutColor = '#E5E5E5';
 
     // Check if canvas exists (only for admin users)
-    const canvas = document.getElementById('milestonesByCategoryChart');
+    const canvas = document.getElementById('surveysRadarChart');
     if (!canvas) {
         return;
     }
 
     // Get current filter from URL
     const urlParams = new URLSearchParams(window.location.search);
-    const currentFilterCategory = urlParams.get('filterCategory');
-    if (currentFilterCategory) {
-        selectedCategory = currentFilterCategory;
+    const currentFilterNPS = urlParams.get('filterNPS');
+    if (currentFilterNPS) {
+        selectedBucket = currentFilterNPS;
     }
 
-    // Fetch milestones by category and create chart
-    fetch('/api/milestones-by-category')
+    // Fetch NPS distribution and create chart
+    fetch('/api/surveys-nps-distribution')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -41,31 +36,32 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(data => {
+            console.log('NPS distribution data:', data);
+
             if (!data || data.length === 0) {
-                canvas.parentElement.innerHTML = '<p class="text-muted text-center">No milestone data available</p>';
+                canvas.parentElement.innerHTML = '<p class="text-muted text-center">No NPS data available</p>';
                 return;
             }
-            
+
             fullData = data;
             const ctx = canvas.getContext('2d');
 
             // Calculate total for percentages
             const total = data.reduce((sum, item) => sum + parseInt(item.count), 0);
 
-            // Create one dataset per category (for stacking)
-            const datasets = data.map((item, index) => {
+            // Create one dataset per NPS bucket (for stacking)
+            const datasets = data.map((item) => {
                 const percentage = (parseInt(item.count) / total) * 100;
-                const isSelected = !selectedCategory || item.category === selectedCategory;
-                const baseColor = categoryColors[index % categoryColors.length];
+                const isSelected = !selectedBucket || item.bucket === selectedBucket;
+                const baseColor = npsColors[item.bucket] || '#999';
 
                 return {
-                    label: item.category,
+                    label: item.bucket,
                     data: [percentage],
                     backgroundColor: isSelected ? baseColor : greyedOutColor,
                     borderColor: isSelected ? baseColor : '#D0D0D0',
                     borderWidth: 0,
                     borderSkipped: false,
-                    categoryIndex: index,
                     rawCount: parseInt(item.count),
                     percentage: percentage
                 };
@@ -91,19 +87,19 @@ document.addEventListener('DOMContentLoaded', function() {
                             labels: {
                                 font: {
                                     family: "'Montserrat', sans-serif",
-                                    size: 11
+                                    size: 12
                                 },
                                 color: '#3A3F3B',
-                                padding: 15,
+                                padding: 20,
                                 usePointStyle: true,
                                 pointStyle: 'rect',
                                 generateLabels: function(chart) {
                                     return chart.data.datasets.map((dataset, i) => {
-                                        const isActive = !selectedCategory || dataset.label === selectedCategory;
+                                        const isActive = !selectedBucket || dataset.label === selectedBucket;
                                         return {
                                             text: `${dataset.label} (${dataset.percentage.toFixed(1)}%)`,
-                                            fillStyle: isActive ? categoryColors[i % categoryColors.length] : greyedOutColor,
-                                            strokeStyle: isActive ? categoryColors[i % categoryColors.length] : '#D0D0D0',
+                                            fillStyle: isActive ? npsColors[dataset.label] : greyedOutColor,
+                                            strokeStyle: isActive ? npsColors[dataset.label] : '#D0D0D0',
                                             lineWidth: 0,
                                             hidden: false,
                                             index: i,
@@ -113,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 }
                             },
                             onClick: function(e, legendItem, legend) {
-                                handleCategoryClick(legendItem.datasetIndex);
+                                handleBucketClick(legendItem.datasetIndex);
                             }
                         },
                         tooltip: {
@@ -135,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 },
                                 label: function(context) {
                                     const dataset = context.dataset;
-                                    return ` ${dataset.rawCount} milestones (${dataset.percentage.toFixed(1)}%)`;
+                                    return ` ${dataset.rawCount} surveys (${dataset.percentage.toFixed(1)}%)`;
                                 }
                             }
                         }
@@ -153,10 +149,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     onClick: (event, activeElements) => {
                         if (activeElements.length > 0) {
-                            handleCategoryClick(activeElements[0].datasetIndex);
+                            handleBucketClick(activeElements[0].datasetIndex);
                         } else {
                             // Clicked on empty space - clear filter
-                            clearCategoryFilter();
+                            clearNPSFilter();
                         }
                     },
                     onHover: (event, activeElements) => {
@@ -165,29 +161,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            // Function to handle category selection
-            function handleCategoryClick(datasetIndex) {
-                const clickedCategory = fullData[datasetIndex].category;
+            // Function to handle NPS bucket selection
+            function handleBucketClick(datasetIndex) {
+                const clickedBucket = fullData[datasetIndex].bucket;
 
-                if (selectedCategory === clickedCategory) {
-                    // Clicking same category again - clear filter
-                    clearCategoryFilter();
+                if (selectedBucket === clickedBucket) {
+                    // Clicking same bucket again - clear filter
+                    clearNPSFilter();
                 } else {
                     // Redirect with filter
                     const currentUrl = new URL(window.location.href);
-                    currentUrl.searchParams.set('filterCategory', clickedCategory);
+                    currentUrl.searchParams.set('filterNPS', clickedBucket);
                     currentUrl.searchParams.set('page', '1');
                     window.location.href = currentUrl.toString();
                 }
             }
 
-            // Function to clear category filter
-            function clearCategoryFilter() {
+            // Function to clear NPS filter
+            function clearNPSFilter() {
                 const currentUrl = new URL(window.location.href);
-                currentUrl.searchParams.delete('filterCategory');
+                currentUrl.searchParams.delete('filterNPS');
                 currentUrl.searchParams.set('page', '1');
                 window.location.href = currentUrl.toString();
             }
         })
-        .catch(error => console.error('Error loading milestones by category:', error));
+        .catch(error => console.error('Error loading NPS distribution:', error));
 });

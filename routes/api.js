@@ -87,6 +87,31 @@ router.get('/surveys-nps', async (req, res) => {
     }
 });
 
+// Survey NPS distribution for stacked bar chart
+router.get('/surveys-nps-distribution', async (req, res) => {
+    try {
+        const results = await knex.raw(`
+            SELECT
+                "SurveyNPSBucket" as bucket,
+                COUNT(*) as count
+            FROM "Surveys"
+            WHERE "SurveyNPSBucket" IS NOT NULL AND "SurveyNPSBucket" != ''
+            GROUP BY "SurveyNPSBucket"
+            ORDER BY 
+                CASE "SurveyNPSBucket"
+                    WHEN 'Promoter' THEN 1
+                    WHEN 'Passive' THEN 2
+                    WHEN 'Detractor' THEN 3
+                    ELSE 4
+                END
+        `);
+        res.json(results.rows);
+    } catch (err) {
+        console.error('Survey NPS distribution error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 router.get('/surveys-responses', async (req, res) => {
     try {
         const data = await knex('surveys')

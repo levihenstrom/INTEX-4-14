@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (monthCardLabel) {
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             monthCardLabel.textContent = `Donations in ${monthNames[selectedMonth.month - 1]} ${selectedMonth.year}`;
         }
     }
@@ -37,10 +37,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateChartData(upToIndex) {
         // Show data up to selected point
         const dataUpToPoint = fullData.slice(0, upToIndex + 1);
-        chart.data.labels = dataUpToPoint.map(item => {
-            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            return `${monthNames[item.month - 1]} ${item.year}`;
+        chart.data.labels = dataUpToPoint.map((item, index) => {
+            // Show year only for January or first data point
+            if (item.month === 1 || index === 0) {
+                return item.year.toString();
+            }
+            return '';
         });
         chart.data.datasets[0].data = dataUpToPoint.map(item => parseFloat(item.total) || 0);
         chart.update();
@@ -59,11 +61,13 @@ document.addEventListener('DOMContentLoaded', function() {
             fullData = data;
             const ctx = canvas.getContext('2d');
 
-        // Format data for chart
-        const labels = data.map(item => {
-            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            return `${monthNames[item.month - 1]} ${item.year}`;
+        // Format data for chart - only show year labels
+        const labels = data.map((item, index) => {
+            // Show year only for January or first data point
+            if (item.month === 1 || index === 0) {
+                return item.year.toString();
+            }
+            return ''; // Empty label for other months
         });
 
         const amounts = data.map(item => parseFloat(item.total) || 0);
@@ -94,20 +98,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 maintainAspectRatio: false,
                 plugins: {
                     title: {
-                        display: true,
-                        text: 'Donations Over Time',
-                        font: {
-                            family: "'DM Serif Display', serif",
-                            size: 24,
-                            weight: 'normal'
-                        },
-                        color: '#3A3F3B'
+                        display: false
                     },
                     legend: {
                         display: false
                     },
                     tooltip: {
                         callbacks: {
+                            title: function(context) {
+                                // Show full month/year in tooltip title
+                                const index = context[0].dataIndex;
+                                const item = fullData[index];
+                                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                                                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                return `${monthNames[item.month - 1]} ${item.year}`;
+                            },
                             label: function(context) {
                                 let label = context.dataset.label || '';
                                 if (label) {
