@@ -3,6 +3,7 @@ const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
 const helmet = require('helmet');
+const csurf = require('csurf');
 // const { Pool } = require('pg'); // For Database Engineer - Alex
 
 // 2. Initial Setup
@@ -98,6 +99,16 @@ app.use(session({
     saveUninitialized: false,
     cookie: { secure: false } // Set to true in production with HTTPS
 }));
+
+// CSRF Protection - placed after session middleware
+const csrfProtection = csurf({ cookie: false });
+app.use(csrfProtection);
+
+// Make CSRF token available to all views
+app.use((req, res, next) => {
+    res.locals.csrfToken = req.csrfToken();
+    next();
+});
 
 // EJS View Engine Setup
 app.set('view engine', 'ejs');
@@ -3278,6 +3289,22 @@ app.get('/dashboard', (req, res) => {
 
 app.get('/info', (req, res) => {
     res.render('info', { layout: 'public', pageTitle: 'Info' });
+});
+
+// CSRF Error Handler
+app.use((err, req, res, next) => {
+    if (err.code === 'EBADCSRFTOKEN') {
+        // Handle CSRF token errors
+        console.error('CSRF token validation failed');
+        return res.status(403).render('login', {
+            layout: 'public',
+            pageTitle: 'Error',
+            defaultView: 'login',
+            isVolunteer: false,
+            error: 'Form has expired. Please try again.'
+        });
+    }
+    next(err);
 });
 
 // 6. Start Server

@@ -510,6 +510,7 @@
                 </div>
                 <div class="card-body">
                     <form action="/participants" method="POST">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="userParticipantFirstName" class="form-label">First Name *</label>
