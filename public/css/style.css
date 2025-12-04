@@ -1184,11 +1184,13 @@ body:not(.has-hero) {
 .events-container .event-card-wrapper {
     position: relative;
     display: block;
+    height: 100%;
 }
 
 /* Event Card - EVENTS PAGE */
 .events-container .event-card {
-    display: block;
+    display: flex;
+    flex-direction: column;
     background-color: white;
     border-radius: 16px;
     overflow: hidden;
@@ -1197,6 +1199,8 @@ body:not(.has-hero) {
     text-decoration: none;
     color: inherit;
     height: 100%;
+    opacity: 1;              /* ensure visible even without animation class */
+    transform: none;
 }
 
 .events-container .event-card:hover {
@@ -1229,6 +1233,10 @@ body:not(.has-hero) {
 /* Event Content - EVENTS PAGE */
 .events-container .event-content {
     padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .events-container .event-name {
@@ -1842,8 +1850,8 @@ body:not(.has-hero) {
     color: white;
 }
 
-/* Simple custom modal (if used somewhere) */
-.modal-backdrop {
+/* Simple custom modal (registration view only) */
+.reg-modal-backdrop {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.35);
@@ -1853,11 +1861,11 @@ body:not(.has-hero) {
     z-index: 1000;
 }
 
-.modal-backdrop.active {
+.reg-modal-backdrop.active {
     display: flex;
 }
 
-.modal {
+.reg-modal {
     background: white;
     border-radius: 12px;
     padding: 1.5rem;
@@ -1866,14 +1874,14 @@ body:not(.has-hero) {
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
-.modal-header {
+.reg-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
 }
 
-.modal-close {
+.reg-modal-close {
     background: transparent;
     border: none;
     font-size: 1.25rem;
