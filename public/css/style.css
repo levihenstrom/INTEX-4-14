@@ -1096,6 +1096,19 @@ body:not(.has-hero) {
     color: #3A3F3B;
     margin-bottom: 1.5rem;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: color 0.2s ease;
+}
+
+.filters-title:hover {
+    color: #978EC4;
+}
+
+.filters-title i {
+    transition: transform 0.3s ease;
 }
 
 .filters-row {
@@ -1104,6 +1117,18 @@ body:not(.has-hero) {
     gap: 1.5rem;
     align-items: flex-end;
     justify-content: center;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .filter-group {
@@ -2993,4 +3018,59 @@ body:not(.has-hero) {
         grid-template-columns: 1fr;
         grid-auto-rows: 200px;
     }
+}
+
+/* Survey Modal Sliders */
+#surveyModalBackdrop input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: #E0E0E0;
+    outline: none;
+    transition: background 0.3s;
+}
+
+#surveyModalBackdrop input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #978EC4;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+
+#surveyModalBackdrop input[type="range"]::-webkit-slider-thumb:hover {
+    background: #7A6FA3;
+    transform: scale(1.1);
+}
+
+#surveyModalBackdrop input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #978EC4;
+    cursor: pointer;
+    border: none;
+    transition: background 0.3s, transform 0.2s;
+}
+
+#surveyModalBackdrop input[type="range"]::-moz-range-thumb:hover {
+    background: #7A6FA3;
+    transform: scale(1.1);
+}
+
+#surveyModalBackdrop input[type="range"]:focus {
+    background: #D0D0D0;
+}
+
+#surveyModalBackdrop input[type="range"]:focus::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px rgba(151, 142, 196, 0.3);
+}
+
+#surveyModalBackdrop input[type="range"]:focus::-moz-range-thumb {
+    box-shadow: 0 0 0 3px rgba(151, 142, 196, 0.3);
 }
