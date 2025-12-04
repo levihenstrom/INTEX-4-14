@@ -3,6 +3,12 @@
         <div class="row justify-content-center">
             <!-- <div class="col-lg-11 col-xl-10"> -->
             <div class="col-12">
+                <div class="registration-back">
+                    <a class="btn-back" href="/events">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Back to Events
+                    </a>
+                </div>
                 <div class="registration-card">
                     <div class="registration-header">
                         <div class="registration-image">
@@ -149,7 +155,7 @@
                                                            <% if (occurrence.EventCapacity) { %>
                                                                <div class="occurrence-detail-item">
                                                                    <i class="fa-solid fa-users"></i>
-                                                                   <span><%= occurrence.EventCapacity %> slots</span>
+                                                                   <span><%= occurrence.EventCapacity - occurrence.registrationCount %> slots left</span>
                                                                </div>
                                                            <% } %>
                                                            <% if (isPast && typeof isAdmin !== 'undefined' && isAdmin && typeof occurrence.attendanceCount !== 'undefined') { %>
@@ -186,13 +192,10 @@
                                         </div>
                                         
                                     </div>
-                                    <div class="registration-actions">
-                                        <a href="/events" class="btn btn-outline-secondary">Back to Events</a>
-                                    </div>
+                                   
                                 <% } else { %>
                                     <div class="no-occurrences">
                                         <p>No upcoming sessions available for this event at this time.</p>
-                                        <a href="/events" class="btn btn-secondary">Back to Events</a>
                                     </div>
                                 <% } %>
                             </div>
@@ -207,7 +210,46 @@
     </div>
 </div>
 
+<div class="reg-confirm-backdrop" id="regConfirmBackdrop" aria-modal="true" role="dialog">
+    <div class="reg-confirm-modal">
+        <h4 style="margin: 0;">Confirm Delete</h4>
+        <p id="regConfirmMessage" style="margin: 0;">Are you sure?</p>
+        <div class="reg-confirm-actions">
+            <button type="button" class="btn btn-outline-secondary" id="regConfirmNo">Cancel</button>
+            <button type="button" class="btn btn-danger" id="regConfirmYes">Delete</button>
+        </div>
+    </div>
+</div>
+
 <style>
+.registration-card {
+}
+
+.registration-back {
+    max-width: 1400px;     /* match .registration-card */
+    margin: 0 auto 1rem;   /* center & add space below */
+    padding: 0 0.5rem;     /* small horizontal padding (optional) */
+}
+
+.registration-back .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #978EC4;
+    color: white;
+    border: none;
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+}
+
+.registration-back .btn-back:hover {
+    background: #897FB8;
+    color: white;
+}
+
 .reg-modal {
     max-width: 640px;
     width: 92%;
@@ -222,6 +264,7 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    overflow-y: auto;
 }
 
 .reg-modal-meta {
@@ -253,6 +296,13 @@
     gap: 0.75rem;
 }
 
+.reg-participant-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
 .reg-participants-list {
     max-height: 260px;
     overflow-y: auto;
@@ -263,13 +313,44 @@
 
 .reg-participant-row {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
     padding: 0.75rem 0.9rem;
     background: white;
     border: 1px solid #E6E0D4;
     border-radius: 10px;
+    min-height: 86px;
+}
+
+.reg-participant-left,
+.reg-participant-main,
+.reg-participant-right {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.reg-participant-left {
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+}
+
+.reg-participant-main {
+    flex: 1 1 auto;
+}
+
+.reg-participant-right {
+    flex: 0 0 auto;
+    align-items: flex-end;
+    gap: 0.5rem;
+    min-height: 70px;
+    justify-content: flex-start;
+}
+
+.reg-participant-right.no-survey {
+    justify-content: center;
 }
 
 .reg-participant-info {
@@ -319,7 +400,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     position: relative;
 }
 
@@ -349,23 +430,6 @@
 
 .reg-search-results .result-item:hover {
     background: #F0F0F0;
-}
-
-.reg-participant-actions .btn {
-    white-space: nowrap;
-}
-
-.reg-participant-row .reg-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-
-.reg-status-select {
-    padding: 0.3rem 0.4rem;
-    border-radius: 8px;
-    border: 1px solid #D0D0D0;
-    font-size: 0.9rem;
 }
 
 .reg-empty {
@@ -400,7 +464,8 @@
 
 .reg-modal-footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     gap: 0.75rem;
 }
 
@@ -426,6 +491,214 @@
 .status-pill--bad {
     background: #CE325B;
     color: white;
+}
+
+.reg-edit-region .reg-editable {
+    display: none;
+}
+
+.reg-edit-region.reg-editing .reg-editable {
+    display: block;
+}
+
+.reg-edit-buttons,
+.reg-edit-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.reg-edit-buttons {
+    margin-left: auto;
+}
+
+.btn-lavender {
+    background: #978EC4;
+    border: 1px solid #978EC4;
+    color: white;
+}
+
+.btn-lavender:hover {
+    background: #897FB8;
+    border-color: #897FB8;
+    color: white;
+}
+
+.reg-toast {
+    display: none;
+    align-items: center;
+    gap: 0.4rem;
+    background: #9AB59D;
+    color: white;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    min-height: 36px;
+}
+
+.reg-toast.active {
+    display: inline-flex;
+}
+
+.reg-confirm-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.reg-confirm-backdrop.active {
+    display: flex;
+}
+
+.reg-confirm-modal {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+    max-width: 420px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.reg-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+}
+
+.reg-edit-region.reg-editing #regModalEditBtn {
+    display: none;
+}
+
+.reg-edit-region .reg-form {
+    margin-bottom: 0.75rem;
+}
+
+.reg-edit-region .reg-form-group:last-child {
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 640px) {
+    .reg-modal {
+        max-height: 92vh;
+    }
+    .reg-modal-body {
+        max-height: calc(92vh - 80px);
+    }
+    .reg-participant-actions {
+        flex-wrap: wrap;
+    }
+    .reg-participant-search {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+    .reg-participant-actions .btn {
+        width: 100%;
+    }
+    .reg-participant-email {
+        display: none;
+    }
+}
+.reg-remove-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #E6E0D4;
+    background: #FDF2F2;
+    color: #D14343;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.reg-remove-icon:hover {
+    background: #FBE3E3;
+    transform: translateY(-1px);
+}
+
+.reg-status-trigger {
+    min-width: 140px;
+    border-radius: 999px;
+    border: 1px solid #D0D0D0;
+    background: #F7F7F7;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.8rem;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s ease, transform 0.15s ease;
+    font-weight: 700;
+}
+
+.reg-status-trigger:hover {
+    background: #EFEFEF;
+    transform: translateY(-1px);
+}
+
+.reg-status-trigger.status-pill--good {
+    border-color: #9AB59D;
+    background: #F2F7F3;
+    color: #3D6643;
+}
+
+.reg-status-trigger.status-pill--neutral {
+    border-color: #D0D0D0;
+    background: #F7F7F7;
+    color: #4B4F4B;
+}
+
+.reg-status-trigger.status-pill--bad {
+    border-color: #CE325B;
+    background: #FDF2F6;
+    color: #8F1D3C;
+}
+
+.reg-status-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 180px;
+    background: white;
+    border: 1px solid #E6E0D4;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+    z-index: 20;
+    padding: 0.35rem;
+}
+
+.reg-status-menu.active {
+    display: block;
+}
+
+.reg-status-option {
+    width: 100%;
+    border: none;
+    background: transparent;
+    padding: 0.45rem 0.6rem;
+    border-radius: 8px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: #3A3F3B;
+}
+
+.reg-status-option:hover {
+    background: #F2F2F2;
 }
 
 </style>
@@ -455,8 +728,17 @@
             const modalEmpty = document.getElementById('regModalEmpty');
             const modalCount = document.getElementById('regModalParticipantCount');
             const modalSave = document.getElementById('regModalSaveBtn');
+            const modalCancel = document.getElementById('regModalCancelBtn');
             const modalDelete = document.getElementById('regModalDeleteBtn');
             const modalAdd = document.getElementById('regModalAddBtn');
+            const modalEdit = document.getElementById('regModalEditBtn');
+            const modalRoot = document.querySelector('.reg-modal');
+            const regEditRegion = document.getElementById('regEditRegion');
+            const toastEl = document.getElementById('regModalToast');
+            const confirmBackdrop = document.getElementById('regConfirmBackdrop');
+            const confirmMessage = document.getElementById('regConfirmMessage');
+            const confirmYes = document.getElementById('regConfirmYes');
+            const confirmNo = document.getElementById('regConfirmNo');
             const searchInput = document.getElementById('regParticipantSearch');
             const searchResults = document.getElementById('regParticipantResults');
             const inputDate = document.getElementById('regEditDate');
@@ -465,6 +747,47 @@
             const selectLocation = document.getElementById('regEditLocation');
             let activeOccurrenceId = null;
             let activeSearchId = null;
+            let openStatusMenuId = null;
+            let isEditing = false;
+            let confirmResolver = null;
+
+            const setEditing = (state) => {
+                isEditing = !!state;
+                if (regEditRegion) {
+                    regEditRegion.classList.toggle('reg-editing', isEditing);
+                }
+            };
+            setEditing(false);
+
+            const hideToast = () => {
+                if (toastEl) toastEl.classList.remove('active');
+            };
+
+            const showToast = (message) => {
+                if (!toastEl) return;
+                toastEl.textContent = message;
+                toastEl.classList.add('active');
+                setTimeout(() => hideToast(), 2500);
+            };
+
+            const openConfirm = (message) => {
+                if (!confirmBackdrop || !confirmMessage) {
+                    return Promise.resolve(confirm('Are you sure?'));
+                }
+                confirmMessage.textContent = message || 'Are you sure?';
+                confirmBackdrop.classList.add('active');
+                return new Promise((resolve) => {
+                    confirmResolver = resolve;
+                });
+            };
+
+            const closeConfirm = (result) => {
+                if (confirmBackdrop) confirmBackdrop.classList.remove('active');
+                if (confirmResolver) {
+                    confirmResolver(result);
+                    confirmResolver = null;
+                }
+            };
 
             // Populate location dropdown
             if (selectLocation) {
@@ -530,10 +853,23 @@
                     : { label: 'Not Checked In', cls: 'status-pill--neutral' };
             };
 
+            const statusOptionsFor = (participant, occurrence) => {
+                const defaultLabel = occurrence?.isPast ? 'No Show' : 'Not Checked In';
+                const opts = [
+                    { value: 'registered:false', label: defaultLabel, icon: 'fa-user-clock' },
+                    { value: 'checkedin:true', label: 'Checked In', icon: 'fa-person-walking' },
+                    { value: 'attended:true', label: 'Attended', icon: 'fa-user-check' },
+                    { value: 'cancelled:false', label: 'Cancelled', icon: 'fa-ban' }
+                ];
+                return occurrence?.isPast ? opts.filter(opt => opt.value !== 'checkedin:true') : opts;
+            };
+
             const renderModal = (occurrenceId) => {
                 const data = adminOccurrenceData[occurrenceId];
                 if (!data || !modalBackdrop) return;
                 activeOccurrenceId = occurrenceId;
+                setEditing(false);
+                hideToast();
 
                 const { occurrence, participants = [] } = data;
                 if (modalTitle) {
@@ -559,12 +895,34 @@
                         if (modalCount) modalCount.textContent = `${participants.length} registered`;
                         participants.forEach((p, idx) => {
                             const pill = computeStatus(p, occurrence);
+                            const statusOptions = statusOptionsFor(p, occurrence);
                             const row = document.createElement('div');
                             row.className = 'reg-participant-row';
                             row.innerHTML = `
-                                <div class="reg-participant-info">
+                                <div class="reg-participant-left">
+                                    <button type="button" class="reg-remove reg-remove-icon" data-registration-id="${p.registrationId || ''}" aria-label="Remove ${p.name || 'participant'}">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                                <div class="reg-participant-main">
                                     <div class="reg-participant-name">${p.name || 'Participant ' + (idx + 1)}</div>
                                     <div class="reg-participant-email">${p.email || ''}</div>
+                                </div>
+                                <div class="reg-participant-right ${pill.label !== 'Attended' ? 'no-survey' : ''}">
+                                    <div class="reg-status-wrapper" style="position: relative;">
+                                        <button type="button" class="reg-status-trigger ${pill.cls}" data-registration-id="${p.registrationId || ''}" title="${pill.label}">
+                                            <i class="fa-solid fa-user-check"></i>
+                                            <span class="reg-status-label">${pill.label}</span>
+                                        </button>
+                                        <div class="reg-status-menu" data-registration-id="${p.registrationId || ''}">
+                                            ${statusOptions.map(opt => `
+                                                <button type="button" class="reg-status-option" data-registration-id="${p.registrationId || ''}" data-value="${opt.value}">
+                                                    <i class="fa-solid ${opt.icon}"></i>
+                                                    <span>${opt.label}</span>
+                                                </button>
+                                            `).join('')}
+                                        </div>
+                                    </div>
                                     <div class="reg-participant-meta">
                                         ${pill.label === 'Attended' ? `${p.surveyId
                                             ? `<a class="survey-badge" href="/surveys?filterSurveyID=${p.surveyId}">
@@ -575,16 +933,8 @@
                                                     <i class="fa-solid fa-circle-xmark"></i>
                                                     Survey Missing
                                                </span>`}` : ''}
-                                        <select class="reg-status-select" data-registration-id="${p.registrationId || ''}">
-                                            <option value="registered:${p.attended ? 'true' : 'false'}" ${!p.attended && (p.status || '').toLowerCase() !== 'cancelled' ? 'selected' : ''}>${occurrence.isPast ? 'No Show' : 'Not Checked In'}</option>
-                                            <option value="checkedin:true" ${p.checkInTime && !p.attended ? 'selected' : ''}>Checked In</option>
-                                            <option value="attended:true" ${p.attended ? 'selected' : ''}>Attended</option>
-                                            <option value="cancelled:false" ${(p.status || '').toLowerCase() === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-secondary btn-sm reg-remove" data-registration-id="${p.registrationId || ''}">Remove</button>
                                     </div>
                                 </div>
-                                <span class="status-pill ${pill.cls}">${pill.label}</span>
                             `;
                             modalParticipants.appendChild(row);
                         });
@@ -682,6 +1032,63 @@
                 if (searchResults) searchResults.style.display = 'block';
             };
 
+            const closeStatusMenus = () => {
+                if (modalParticipants) {
+                    modalParticipants.querySelectorAll('.reg-status-menu').forEach(menu => menu.classList.remove('active'));
+                }
+                openStatusMenuId = null;
+            };
+
+            const toggleStatusMenu = (registrationId) => {
+                if (!modalParticipants) return;
+                const menu = modalParticipants.querySelector(`.reg-status-menu[data-registration-id="${registrationId}"]`);
+                if (!menu) return;
+                const isOpen = menu.classList.contains('active');
+                closeStatusMenus();
+                if (!isOpen) {
+                    menu.classList.add('active');
+                    openStatusMenuId = registrationId;
+                }
+            };
+
+            const updateRegistrationStatus = async (registrationId, value) => {
+                const [statusKey, attendedVal] = (value || '').split(':');
+                const attended = attendedVal === 'true';
+                let status = 'Registered';
+                if (statusKey === 'cancelled') status = 'Cancelled';
+                if (statusKey === 'checkedin') status = 'Registered';
+                if (statusKey === 'attended') status = 'Registered';
+                if (statusKey === 'registered' && attended) status = 'Registered';
+
+                try {
+                    const res = await fetch(`/admin/registrations/${registrationId}/update-status`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status, attended })
+                    });
+                    const data = await res.json();
+                    if (!data.success) {
+                        throw new Error(data.error || 'Update failed');
+                    }
+                    // Update local copy so the UI reflects changes immediately
+                    const occ = adminOccurrenceData[activeOccurrenceId];
+                    if (occ && Array.isArray(occ.participants)) {
+                        const participant = occ.participants.find(p => String(p.registrationId) === String(registrationId));
+                        if (participant) {
+                            participant.status = status;
+                            participant.attended = attended;
+                            participant.checkInTime = statusKey === 'checkedin' ? new Date().toISOString() : null;
+                        }
+                    }
+                    renderModal(activeOccurrenceId);
+                } catch (err) {
+                    console.error(err);
+                    alert(err.message || 'Error updating status');
+                } finally {
+                    closeStatusMenus();
+                }
+            };
+
             if (searchInput) {
                 searchInput.addEventListener('input', async () => {
                     const q = searchInput.value.trim();
@@ -721,7 +1128,26 @@
                 if (searchResults && !searchResults.contains(e.target) && e.target !== searchInput) {
                     hideResults();
                 }
+                const inStatusMenu = e.target.closest('.reg-status-menu');
+                const isStatusTrigger = e.target.closest('.reg-status-trigger');
+                if (!inStatusMenu && !isStatusTrigger) {
+                    closeStatusMenus();
+                }
             });
+
+            if (confirmYes) {
+                confirmYes.addEventListener('click', () => closeConfirm(true));
+            }
+            if (confirmNo) {
+                confirmNo.addEventListener('click', () => closeConfirm(false));
+            }
+            if (confirmBackdrop) {
+                confirmBackdrop.addEventListener('click', (e) => {
+                    if (e.target === confirmBackdrop) {
+                        closeConfirm(false);
+                    }
+                });
+            }
 
             // Add participant
             if (modalAdd) {
@@ -759,13 +1185,28 @@
                             adminOccurrenceData[activeOccurrenceId].occurrence.registrationCount += 1;
                         }
                         renderModal(activeOccurrenceId);
-                        alert('Participant registered');
+                        showToast('Participant registered');
                     } catch (err) {
                         console.error(err);
                         alert(err.message || 'Error registering participant');
                     } finally {
                         modalAdd.disabled = false;
-                        modalAdd.textContent = 'Register Participant';
+                        modalAdd.textContent = 'Register';
+                    }
+                });
+            }
+
+            if (modalEdit) {
+                modalEdit.addEventListener('click', () => {
+                    setEditing(true);
+                });
+            }
+
+            if (modalCancel) {
+                modalCancel.addEventListener('click', () => {
+                    setEditing(false);
+                    if (activeOccurrenceId) {
+                        renderModal(activeOccurrenceId);
                     }
                 });
             }
@@ -829,17 +1270,18 @@
                                     : null;
                                 timeEl.innerHTML = `<i class="fa-solid fa-clock"></i> ${startStr}${endStr ? ' - ' + endStr : ''}`;
                             }
-                            if (locEl) {
-                                locEl.textContent = data.occurrence.EventLocation || 'Location TBA';
-                            }
+                        if (locEl) {
+                            locEl.textContent = data.occurrence.EventLocation || 'Location TBA';
                         }
+                    }
 
-                        renderModal(activeOccurrenceId);
-                        alert('Occurrence updated');
-                    } catch (err) {
-                        console.error(err);
-                        alert(err.message || 'Error updating occurrence');
-                    } finally {
+                    renderModal(activeOccurrenceId);
+                    setEditing(false);
+                    showToast('Changes saved');
+                } catch (err) {
+                    console.error(err);
+                    alert(err.message || 'Error updating occurrence');
+                } finally {
                         modalSave.disabled = false;
                         modalSave.textContent = 'Save Changes';
                     }
@@ -848,44 +1290,29 @@
 
             // Status change + removal
             if (modalParticipants) {
-                modalParticipants.addEventListener('change', async (e) => {
-                    const target = e.target;
-                    if (!(target instanceof HTMLSelectElement)) return;
-                    if (!target.classList.contains('reg-status-select')) return;
-                    const registrationId = target.getAttribute('data-registration-id');
-                    if (!registrationId) return;
-                    const value = target.value || '';
-                    const [statusKey, attendedVal] = value.split(':');
-                    const attended = attendedVal === 'true';
-                    let status = 'Registered';
-                    if (statusKey === 'cancelled') status = 'Cancelled';
-                    if (statusKey === 'checkedin') status = 'Registered';
-                    if (statusKey === 'attended') status = 'Registered';
-                    if (statusKey === 'registered' && attended) status = 'Registered';
-
-                    try {
-                        const res = await fetch(`/admin/registrations/${registrationId}/update-status`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ status, attended })
-                        });
-                        const data = await res.json();
-                        if (!data.success) {
-                            throw new Error(data.error || 'Update failed');
-                        }
-                        renderModal(activeOccurrenceId);
-                    } catch (err) {
-                        console.error(err);
-                        alert(err.message || 'Error updating status');
-                    }
-                });
-
                 modalParticipants.addEventListener('click', async (e) => {
+                    const trigger = e.target.closest('.reg-status-trigger');
+                    if (trigger) {
+                        const registrationId = trigger.getAttribute('data-registration-id');
+                        if (registrationId) toggleStatusMenu(registrationId);
+                        return;
+                    }
+
+                    const option = e.target.closest('.reg-status-option');
+                    if (option) {
+                        const registrationId = option.getAttribute('data-registration-id');
+                        const value = option.getAttribute('data-value') || '';
+                        if (registrationId) {
+                            await updateRegistrationStatus(registrationId, value);
+                        }
+                        return;
+                    }
+
                     const btn = e.target.closest('.reg-remove');
                     if (!btn) return;
                     const registrationId = btn.getAttribute('data-registration-id');
                     if (!registrationId) return;
-                    const confirmed = confirm('Remove this participant from the occurrence?');
+                    const confirmed = await openConfirm('Remove this participant from the occurrence?');
                     if (!confirmed) return;
                     btn.disabled = true;
                     try {
@@ -914,7 +1341,7 @@
             if (modalDelete) {
                 modalDelete.addEventListener('click', async () => {
                     if (!activeOccurrenceId) return;
-                    const confirmed = confirm('Are you sure you want to delete this event?');
+                    const confirmed = await openConfirm('Are you sure you want to delete this event?');
                     if (!confirmed) return;
 
                     modalDelete.disabled = true;
@@ -933,8 +1360,7 @@
                         }
                         delete adminOccurrenceData[activeOccurrenceId];
                         closeModal();
-                        if (modalRoot) modalRoot.classList.remove('reg-editing');
-                        isEditing = false;
+                        setEditing(false);
                     } catch (err) {
                         console.error(err);
                         alert(err.message || 'Error deleting occurrence');
@@ -1000,43 +1426,52 @@
             <h3 id="regModalTitle">Occurrence Details</h3>
             <button type="button" class="reg-modal-close" aria-label="Close">&times;</button>
         </div>
-        <div class="reg-modal-body">
+            <div class="reg-modal-body">
             <div class="reg-modal-meta" id="regModalMeta"></div>
             <div class="reg-participants-card">
-                <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                <div class="reg-participant-head">
                     <h4 style="margin: 0;">Participants</h4>
-                    <div class="reg-participant-actions">
-                        <input type="text" id="regParticipantSearch" class="form-control reg-participant-search" placeholder="Search participants..." autocomplete="off">
-                        <div class="reg-search-results" id="regParticipantResults"></div>
-                        <button type="button" class="btn btn-secondary" id="regModalAddBtn">Register Participant</button>
-                    </div>
+                    <div class="reg-toast" id="regModalToast" role="status" aria-live="polite"></div>
+                </div>
+                <div class="reg-participant-actions">
+                    <input type="text" id="regParticipantSearch" class="form-control reg-participant-search" placeholder="Search participants..." autocomplete="off">
+                    <div class="reg-search-results" id="regParticipantResults"></div>
+                    <button type="button" class="btn btn-secondary" id="regModalAddBtn">Register</button>
                 </div>
                 <div class="reg-participants-list" id="regModalParticipants"></div>
                 <p class="reg-empty" id="regModalEmpty" style="display: none;">No participants registered yet.</p>
             </div>
-            <div class="reg-form">
-                <div class="reg-form-row">
-                    <div class="reg-form-group">
-                        <label for="regEditDate">Date</label>
-                        <input type="date" id="regEditDate" class="form-control">
+            <div class="reg-edit-region" id="regEditRegion">
+                <div class="reg-form reg-editable">
+                    <div class="reg-form-row">
+                        <div class="reg-form-group">
+                            <label for="regEditDate">Date</label>
+                            <input type="date" id="regEditDate" class="form-control">
+                        </div>
+                        <div class="reg-form-group">
+                            <label for="regEditStart">Start Time</label>
+                            <input type="time" id="regEditStart" class="form-control">
+                        </div>
+                        <div class="reg-form-group">
+                            <label for="regEditEnd">End Time</label>
+                            <input type="time" id="regEditEnd" class="form-control">
+                        </div>
                     </div>
                     <div class="reg-form-group">
-                        <label for="regEditStart">Start Time</label>
-                        <input type="time" id="regEditStart" class="form-control">
-                    </div>
-                    <div class="reg-form-group">
-                        <label for="regEditEnd">End Time</label>
-                        <input type="time" id="regEditEnd" class="form-control">
+                        <label for="regEditLocation">Location</label>
+                        <select id="regEditLocation" class="form-control"></select>
                     </div>
                 </div>
-                <div class="reg-form-group">
-                    <label for="regEditLocation">Location</label>
-                    <select id="regEditLocation" class="form-control"></select>
+                <div class="reg-modal-footer">
+                    <div class="reg-edit-actions reg-editable">
+                        <button type="button" class="btn btn-secondary" id="regModalSaveBtn">Save Changes</button>
+                        <button type="button" class="btn btn-outline-secondary" id="regModalCancelBtn">Cancel</button>
+                    </div>
+                    <div class="reg-edit-buttons">
+                        <button type="button" class="btn btn-lavender" id="regModalEditBtn">Edit</button>
+                        <button type="button" class="btn btn-danger" id="regModalDeleteBtn">Delete</button>
+                    </div>
                 </div>
-            </div>
-            <div class="reg-modal-footer">
-                <button type="button" class="btn btn-secondary" id="regModalSaveBtn">Save Changes</button>
-                <button type="button" class="btn btn-primary" id="regModalDeleteBtn">Delete</button>
             </div>
         </div>
     </div>
