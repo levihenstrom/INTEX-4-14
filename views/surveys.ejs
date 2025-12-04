@@ -19,6 +19,7 @@
     pushFilter('filterState');
     pushFilter('filterRole');
     pushFilter('filterInterest');
+    pushFilter('filterSurveyID');
     const filterQueryString = filterPairs.length ? '&' + filterPairs.map(function(pair) {
         return pair.key + '=' + encodeURIComponent(pair.value);
     }).join('&') : '';
