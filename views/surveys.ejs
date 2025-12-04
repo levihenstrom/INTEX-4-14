@@ -20,6 +20,7 @@
     pushFilter('filterRole');
     pushFilter('filterInterest');
     pushFilter('filterSurveyID');
+    pushFilter('filterNPS');
     const filterQueryString = filterPairs.length ? '&' + filterPairs.map(function(pair) {
         return pair.key + '=' + encodeURIComponent(pair.value);
     }).join('&') : '';
@@ -43,6 +44,17 @@
         <h1 class="mb-1">Surveys</h1>
         <p class="text-muted mb-0">Understand participant satisfaction and follow-up.</p>
     </div>
+
+    <!-- Survey NPS Distribution Chart -->
+    <% if (isAdmin) { %>
+        <div class="row mb-4">
+            <div class="col-12">
+                <div style="position: relative; height: 180px; width: 100%;">
+                    <canvas id="surveysRadarChart"></canvas>
+                </div>
+            </div>
+        </div>
+    <% } %>
 
     <div class="row g-3 mb-4">
         <div class="col-md-4">
@@ -419,3 +431,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<% if (isAdmin) { %>
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/surveys-radar-chart.js"></script>
+<% } %>

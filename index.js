@@ -1903,6 +1903,7 @@ app.get('/surveys', async (req, res) => {
         const filterRole = req.query.filterRole || '';
         const filterInterest = req.query.filterInterest || '';
         const filterSurveyID = req.query.filterSurveyID ? parseInt(req.query.filterSurveyID, 10) : null;
+        const filterNPS = req.query.filterNPS || '';
 
         const baseQuery = knex('Surveys as s')
             .join('Registration as r', 's.RegistrationID', 'r.RegistrationID')
@@ -1975,6 +1976,9 @@ app.get('/surveys', async (req, res) => {
         }
         if (filterSurveyID) {
             filteredQuery.andWhere('s.SurveyID', filterSurveyID);
+        }
+        if (filterNPS) {
+            filteredQuery.andWhere('s.SurveyNPSBucket', filterNPS);
         }
 
         const totalRow = await knex.count('* as count')
@@ -2150,7 +2154,8 @@ app.get('/surveys', async (req, res) => {
                 filterEventStartDate,
                 filterEventEndDate,
                 filterEventTitle,
-                filterSurveyID: filterSurveyID || ''
+                filterSurveyID: filterSurveyID || '',
+                filterNPS
             },
             currentPage: safePage,
             totalPages,

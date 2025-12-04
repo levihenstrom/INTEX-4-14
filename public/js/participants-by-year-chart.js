@@ -20,14 +20,7 @@ fetch('/api/participants-by-year')
                 responsive: true,
                 plugins: {
                     title: {
-                        display: true,
-                        text: 'New Participants by Year',
-                        font: {
-                            family: "'DM Serif Display', serif",
-                            size: 24,
-                            weight: 'normal'
-                        },
-                        color: '#3A3F3B'
+                        display: false
                     },
                     legend: {
                         display: false
@@ -44,10 +37,6 @@ fetch('/api/participants-by-year')
                         }
                     },
                     x: {
-                        title: {
-                            display: true,
-                            text: 'Year'
-                        },
                         grid: {
                             display: false
                         }
