@@ -173,7 +173,7 @@
                                                            data-is-registered="<%= isRegistered %>"
                                                            data-is-full="<%= isFull %>"
                                                            <%= disableRegister ? 'disabled aria-disabled=\"true\"' : '' %>>
-                                                       <%= disableRegister ? 'Register' : (isRegistered ? 'Unregister' : 'Register') %>
+                                                       <%= disableRegister ? 'Full' : (isRegistered ? 'Unregister' : 'Register') %>
                                                    </button>
                                                <% } else if (!isPast && (typeof isAdmin === 'undefined' || !isAdmin)) { %>
                                                    <a href="/login?redirect=/registration/<%= eventTemplate.EventID %>" class="btn btn-primary">
@@ -214,7 +214,7 @@
 <script>
     // Scroll to focused occurrence on page load
     document.addEventListener('DOMContentLoaded', function() {
-        const isAdminView = "<%= isAdmin ? 'true' : 'false' %>" === "true";
+        const isAdminView = "<%= typeof isAdmin !== 'undefined' && isAdmin ? 'true' : 'false' %>;"
         const focusedOccurrence = document.getElementById('focused-occurrence');
         if (focusedOccurrence) {
             setTimeout(() => {
@@ -247,8 +247,8 @@
             }
 
             // Admin details modal placeholder
-            const modalBackdrop = document.querySelector('.modal-backdrop');
-            const modalClose = document.querySelector('.modal-close');
+            const modalBackdrop = document.querySelector('.reg-modal-backdrop');
+            const modalClose = document.querySelector('.reg-modal-close');
 
             const openModal = () => {
                 if (modalBackdrop) modalBackdrop.classList.add('active');
@@ -325,11 +325,11 @@
     });
 </script>
 
-<div class="modal-backdrop">
-    <div class="modal">
-        <div class="modal-header">
+<div class="reg-modal-backdrop">
+    <div class="reg-modal">
+        <div class="reg-modal-header">
             <h3>Occurrence Details</h3>
-            <button type="button" class="modal-close" aria-label="Close">&times;</button>
+            <button type="button" class="reg-modal-close" aria-label="Close">&times;</button>
         </div>
         <p>This is a placeholder for occurrence details.</p>
     </div>
