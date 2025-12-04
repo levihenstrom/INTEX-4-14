@@ -9,10 +9,18 @@
 html, body {
     overflow-x: hidden;
     max-width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+body {
+    flex: 1;
 }
 
 main {
     overflow-x: hidden;
+    flex: 1;
 }
 
 /* ====================================================== */
@@ -24,7 +32,7 @@ body {
     background-color: #F9F5EA; /* Cream */
     color: #3A3F3B;
     margin: 0;
-    padding-top: 120px !important; /* pushes content down below navbar */
+     padding-top: 120px !important; /* pushes content down below navbar */
     line-height: 1.55;
     overflow-x: hidden; /* Prevent horizontal scroll */
 }
@@ -216,23 +224,7 @@ p, li, a, .nav-link {
 .event-card:nth-child(2) { transition-delay: 0.3s; }
 .event-card:nth-child(3) { transition-delay: 0.45s; }
 
-/* Gallery items staggered */
-.gallery-item {
-    opacity: 0;
-}
-
-.gallery-item.animated {
-    opacity: 1;
-}
-
-.gallery-item:nth-child(1) { transition-delay: 0.05s; }
-.gallery-item:nth-child(2) { transition-delay: 0.1s; }
-.gallery-item:nth-child(3) { transition-delay: 0.15s; }
-.gallery-item:nth-child(4) { transition-delay: 0.2s; }
-.gallery-item:nth-child(5) { transition-delay: 0.25s; }
-.gallery-item:nth-child(6) { transition-delay: 0.3s; }
-.gallery-item:nth-child(7) { transition-delay: 0.35s; }
-.gallery-item:nth-child(8) { transition-delay: 0.4s; }
+/* Bento items animation - handled in bento section */
 
 /* Button hover animations */
 .hero-btn-watch,
@@ -569,44 +561,15 @@ p, li, a, .nav-link {
 /*                      CLEAN MINIMAL FOOTER              */
 /* ====================================================== */
 
-footer {
-    background-color: #3A3F3B;      /* deep charcoal brand color */
-    color: #FFFFFF;
-    text-align: center;
-    padding: 0.9rem 0;              /* SMALL padding */
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.9rem;
-    margin-top: 4rem;               /* space above footer */
-}
+/* Removed conflicting footer rules - using .site-footer instead */
 
-/* Remove any forced sticky/footer behavior */
-footer {
-    position: static !important;
-    bottom: 0 !important;
-    width: 100%;
-}
-
-/* Remove any extra spacing Bootstrap adds */
-footer * {
-    margin: 0 !important;
-    padding: 0 !important;
-}
+/* Removed conflicting footer rules */
 
 /* ====================================================== */
 /*               MINIMAL FLOATING CENTER FOOTER           */
 /* ====================================================== */
 
-footer {
-    background: none !important;     /* remove bar look */
-    color: #3A3F3B;                  /* brand charcoal */
-    text-align: center;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.85rem;
-    padding: 1rem 0 2rem 0 !important; /* small and airy */
-    margin: 0 auto;
-    width: fit-content;              /* shrink to content */
-    position: relative;              /* normal flow */
-}
+/* Removed conflicting footer rules */
 
 
 
@@ -614,56 +577,13 @@ footer {
 /*                ULTRA-MINIMAL FLOATING FOOTER           */
 /* ====================================================== */
 
-footer {
-    background: none !important;     /* NO bar */
-    border: none !important;         /* NO border */
-    box-shadow: none !important;     /* NO shadow */
-    
-    color: #3A3F3B;                  /* soft charcoal text */
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.85rem;
-
-    text-align: center;
-
-    width: fit-content;              /* shrink to content */
-    margin: 2rem auto 1rem auto;     /* centered, floating */
-    padding: 0 !important;           /* no extra space */
-}
-
-/* Make sure nothing inside adds space */
-footer * {
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-}
+/* Removed conflicting footer rules */
 
 /* ====================================================== */
 /*    FORCE FOOTER TO BE MINIMAL + REMOVE OUTER BARS     */
 /* ====================================================== */
 
-footer, 
-footer div, 
-footer .container, 
-footer .row, 
-footer .col,
-footer * {
-    background: none !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 auto !important;
-}
-
-/* Make footer shrink to content */
-footer {
-    width: fit-content;
-    margin: 3rem auto 1.5rem auto !important;
-    font-size: 0.85rem;
-    color: #3A3F3B;
-    text-align: center;
-    position: relative !important;
-}
+/* Removed conflicting footer rules */
 
 /* Default padding so navbar doesn't overlap content */
 body {
@@ -1920,7 +1840,7 @@ body:not(.has-hero) {
     padding: 100px 0 120px;
     text-align: center;
     box-sizing: border-box;
-    overflow: hidden; /* Clips horizontal scroll from marquee */
+    overflow-x: hidden; /* Clips horizontal scroll from marquee */
 }
 
 .sponsors-inner {
@@ -1968,20 +1888,25 @@ body:not(.has-hero) {
 
 /* ===== FLOATING SPONSOR MARQUEE ===== */
 .sponsors-marquee {
-    width: 100%;
-    margin: 2rem 0 3rem;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-top: 2rem;
+    margin-bottom: 3rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;
     overflow: visible;
     position: relative;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 .marquee-row {
     width: 100%;
-    overflow: visible;
+    overflow: hidden;
     position: relative;
     padding: 30px 0; /* Space for logos to scale up */
+    margin: 0;
 }
 
 .marquee-content {
@@ -1989,27 +1914,37 @@ body:not(.has-hero) {
     align-items: center;
     gap: 4rem;
     width: max-content;
-    overflow: visible;
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 /* Left scrolling animation */
 .marquee-left .marquee-content {
-    animation: marqueeLeft 35s linear infinite;
+    animation: marqueeLeft 25s linear infinite;
 }
 
 /* Right scrolling animation */
 .marquee-right .marquee-content {
-    animation: marqueeRight 30s linear infinite;
+    animation: marqueeRight 20s linear infinite;
 }
 
 @keyframes marqueeLeft {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    from { 
+        transform: translate3d(0, 0, 0); 
+    }
+    to { 
+        transform: translate3d(-33.333%, 0, 0); 
+    }
 }
 
 @keyframes marqueeRight {
-    0% { transform: translateX(-50%); }
-    100% { transform: translateX(0); }
+    from { 
+        transform: translate3d(-33.333%, 0, 0); 
+    }
+    to { 
+        transform: translate3d(0, 0, 0); 
+    }
 }
 
 /* Pause animation on hover - stops the whole row */
@@ -2327,30 +2262,23 @@ body:not(.has-hero) {
 }
 
 /* ====================================================== */
-/*              PHOTO GALLERY SECTION - MASONRY           */
+/*           IN ACTION / BENTO GRID WITH TESTIMONIALS     */
 /* ====================================================== */
 
-.gallery-section {
+.inaction-section {
     width: 100%;
-    margin-left: 0;
     margin-top: 10px;
     background: #99B7C6;
-    padding: 100px 0 120px;
+    padding: 80px 0 0 0;
+    box-sizing: border-box;
+}
+
+.inaction-header {
     text-align: center;
-    box-sizing: border-box;
+    padding: 0 20px 60px;
 }
 
-.gallery-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    box-sizing: border-box;
-}
-
-.gallery-label {
+.inaction-label {
     display: inline-block;
     font-family: 'Montserrat', sans-serif;
     font-size: 0.85rem;
@@ -2361,93 +2289,169 @@ body:not(.has-hero) {
     margin-bottom: 0.8rem;
 }
 
-.gallery-section h2 {
+.inaction-section h2 {
     font-family: 'DM Serif Display', serif;
     font-size: 3rem;
     color: #FFFFFF;
     margin-bottom: 1.2rem;
 }
 
-.gallery-subtitle {
+.inaction-subtitle {
     font-size: 1.15rem;
     color: rgba(255, 255, 255, 0.9);
     max-width: 600px;
-    margin: 0 auto 4rem auto;
+    margin: 0 auto;
     line-height: 1.7;
 }
 
-.gallery-grid-masonry {
+/* Bento Grid - Edge to Edge */
+.bento-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    grid-auto-rows: 200px;
-    gap: 1rem;
+    grid-auto-rows: 280px;
+    gap: 12px;
     width: 100%;
-    max-width: 1100px;
-    margin: 0 auto;
+    padding: 0 12px 12px 12px;
+    box-sizing: border-box;
 }
 
-.gallery-item {
+.bento-item {
     position: relative;
-    border-radius: 20px;
     overflow: hidden;
-    cursor: pointer;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    transition: box-shadow 0.4s ease, transform 0.4s ease, opacity 0.6s ease;
 }
 
-.gallery-item img {
+/* Photo items */
+.bento-photo {
+    cursor: pointer;
+}
+
+.bento-photo img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
+    transition: transform 0.6s ease;
 }
 
-.gallery-item:hover img {
-    transform: scale(1.1);
+.bento-photo:hover img {
+    transform: scale(1.08);
 }
 
-.gallery-item:hover {
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-    z-index: 2;
+/* Grid sizing */
+.bento-large {
+    grid-column: span 2;
+    grid-row: span 2;
 }
 
-.gallery-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, transparent 40%, rgba(58,63,59,0.85) 100%);
-    opacity: 0;
-    transition: opacity 0.4s ease;
+.bento-tall {
+    grid-row: span 2;
+}
+
+.bento-wide {
+    grid-column: span 2;
+}
+
+/* Testimonial Cards */
+.bento-testimonial {
+    background: #F9F5EA;
     display: flex;
-    align-items: flex-end;
-    padding: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
 }
 
-.gallery-item:hover .gallery-overlay {
-    opacity: 1;
+.testimonial-content {
+    text-align: center;
+    max-width: 280px;
 }
 
-.gallery-overlay span {
+.testimonial-icon {
+    font-size: 2rem;
+    color: #CE325B;
+    margin-bottom: 1rem;
+    opacity: 0.6;
+}
+
+.testimonial-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    color: #3A3F3B;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.testimonial-author {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.author-name {
     font-family: 'Montserrat', sans-serif;
-    font-weight: 600;
-    font-size: 1rem;
-    color: white;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #3A3F3B;
+}
+
+.author-role {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 0.8rem;
+    color: #7A7E7A;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
-/* Special gallery sizes */
-.gallery-large {
-    grid-column: span 2;
-    grid-row: span 2;
+/* Testimonial color variations */
+.testimonial-accent {
+    background: #FFD8D1;
 }
 
-.gallery-tall {
-    grid-row: span 2;
+.testimonial-accent .testimonial-icon {
+    color: #978EC4;
 }
 
-.gallery-wide {
-    grid-column: span 2;
+.testimonial-dark {
+    background: #3A3F3B;
 }
+
+.testimonial-dark .testimonial-text,
+.testimonial-dark .author-name {
+    color: #FFFFFF;
+}
+
+.testimonial-dark .author-role {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.testimonial-dark .testimonial-icon {
+    color: #F4B092;
+}
+
+/* Animation for bento items */
+.bento-item {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.bento-item.animated {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.bento-item:nth-child(1) { transition-delay: 0.05s; }
+.bento-item:nth-child(2) { transition-delay: 0.1s; }
+.bento-item:nth-child(3) { transition-delay: 0.15s; }
+.bento-item:nth-child(4) { transition-delay: 0.2s; }
+.bento-item:nth-child(5) { transition-delay: 0.25s; }
+.bento-item:nth-child(6) { transition-delay: 0.3s; }
+.bento-item:nth-child(7) { transition-delay: 0.35s; }
+.bento-item:nth-child(8) { transition-delay: 0.4s; }
+.bento-item:nth-child(9) { transition-delay: 0.45s; }
+.bento-item:nth-child(10) { transition-delay: 0.5s; }
+.bento-item:nth-child(11) { transition-delay: 0.55s; }
+.bento-item:nth-child(12) { transition-delay: 0.6s; }
 
 /* ====================================================== */
 /*                CALL TO ACTION SECTION                  */
@@ -2472,7 +2476,7 @@ body:not(.has-hero) {
 .cta-header-card {
     background: #FFFFFF;
     border-radius: 28px;
-    padding: 50px 40px 50px;
+    padding: 35px 40px 35px;
     box-shadow: 0 12px 40px rgba(58, 63, 59, 0.12);
 }
 
@@ -2549,55 +2553,59 @@ body:not(.has-hero) {
 .site-footer {
     width: 100%;
     margin-left: 0;
-    margin-top: 10px;
-    background: #3A3F3B;
+    margin-top: 80px;
+    background: #3A3F3B !important;
     color: #FFFFFF;
     padding: 0;
     box-sizing: border-box;
 }
 
 .footer-main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 80px 2rem 60px;
+    max-width: 100%;
+    margin: 0 auto !important;
+    padding: 50px 2rem 40px !important;
     display: grid;
     grid-template-columns: 1.5fr 2fr;
-    gap: 4rem;
+    gap: 3rem;
+    align-items: start;
 }
 
 .footer-brand {
-    max-width: 320px;
+    max-width: 280px;
+    text-align: left;
+    padding-left: 3rem;
 }
 
 .footer-logo {
-    height: 60px;
+    height: 50px;
     width: auto;
-    margin-bottom: 1.2rem;
+    margin-bottom: 1rem !important;
     filter: brightness(0) invert(1);
 }
 
 .footer-tagline {
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: rgba(255,255,255,0.7);
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
+    line-height: 1.5;
+    margin-bottom: 1rem !important;
+    padding: 0 !important;
 }
 
 .footer-social {
     display: flex;
-    gap: 0.8rem;
+    gap: 0.6rem;
 }
 
 .footer-social a {
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
     background: rgba(255,255,255,0.1);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     transition: all 0.3s ease;
 }
 
@@ -2610,30 +2618,40 @@ body:not(.has-hero) {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
+    max-width: 100%;
+}
+
+.footer-column {
+    text-align: center !important;
 }
 
 .footer-column h4 {
     font-family: 'Montserrat', sans-serif;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 1px;
     color: #F4B092;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem !important;
+    text-align: center !important;
 }
 
 .footer-column ul {
     list-style: none;
-    padding: 0;
-    margin: 0;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .footer-column li {
-    margin-bottom: 0.9rem;
+    margin-bottom: 0.6rem !important;
+    text-align: center !important;
 }
 
 .footer-column a {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     color: rgba(255,255,255,0.7);
     text-decoration: none;
     transition: color 0.2s ease;
@@ -2645,26 +2663,27 @@ body:not(.has-hero) {
 
 .footer-bottom {
     background: rgba(0, 0, 0, 0.15);
-    padding: 1.5rem 2rem;
+    padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     max-width: 100%;
+    margin: 0;
 }
 
 .footer-bottom p {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: rgba(255,255,255,0.5);
     margin: 0;
 }
 
 .footer-legal {
     display: flex;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 .footer-legal a {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: rgba(255,255,255,0.5);
     text-decoration: none;
     transition: color 0.2s ease;
@@ -2683,13 +2702,15 @@ body:not(.has-hero) {
         grid-template-columns: repeat(3, 1fr);
     }
     
-    .gallery-grid-masonry {
+    /* Bento grid responsive */
+    .bento-grid {
         grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: 250px;
     }
     
-    .gallery-large {
+    .bento-large {
         grid-column: span 2;
-        grid-row: span 1;
+        grid-row: span 2;
     }
 }
 
@@ -2705,28 +2726,35 @@ body:not(.has-hero) {
         margin-right: auto;
     }
     
-    .gallery-grid-masonry {
+    /* Bento grid tablet */
+    .bento-grid {
         grid-template-columns: repeat(2, 1fr);
-        grid-auto-rows: 180px;
+        grid-auto-rows: 220px;
     }
     
-    .gallery-large,
-    .gallery-wide {
+    .bento-large {
+        grid-column: span 2;
+        grid-row: span 1;
+    }
+    
+    .bento-wide {
         grid-column: span 2;
     }
     
-    .gallery-tall {
+    .bento-tall {
         grid-row: span 2;
     }
     
+    .testimonial-text {
+        font-size: 1rem;
+    }
+    
     .footer-main {
-        grid-template-columns: 1fr;
-        text-align: center;
+        gap: 2.5rem;
     }
     
     .footer-brand {
         max-width: 100%;
-        margin-bottom: 2rem;
     }
     
     .footer-social {
@@ -2735,6 +2763,7 @@ body:not(.has-hero) {
     
     .footer-links {
         grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
     }
     
     .footer-bottom {
@@ -2862,16 +2891,27 @@ body:not(.has-hero) {
         min-width: auto;
     }
     
-    .gallery-grid-masonry {
+    /* Bento grid mobile */
+    .bento-grid {
         grid-template-columns: 1fr 1fr;
-        grid-auto-rows: 150px;
+        grid-auto-rows: 200px;
     }
     
-    .gallery-large,
-    .gallery-wide,
-    .gallery-tall {
-        grid-column: span 1;
+    .bento-large,
+    .bento-wide {
+        grid-column: span 2;
+    }
+    
+    .bento-tall {
         grid-row: span 1;
+    }
+    
+    .testimonial-text {
+        font-size: 0.95rem;
+    }
+    
+    .bento-testimonial {
+        padding: 20px;
     }
     
     .footer-links {
