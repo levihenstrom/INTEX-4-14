@@ -34,6 +34,13 @@ const formatDateForInput = (dateValue) => {
     return `${year}-${month}-${day}`;
 };
 
+const formatMonthYear = (dateValue) => {
+    if (!dateValue) return null;
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+};
+
 const calculateAge = (dateValue) => {
     if (!dateValue) return null;
     const birthDate = new Date(dateValue);
@@ -1123,6 +1130,64 @@ app.post('/unregister-occurrence', async (req, res) => {
     } catch (err) {
         console.error('Error unregistering from occurrence:', err);
         return res.status(500).json({ success: false, error: 'Error unregistering from occurrence' });
+    }
+});
+
+// POST /registrations/:id/cancel - user cancel before event start
+app.post('/registrations/:id/cancel', async (req, res) => {
+    try {
+        if (!req.session.user || !req.session.user.ParticipantID) {
+            return res.status(401).json({ success: false, error: 'Please log in' });
+        }
+        const registrationId = parseInt(req.params.id, 10);
+        if (!registrationId) {
+            return res.status(400).json({ success: false, error: 'Registration ID is required' });
+        }
+        const registration = await knex('Registration')
+            .where('RegistrationID', registrationId)
+            .andWhere('ParticipantID', req.session.user.ParticipantID)
+            .first();
+        if (!registration) {
+            return res.status(404).json({ success: false, error: 'Registration not found' });
+        }
+        await knex('Registration')
+            .where('RegistrationID', registrationId)
+            .update({ RegistrationStatus: 'Cancelled', RegistrationAttendedFlag: false, RegistrationCheckInTime: null });
+        return res.json({ success: true, message: 'Registration cancelled' });
+    } catch (err) {
+        console.error('Error cancelling registration:', err);
+        return res.status(500).json({ success: false, error: 'Error cancelling registration' });
+    }
+});
+
+// POST /registrations/:id/check-in - user self check-in during event
+app.post('/registrations/:id/check-in', async (req, res) => {
+    try {
+        if (!req.session.user || !req.session.user.ParticipantID) {
+            return res.status(401).json({ success: false, error: 'Please log in' });
+        }
+        const registrationId = parseInt(req.params.id, 10);
+        if (!registrationId) {
+            return res.status(400).json({ success: false, error: 'Registration ID is required' });
+        }
+        const registration = await knex('Registration')
+            .where('RegistrationID', registrationId)
+            .andWhere('ParticipantID', req.session.user.ParticipantID)
+            .first();
+        if (!registration) {
+            return res.status(404).json({ success: false, error: 'Registration not found' });
+        }
+        await knex('Registration')
+            .where('RegistrationID', registrationId)
+            .update({
+                RegistrationStatus: 'Registered',
+                RegistrationAttendedFlag: true,
+                RegistrationCheckInTime: knex.fn.now()
+            });
+        return res.json({ success: true, message: 'Checked in' });
+    } catch (err) {
+        console.error('Error checking in:', err);
+        return res.status(500).json({ success: false, error: 'Error checking in' });
     }
 });
 
@@ -2458,6 +2523,72 @@ app.get('/profile', async (req, res) => {
             const totalDonationsDisplay = totalDonations.toFixed(2);
             const profileDOBDisplay = formatDateForDisplay(participant.ParticipantDOB);
             const profileDOBInput = formatDateForInput(participant.ParticipantDOB);
+            const memberSinceDisplay = formatMonthYear(participant.AccountCreatedDate);
+            const userEventsRows = await knex('Registration as r')
+                .leftJoin('Event_Occurrence as o', 'r.OccurrenceID', 'o.OccurrenceID')
+                .leftJoin('Event_Templates as e', 'o.EventID', 'e.EventID')
+                .leftJoin('Surveys as s', 'r.RegistrationID', 's.RegistrationID')
+                .select(
+                    'r.RegistrationID',
+                    'r.RegistrationStatus',
+                    'r.RegistrationAttendedFlag',
+                    'r.RegistrationCheckInTime',
+                    'r.RegistrationCreatedAt',
+                    'o.OccurrenceID',
+                    'o.EventDateTimeStart',
+                    'o.EventDateTimeEnd',
+                    'o.EventRegistrationDeadline',
+                    'o.EventLocation',
+                    'o.EventCapacity',
+                    'e.EventID',
+                    'e.EventName',
+                    'e.EventType',
+                    'e.EventRecurrencePattern',
+                    's.SurveyID'
+                )
+                .where('r.ParticipantID', participant.ParticipantID)
+                .orderBy('o.EventDateTimeStart', 'asc');
+
+            const profileNow = new Date();
+            const userEvents = userEventsRows.map(row => {
+                const start = row.EventDateTimeStart ? new Date(row.EventDateTimeStart) : null;
+                const end = row.EventDateTimeEnd ? new Date(row.EventDateTimeEnd) : null;
+                const deadline = row.EventRegistrationDeadline ? new Date(row.EventRegistrationDeadline) : null;
+                const isPast = start ? start < profileNow : false;
+                return {
+                    registrationId: row.RegistrationID,
+                    status: row.RegistrationStatus || 'Registered',
+                    attended: !!row.RegistrationAttendedFlag,
+                    checkInTime: row.RegistrationCheckInTime,
+                    occurrenceId: row.OccurrenceID,
+                    start,
+                    end,
+                    deadline,
+                    location: row.EventLocation,
+                    capacity: row.EventCapacity,
+                    eventId: row.EventID,
+                    eventName: row.EventName,
+                    eventType: row.EventType,
+                    recurrence: row.EventRecurrencePattern,
+                    surveyId: row.SurveyID,
+                    isPast
+                };
+            });
+
+            // Mark past unattended registrations as no show
+            const noShowIds = userEvents
+                .filter(ev => ev.isPast && !ev.attended && (!ev.status || ev.status.toLowerCase() !== 'cancelled'))
+                .map(ev => ev.registrationId);
+            if (noShowIds.length) {
+                await knex('Registration')
+                    .whereIn('RegistrationID', noShowIds)
+                    .update({ RegistrationStatus: 'No Show', RegistrationAttendedFlag: false });
+                userEvents.forEach(ev => {
+                    if (noShowIds.includes(ev.registrationId)) {
+                        ev.status = 'No Show';
+                    }
+                });
+            }
 
             res.render('profile', { 
                 layout: 'public', 
@@ -2470,7 +2601,9 @@ app.get('/profile', async (req, res) => {
                     totalDonationsDisplay
                 },
                 profileDOBDisplay,
-                profileDOBInput
+                profileDOBInput,
+                memberSinceDisplay,
+                userEvents
             });
         } catch (err) {
             console.error('Error fetching profile:', err);
@@ -2480,7 +2613,8 @@ app.get('/profile', async (req, res) => {
                 participant: null,
                 error: 'Error loading your profile. Please try again.',
                 profileDOBDisplay: null,
-                profileDOBInput: null
+                profileDOBInput: null,
+                memberSinceDisplay: null
             });
         }
 });

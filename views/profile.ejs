@@ -1,6 +1,144 @@
+    <style>
+        .my-events-section .occurrence-toggle {
+            display: inline-flex;
+            gap: 0.5rem;
+        }
+        .my-event-card {
+            gap: 1rem;
+            display: grid;
+            grid-template-columns: 150px 1fr 1fr auto auto auto;
+            align-items: stretch;
+            column-gap: 1rem;
+        }
+        .my-event-image img {
+            width: 140px;
+            height: 100%;
+            max-height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid #E0E0E0;
+        }
+        .my-event-card .occurrence-status {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.35rem;
+        }
+        .my-event-card .occurrence-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            align-self: center;
+        }
+        .my-event-card > div {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .my-event-card .occurrence-date-time,
+        .my-event-card .occurrence-details-row {
+            gap: 0.35rem;
+        }
+        .my-event-card .occurrence-status {
+            align-items: center;
+        }
+        .my-event-card .occurrence-details-row {
+            align-items: flex-start;
+        }
+        .survey-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            background: #978EC4;
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .survey-badge.missing {
+            background: #D8D8D8;
+            color: #3A3F3B;
+            cursor: default;
+        }
+        .survey-badge.placeholder {
+            visibility: hidden;
+        }
+        @media (max-width: 768px) {
+            .my-event-card {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .my-event-image img {
+                width: 100%;
+                max-height: 180px;
+            }
+        }
+
+        .profile-edit-trigger {
+            position: absolute;
+            right: 1rem;
+            bottom: 1rem;
+        }
+        .reg-confirm-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.3);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .reg-confirm-modal {
+            background: white;
+            border-radius: 12px;
+            padding: 1.2rem 1.4rem;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+            max-width: 420px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+        }
+        .reg-confirm-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.6rem;
+        }
+
+        .status-pill {
+            padding: 0.45rem 1.2rem;
+            border-radius: 999px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            font-family: 'Montserrat', sans-serif;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .status-pill--good {
+            background: #9AB59D;
+            color: white;
+        }
+        .status-pill--neutral {
+            background: #D8D8D8;
+            color: #3A3F3B;
+        }
+        .status-pill--bad {
+            background: #CE325B;
+            color: white;
+        }
+    </style>
     <!-- Regular User View: Show their own profile -->
     <div class="participants-page">
-        <h1 class="mb-4">My Profile</h1>
+        <div class="d-flex flex-column flex-md-row align-items-start justify-content-between mb-2">
+            <h1 class="mb-2 mb-md-0">My Profile</h1>
+        </div>
         
         <% if (typeof error !== 'undefined' && error) { %>
             <div class="alert alert-danger" role="alert">
@@ -8,76 +146,34 @@
             </div>
         <% } %>
 
+        
+
         <div class="card shadow-sm mb-4">
-            <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-start gap-4">
-                <div>
-                    <p class="text-muted text-uppercase small mb-1"></p>
-                    <h2 class="mb-3">Welcome, <%= participant.ParticipantFirstName %> <%= participant.ParticipantLastName %></h2>
-                    <p class="mb-1"><strong>Email:</strong> <%= participant.ParticipantEmail %></p>
-                    <p class="mb-1"><strong>Phone:</strong> <%= participant.ParticipantPhone || 'Not provided' %></p>
-                    <p class="mb-1"><strong>Birthday:</strong> <%= profileDOBDisplay || 'Not provided' %></p>
-                    <p class="mb-1"><strong>Location:</strong> 
-                        <%= participant.ParticipantCity || 'City N/A' %>, 
-                        <%= participant.ParticipantState || 'State N/A' %>
-                    </p>
-                    <p class="mb-0"><strong>School/Employer:</strong> <%= participant.ParticipantSchoolOrEmployer || 'Not provided' %></p>
+            <div class="card-body d-flex flex-column gap-3 position-relative profile-card-body">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-4">
+                    <div>
+                        <p class="text-muted text-uppercase small mb-1"></p>
+                        <h2 class="mb-3">Welcome, <%= participant.ParticipantFirstName %> <%= participant.ParticipantLastName %></h2>
+                        <p class="mb-1"><strong>Email:</strong> <%= participant.ParticipantEmail %></p>
+                        <p class="mb-1"><strong>Phone:</strong> <%= participant.ParticipantPhone || 'Not provided' %></p>
+                        <p class="mb-1"><strong>Birthday:</strong> <%= profileDOBDisplay || 'Not provided' %></p>
+                        <p class="mb-1"><strong>Location:</strong> 
+                            <%= participant.ParticipantCity || 'City N/A' %>, 
+                            <%= participant.ParticipantState || 'State N/A' %>
+                        </p>
+                        <p class="mb-0"><strong>School/Employer:</strong> <%= participant.ParticipantSchoolOrEmployer || 'Not provided' %></p>
+                    </div>
+                    <div class="text-muted text-end ms-md-auto">
+                        <p class="text-uppercase small mb-1">Member since</p>
+                        <p class="fs-5 mb-0"><%= memberSinceDisplay || 'Date not set' %></p>
+                    </div>
                 </div>
-                <!-- <div class="text-muted small">
-                    <p class="mb-1">Member since</p>
-                    <p class="fs-5 mb-0"><%= profileDOBDisplay || 'Date not set' %></p>
-                </div> -->
+                <button class="btn btn-outline-primary profile-edit-trigger" type="button" data-bs-toggle="collapse" data-bs-target="#profileEditForm" aria-expanded="false" aria-controls="profileEditForm">
+                    Update Your Details
+                </button>
             </div>
         </div>
-
-        <% const kpiMetrics = metrics || {}; %>
-        <% const latestMilestone = kpiMetrics.recentMilestone; %>
-        <% const showDonationsCard = (kpiMetrics.totalDonationsDisplay && Number(kpiMetrics.totalDonationsDisplay) > 0); %>
-        <div class="row g-3 mb-4">
-            <div class="<%= showDonationsCard ? 'col-md-4' : 'col-md-6' %>">
-                <a href="/events" class="text-decoration-none text-reset d-block h-100">
-                    <div class="card h-100 text-center shadow-sm">
-                        <div class="card-body">
-                            <p class="text-muted text-uppercase small">Total Events Attended</p>
-                            <h3 class="display-6"><%= kpiMetrics.totalEventsAttended || 0 %></h3>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="<%= showDonationsCard ? 'col-md-4' : 'col-md-6' %>">
-                <a href="/milestones" class="text-decoration-none text-reset d-block h-100">
-                    <div class="card h-100 text-center shadow-sm">
-                        <div class="card-body">
-                            <p class="text-muted text-uppercase small">Most Recent Milestone</p>
-                            <% if (latestMilestone) { %>
-                                <h5 class="mb-1"><%= latestMilestone.MilestoneTitle %></h5>
-                                <p class="text-muted mb-0"><%= latestMilestone.MilestoneDate ? new Date(latestMilestone.MilestoneDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date TBD' %></p>
-                            <% } else { %>
-                                <h5 class="mb-1">No milestones yet</h5>
-                                <p class="text-muted mb-0">Keep going!</p>
-                            <% } %>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <% if (showDonationsCard) { %>
-            <div class="col-md-4">
-                <a href="/donations" class="text-decoration-none text-reset d-block h-100">
-                    <div class="card h-100 text-center shadow-sm">
-                        <div class="card-body">
-                            <p class="text-muted text-uppercase small">Total Donations</p>
-                            <h3 class="display-6">$<%= kpiMetrics.totalDonationsDisplay || '0.00' %></h3>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <% } %>
-        </div>
-
-        <button class="btn btn-outline-primary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#profileEditForm" aria-expanded="false" aria-controls="profileEditForm">
-            Update Your Details
-        </button>
-
-        <div class="collapse" id="profileEditForm">
+        <div class="collapse mb-4" id="profileEditForm">
             <div class="card shadow-sm">
                 <div class="card-header bg-white">
                     <h5 class="mb-0">Update Your Details</h5>
@@ -181,6 +277,182 @@
             </div>
         </div>
 
+        <% const kpiMetrics = metrics || {}; %>
+        <% const latestMilestone = kpiMetrics.recentMilestone; %>
+        <% const showDonationsCard = (kpiMetrics.totalDonationsDisplay && Number(kpiMetrics.totalDonationsDisplay) > 0); %>
+        <div class="row g-3 mb-4">
+            <div class="<%= showDonationsCard ? 'col-md-4' : 'col-md-6' %>">
+                <a href="/events" class="text-decoration-none text-reset d-block h-100">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <p class="text-muted text-uppercase small">Total Events Attended</p>
+                            <h3 class="display-6"><%= kpiMetrics.totalEventsAttended || 0 %></h3>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="<%= showDonationsCard ? 'col-md-4' : 'col-md-6' %>">
+                <a href="/milestones" class="text-decoration-none text-reset d-block h-100">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <p class="text-muted text-uppercase small">Most Recent Milestone</p>
+                            <% if (latestMilestone) { %>
+                                <h5 class="mb-1"><%= latestMilestone.MilestoneTitle %></h5>
+                                <p class="text-muted mb-0"><%= latestMilestone.MilestoneDate ? new Date(latestMilestone.MilestoneDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date TBD' %></p>
+                            <% } else { %>
+                                <h5 class="mb-1">No milestones yet</h5>
+                                <p class="text-muted mb-0">Keep going!</p>
+                            <% } %>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <% if (showDonationsCard) { %>
+            <div class="col-md-4">
+                <a href="/donations" class="text-decoration-none text-reset d-block h-100">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <p class="text-muted text-uppercase small">Total Donations</p>
+                            <h3 class="display-6">$<%= kpiMetrics.totalDonationsDisplay || '0.00' %></h3>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <% } %>
+        </div>
+
+        <div class="my-events-section mb-4">
+            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-3">
+                <h2 class="mb-2 mb-md-0">My Events</h2>
+                <div class="occurrence-toggle" id="profile-events-toggle">
+                    <button type="button" class="toggle-btn active" data-filter="future">Future</button>
+                    <button type="button" class="toggle-btn" data-filter="past">Past</button>
+                </div>
+            </div>
+            <div class="occurrences-list" id="profileEventsList">
+                <% if (userEvents && userEvents.length) { %>
+                    <% userEvents.forEach(ev => { 
+                        const startDate = ev.start ? new Date(ev.start) : null;
+                        const endDate = ev.end ? new Date(ev.end) : null;
+                        const isToday = startDate && startDate.toDateString() === new Date().toDateString();
+                        const isThisYear = startDate && startDate.getFullYear() === new Date().getFullYear();
+                        const imgSrc = `/images/events/event_${ev.eventId}.jpg`;
+                        const pillLabel = ev.isPast ? (ev.attended ? 'Attended' : (ev.status && ev.status.toLowerCase() === 'cancelled' ? 'Cancelled' : 'No Show')) : (ev.attended ? 'Checked In' : 'Registered');
+                        const pillCls = (pillLabel === 'Attended' || pillLabel === 'Checked In')
+                            ? 'status-pill--good'
+                            : (pillLabel === 'Cancelled')
+                                ? 'status-pill--neutral'
+                                : (pillLabel === 'No Show')
+                                    ? 'status-pill--bad'
+                                    : 'status-pill--neutral';
+                        const statusIcon = pillLabel === 'Attended'
+                            ? 'fa-user-check'
+                            : pillLabel === 'Checked In'
+                                ? 'fa-person-walking'
+                                : pillLabel === 'Cancelled'
+                                    ? 'fa-ban'
+                                    : 'fa-user-clock';
+                        let typeIcon = 'fa-tag';
+                        let typeColor = '#6B6F6B';
+                        if (ev.eventType === 'STEM') {
+                            typeIcon = 'fa-gear';
+                            typeColor = '#99B7C6';
+                        } else if (ev.eventType === 'Arts') {
+                            typeIcon = 'fa-paintbrush';
+                            typeColor = '#F4B092';
+                        } else if (ev.eventType === 'Leadership') {
+                            typeIcon = 'fa-users';
+                            typeColor = '#9AB59D';
+                        } else if (ev.eventType === 'Annual Conference') {
+                            typeIcon = 'fa-calendar-star';
+                            typeColor = '#978EC4';
+                        }
+                    %>
+                        <div class="occurrence-card my-event-card"
+                             data-is-past="<%= ev.isPast %>"
+                             data-registration-id="<%= ev.registrationId %>"
+                             data-occurrence-id="<%= ev.occurrenceId %>"
+                             data-start="<%= ev.start ? ev.start.toISOString() : '' %>"
+                             data-end="<%= ev.end ? ev.end.toISOString() : '' %>"
+                             data-deadline="<%= ev.deadline ? ev.deadline.toISOString() : '' %>"
+                             data-survey-id="<%= ev.surveyId || '' %>"
+                             data-status="<%= ev.status %>"
+                             data-attended="<%= ev.attended %>">
+                            <div class="my-event-image">
+                                <img src="<%- imgSrc %>" alt="<%= ev.eventName %>" onerror="this.src='/images/events/event_0_real.png'">
+                            </div>
+                            <div class="occurrence-date-time">
+                                <div class="occurrence-date">
+                                    <%= startDate
+                                        ? (isToday
+                                            ? 'Today'
+                                            : startDate.toLocaleDateString('en-US', isThisYear
+                                                ? { weekday: 'short', month: 'short', day: 'numeric' }
+                                                : { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }))
+                                        : 'Date TBD' %>
+                                </div>
+                                <div class="occurrence-time">
+                                    <i class="fa-solid fa-clock"></i>
+                                    <%= startDate
+                                        ? startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+                                        : 'Time TBD' %>
+                                    <% if (endDate) { %>
+                                        - <%= endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) %>
+                                    <% } %>
+                                </div>
+                                <span class="status-badge <%= ev.isPast ? 'status-past' : 'status-available' %>">
+                                    <i class="fa-solid <%= ev.isPast ? 'fa-clock' : 'fa-users' %>"></i>
+                                    <%= ev.isPast ? 'Past' : 'Registered' %>
+                                </span>
+                            </div>
+                            <div class="occurrence-details-row">
+                                <div class="occurrence-detail-item">
+                                    <i class="fa-solid fa-rectangle-list"></i>
+                                    <span><%= ev.eventName %></span>
+                                </div>
+                                <% if (ev.location) { %>
+                                <div class="occurrence-detail-item">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                    <span><%= ev.location %></span>
+                                </div>
+                                <% } %>
+                                <% if (ev.eventType) { %>
+                                <div class="occurrence-detail-item" style="color:<%= typeColor %>;">
+                                    <i class="fa-solid <%= typeIcon %>"></i>
+                                    <span><%= ev.eventType %></span>
+                                </div>
+                                <% } %>
+                            </div>
+                            <div class="occurrence-status text-end">
+                                <span class="status-pill <%= pillCls %>"><i class="fa-solid <%= statusIcon %>"></i><span><%= pillLabel %></span></span>
+                            </div>
+                            <div class="occurrence-status text-end">
+                                <% if (ev.isPast && ev.attended) { %>
+                                    <% if (ev.surveyId) { %>
+                                        <a class="survey-badge" href="/surveys?filterSurveyID=<%= ev.surveyId %>">
+                                            <i class="fa-solid fa-check"></i>
+                                            Survey Complete
+                                        </a>
+                                    <% } else { %>
+                                        <span class="survey-badge missing">
+                                            <i class="fa-solid fa-circle-xmark"></i>
+                                            Survey Missing
+                                        </span>
+                                    <% } %>
+                                <% } else { %>
+                                    <span class="survey-badge placeholder">&nbsp;</span>
+                                <% } %>
+                            </div>
+                            <div class="occurrence-actions"></div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="no-occurrences">You have not registered for any events yet.</div>
+                <% } %>
+            </div>
+        </div>
+
+        
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Phone formatting
@@ -204,5 +476,198 @@
                 userPhoneInput.value = formatted;
             });
         }
+
+        // My events filter
+        const toggle = document.getElementById('profile-events-toggle');
+        let cards = Array.from(document.querySelectorAll('.my-event-card'));
+        const applyFilter = (filter) => {
+            cards.forEach(card => {
+                const isPast = card.getAttribute('data-is-past') === 'true';
+                const show = filter === 'past' ? isPast : !isPast;
+                card.style.display = show ? '' : 'none';
+            });
+        };
+        if (toggle) {
+            toggle.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    toggle.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    applyFilter(btn.getAttribute('data-filter'));
+                });
+            });
+            applyFilter('future');
+        }
+
+        // Confirmation modal
+        const confirmModal = document.createElement('div');
+        confirmModal.className = 'reg-confirm-backdrop active';
+        confirmModal.style.display = 'none';
+        confirmModal.innerHTML = `
+            <div class="reg-confirm-modal">
+                <h4 style="margin: 0;">Confirm</h4>
+                <p id="profileConfirmMessage" style="margin: 0;">Are you sure?</p>
+                <div class="reg-confirm-actions">
+                    <button type="button" class="btn btn-outline-secondary" id="profileConfirmNo">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="profileConfirmYes">Confirm</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(confirmModal);
+        const confirmMsg = confirmModal.querySelector('#profileConfirmMessage');
+        const confirmYes = confirmModal.querySelector('#profileConfirmYes');
+        const confirmNo = confirmModal.querySelector('#profileConfirmNo');
+        let confirmResolver = null;
+
+        const openConfirm = (message) => {
+            confirmMsg.textContent = message || 'Are you sure?';
+            confirmModal.style.display = 'flex';
+            return new Promise(resolve => { confirmResolver = resolve; });
+        };
+        const closeConfirm = (result) => {
+            confirmModal.style.display = 'none';
+            if (confirmResolver) {
+                confirmResolver(result);
+                confirmResolver = null;
+            }
+        };
+        confirmYes.addEventListener('click', () => closeConfirm(true));
+        confirmNo.addEventListener('click', () => closeConfirm(false));
+        confirmModal.addEventListener('click', (e) => {
+            if (e.target === confirmModal) {
+                closeConfirm(false);
+            }
+        });
+
+        // Action buttons
+        const profileNow = Date.now();
+        const setStatusPill = (card, label, cls) => {
+            const pill = card.querySelector('.status-pill');
+            if (!pill) return;
+            const icon = label === 'Attended'
+                ? 'fa-user-check'
+                : label === 'Checked In'
+                    ? 'fa-person-walking'
+                    : label === 'Cancelled'
+                        ? 'fa-ban'
+                        : label === 'No Show'
+                            ? 'fa-user-clock'
+                            : 'fa-user-clock';
+            pill.innerHTML = `<i class="fa-solid ${icon}"></i><span>${label}</span>`;
+            pill.className = `status-pill ${cls}`;
+        };
+        const addSurveyBadge = (card, surveyId) => {
+            const statusBox = card.querySelector('.occurrence-status');
+            if (!statusBox) return;
+            statusBox.querySelectorAll('.survey-badge').forEach(b => b.remove());
+            if (surveyId) {
+                const a = document.createElement('a');
+                a.className = 'survey-badge';
+                a.href = `/surveys?filterSurveyID=${surveyId}`;
+                a.innerHTML = `<i class="fa-solid fa-check"></i>Survey Complete`;
+                statusBox.appendChild(a);
+            } else {
+                const span = document.createElement('span');
+                span.className = 'survey-badge missing';
+                span.innerHTML = `<i class="fa-solid fa-circle-xmark"></i>Survey Missing`;
+                statusBox.appendChild(span);
+            }
+        };
+
+        const renderActions = (card) => {
+            const actions = card.querySelector('.occurrence-actions');
+            if (!actions) return;
+            actions.innerHTML = '';
+            const isPast = card.getAttribute('data-is-past') === 'true';
+            const status = (card.getAttribute('data-status') || '').toLowerCase();
+            const attended = card.getAttribute('data-attended') === 'true';
+            const start = card.getAttribute('data-start') ? new Date(card.getAttribute('data-start')) : null;
+            const end = card.getAttribute('data-end') ? new Date(card.getAttribute('data-end')) : null;
+            const deadline = card.getAttribute('data-deadline') ? new Date(card.getAttribute('data-deadline')) : null;
+            const regId = card.getAttribute('data-registration-id');
+            const occId = card.getAttribute('data-occurrence-id');
+            const nowMs = Date.now();
+
+            if (isPast) return;
+
+            if (deadline && nowMs < deadline.getTime()) {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-outline-secondary btn-sm';
+                btn.textContent = 'Unregister';
+                btn.addEventListener('click', async () => {
+                    const confirmed = await openConfirm('Unregister from this event?');
+                    if (!confirmed) return;
+                    btn.disabled = true;
+                    try {
+                        const res = await fetch('/unregister-occurrence', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ occurrenceId: Number(occId) })
+                        });
+                        const data = await res.json();
+                        if (!data.success) throw new Error(data.error || 'Error');
+                        const idx = cards.indexOf(card);
+                        if (idx >= 0) cards.splice(idx, 1);
+                        card.remove();
+                        applyFilter(toggle?.querySelector('.toggle-btn.active')?.getAttribute('data-filter') || 'future');
+                    } catch (err) {
+                        alert(err.message || 'Error unregistering');
+                        btn.disabled = false;
+                    }
+                });
+                actions.appendChild(btn);
+                return;
+            }
+
+            if (start && nowMs < start.getTime()) {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-outline-secondary btn-sm';
+                btn.textContent = 'Cancel';
+                btn.addEventListener('click', async () => {
+                    const confirmed = await openConfirm('Cancel this registration?');
+                    if (!confirmed) return;
+                    btn.disabled = true;
+                    try {
+                        const res = await fetch(`/registrations/${regId}/cancel`, { method: 'POST' });
+                        const data = await res.json();
+                        if (!data.success) throw new Error(data.error || 'Error');
+                        card.setAttribute('data-status', 'Cancelled');
+                        setStatusPill(card, 'Cancelled', 'status-pill--neutral');
+                        actions.innerHTML = '';
+                    } catch (err) {
+                        alert(err.message || 'Error cancelling');
+                        btn.disabled = false;
+                    }
+                });
+                actions.appendChild(btn);
+                return;
+            }
+
+            if (start && (!end || nowMs <= end.getTime()) && nowMs >= start.getTime()) {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-secondary btn-sm';
+                btn.textContent = 'Check In';
+                btn.addEventListener('click', async () => {
+                    btn.disabled = true;
+                    try {
+                        const res = await fetch(`/registrations/${regId}/check-in`, { method: 'POST' });
+                        const data = await res.json();
+                        if (!data.success) throw new Error(data.error || 'Error');
+                        card.setAttribute('data-attended', 'true');
+                        card.setAttribute('data-status', 'Registered');
+                        setStatusPill(card, 'Checked In', 'status-pill--good');
+                        addSurveyBadge(card, card.getAttribute('data-survey-id'));
+                        actions.innerHTML = '';
+                    } catch (err) {
+                        alert(err.message || 'Error checking in');
+                        btn.disabled = false;
+                    }
+                });
+                actions.appendChild(btn);
+            }
+        };
+
+        cards.forEach(renderActions);
+        const activeFilter = toggle?.querySelector('.toggle-btn.active')?.getAttribute('data-filter') || 'future';
+        applyFilter(activeFilter);
     });
     </script>
