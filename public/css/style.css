@@ -188,23 +188,17 @@ p, li, a, .nav-link {
 .impact-card:nth-child(4) { transition-delay: 0.4s; }
 .impact-card:nth-child(5) { transition-delay: 0.5s; }
 
-/* Sponsor cards staggered */
-.sponsor-card {
+/* Sponsor marquee animation on scroll */
+.sponsors-marquee {
     opacity: 0;
-    transform: translateY(25px);
-    transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.3s ease;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
 }
 
-.sponsor-card.animated {
+.sponsors-marquee.animated {
     opacity: 1;
     transform: translateY(0);
 }
-
-.sponsor-card:nth-child(1) { transition-delay: 0.1s; }
-.sponsor-card:nth-child(2) { transition-delay: 0.15s; }
-.sponsor-card:nth-child(3) { transition-delay: 0.2s; }
-.sponsor-card:nth-child(4) { transition-delay: 0.25s; }
-.sponsor-card:nth-child(5) { transition-delay: 0.3s; }
 
 /* Event cards staggered */
 .event-card {
@@ -1078,6 +1072,7 @@ body:not(.has-hero) {
     padding: 100px 0 120px;
     text-align: center;
     box-sizing: border-box;
+    overflow: hidden; /* Clips horizontal scroll from marquee */
 }
 
 .sponsors-inner {
@@ -1123,60 +1118,85 @@ body:not(.has-hero) {
     line-height: 1.7;
 }
 
-.sponsors-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 2rem;
-    margin-bottom: 3rem;
-}
-
-.sponsor-card {
-    background: white;
-    border-radius: 20px;
-    padding: 2.5rem 2rem;
-    min-width: 180px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+/* ===== FLOATING SPONSOR MARQUEE ===== */
+.sponsors-marquee {
+    width: 100%;
+    margin: 2rem 0 3rem;
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 1rem;
+    overflow: visible;
+    position: relative;
 }
 
-.sponsor-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.1);
+.marquee-row {
+    width: 100%;
+    overflow: visible;
+    position: relative;
+    padding: 30px 0; /* Space for logos to scale up */
 }
 
-.sponsor-logo {
-    width: 80px;
-    height: 80px;
-    background: #F9F5EA; /* Cream from palette */
-    border-radius: 50%;
+.marquee-content {
     display: flex;
     align-items: center;
+    gap: 4rem;
+    width: max-content;
+    overflow: visible;
+}
+
+/* Left scrolling animation */
+.marquee-left .marquee-content {
+    animation: marqueeLeft 35s linear infinite;
+}
+
+/* Right scrolling animation */
+.marquee-right .marquee-content {
+    animation: marqueeRight 30s linear infinite;
+}
+
+@keyframes marqueeLeft {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+@keyframes marqueeRight {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+}
+
+/* Pause animation on hover - stops the whole row */
+.marquee-row:hover .marquee-content {
+    animation-play-state: paused;
+}
+
+/* Logo styling - transparent, floating */
+.marquee-content a {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 15px rgba(58, 63, 59, 0.08);
+    transition: transform 0.3s ease;
+    position: relative;
+    padding: 10px;
 }
 
-.sponsor-logo i {
-    font-size: 2rem;
-    color: #9AB59D; /* Sage green by default */
+.marquee-content a:hover {
+    transform: scale(1.5);
+    z-index: 100;
 }
 
-/* Alternate sponsor logo colors */
-.sponsor-card:nth-child(1) .sponsor-logo i { color: #99B7C6; } /* Blue */
-.sponsor-card:nth-child(2) .sponsor-logo i { color: #978EC4; } /* Lavender */
-.sponsor-card:nth-child(3) .sponsor-logo i { color: #CE325B; } /* Raspberry */
-.sponsor-card:nth-child(4) .sponsor-logo i { color: #F4B092; } /* Peach */
-.sponsor-card:nth-child(5) .sponsor-logo i { color: #9AB59D; } /* Sage */
+.marquee-content img {
+    height: 70px;
+    width: auto;
+    max-width: 160px;
+    object-fit: contain;
+    opacity: 0.7;
+    filter: brightness(0) invert(1); /* Makes logos white */
+    transition: all 0.3s ease;
+}
 
-.sponsor-name {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: #3A3F3B;
+.marquee-content a:hover img {
+    opacity: 1;
+    filter: none; /* Shows original colors */
 }
 
 .sponsors-cta {
@@ -1892,13 +1912,14 @@ body:not(.has-hero) {
         border-radius: 22px;
     }
     
-    .sponsors-grid {
-        gap: 1rem;
+    /* Sponsor marquee responsive */
+    .marquee-content img {
+        height: 50px;
+        max-width: 120px;
     }
     
-    .sponsor-card {
-        min-width: 140px;
-        padding: 1.5rem 1rem;
+    .marquee-content {
+        gap: 2.5rem;
     }
     
     .event-card {
