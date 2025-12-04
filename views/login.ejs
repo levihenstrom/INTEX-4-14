@@ -209,6 +209,35 @@
                         </div>
                     </div>
 
+                    <!-- User Type -->
+                    <div class="auth-form-group">
+                        <label class="auth-label">User Type</label>
+                        <div class="auth-radio-group">
+                            <div class="auth-radio-item">
+                                <input 
+                                    class="auth-radio" 
+                                    type="radio" 
+                                    name="ParticipantRole" 
+                                    id="participant" 
+                                    value="p"
+                                    <%= !isVolunteer ? 'checked' : '' %>
+                                >
+                                <label class="auth-radio-label" for="participant">Participant</label>
+                            </div>
+                            <div class="auth-radio-item">
+                                <input 
+                                    class="auth-radio" 
+                                    type="radio" 
+                                    name="ParticipantRole" 
+                                    id="volunteer" 
+                                    value="v"
+                                    <%= isVolunteer ? 'checked' : '' %>
+                                >
+                                <label class="auth-radio-label" for="volunteer">Volunteer</label>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="auth-button-group">
                         <button type="submit" class="auth-btn-primary">
                             Register Account

@@ -107,7 +107,8 @@ app.use((req, res, next) => {
         '/register',
         '/logout',
         '/donations/add/visitor',
-        '/info'
+        '/info',
+        '/volunteer'
     ]
     if (openPaths.includes(req.path)) {
         return next();
@@ -123,6 +124,7 @@ app.use((req, res, next) => {
         layout: 'public',
         pageTitle: 'Login',
         defaultView: 'login',
+        isVolunteer: false,
         hasHero: false,
         error: "Please log in to access this page"
     });
@@ -155,7 +157,11 @@ app.get('/', (req, res) => {
 
 // GET /login: Show login form
 app.get('/login', (req, res) => {
-    res.render('login', { layout: 'public', pageTitle: 'Login', defaultView: 'login' });
+    res.render('login', { layout: 'public', pageTitle: 'Login', defaultView: 'login', isVolunteer: false });
+});
+
+app.get('/volunteer', (req, res) => {
+    res.render('login', { layout: 'public', pageTitle: 'Login', defaultView: 'register', isVolunteer: true });
 });
 
 app.post('/login', async (req, res) => {
@@ -172,6 +178,7 @@ app.post('/login', async (req, res) => {
             layout: 'public', 
             pageTitle: 'Login',
             defaultView: 'login',
+            isVolunteer: false,
             error: 'Invalid login' 
             });
         }
@@ -189,6 +196,7 @@ app.post('/login', async (req, res) => {
             layout: 'public', 
             pageTitle: 'Login',
             defaultView: 'login',
+            isVolunteer: false,
             error: 'Something went wrong. Please try again.' 
         });
         }
@@ -200,6 +208,7 @@ app.get('/register', (req, res) => {
     layout: 'public',
     pageTitle: 'Register',
     defaultView: 'register',
+    isVolunteer: false,
     error: null
     });
 });
@@ -218,7 +227,8 @@ try {
     ParticipantState, 
     ParticipantZip,
     ParticipantSchoolOrEmployer,
-    ParticipantFieldOfInterest
+    ParticipantFieldOfInterest,
+    ParticipantRole,
     } = req.body;
 
     // 1. Look for existing participant by email
@@ -232,13 +242,14 @@ try {
         layout: 'public',
         pageTitle: 'Register',
         defaultView: 'register',
+        isVolunteer: false,
         error: 'An account with that email already exists. Please log in.'
     });
     }
 
     // --- ROLE DEFAULT LOGIC ---
     // Keep their role if they already have one. Otherwise default to 'p'.
-    const roleToUse = existingParticipant?.ParticipantRole || 'p';
+    const roleToUse = existingParticipant?.ParticipantRole || ParticipantRole;
 
     // 3. Upgrade a visitor row (email exists but password is NULL)
     if (existingParticipant && !existingParticipant.ParticipantPassword) {
@@ -287,6 +298,7 @@ try {
     layout: 'public',
     pageTitle: 'Register',
     defaultView: 'register',
+    isVolunteer: false,
     error: 'Something went wrong. Please try again.'
     });
 }
