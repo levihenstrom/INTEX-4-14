@@ -102,8 +102,10 @@
                             <td >
                                 <form action="/users" method="POST" style="display: inline;" 
                                       class="role-change-form"
+                                      data-csrf-token="<%= csrfToken %>"
                                       data-user-name="<%= user.ParticipantFirstName %> <%= user.ParticipantLastName %>"
                                       data-target-role="<%= user.ParticipantRole === 'a' ? 'User' : 'Admin' %>">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                     <input type="hidden" name="participantId" value="<%= user.ParticipantID %>">
                                     <input type="hidden" name="newRole" value="<%= user.ParticipantRole === 'a' ? 'p' : 'a' %>">
                                     <input type="hidden" name="preserveSearch" value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
@@ -187,6 +189,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="editParticipantForm" action="/participants" method="POST">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <input type="hidden" name="participantId" id="editParticipantId">
                         <input type="hidden" name="preserveSearch" value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
                         <input type="hidden" name="preserveSort" value="<%= typeof sortColumn !== 'undefined' ? sortColumn : 'ParticipantID' %>">
@@ -285,6 +288,7 @@
             </div>
             <div class="modal-body">
                 <form id="addUserForm" action="/users/add" method="POST">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <!-- Name -->
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -455,6 +459,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 form.method = 'POST';
                 form.action = '/users/delete';
                 
+                const inputCsrf = document.createElement('input');
+                inputCsrf.type = 'hidden';
+                inputCsrf.name = '_csrf';
+                inputCsrf.value = '<%= csrfToken %>';
+                form.appendChild(inputCsrf);
+
                 const inputId = document.createElement('input');
                 inputId.type = 'hidden';
                 inputId.name = 'participantId';

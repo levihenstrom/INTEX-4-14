@@ -144,6 +144,7 @@
                                             Edit
                                         </button>
                                         <form action="/surveys/delete" method="POST" class="delete-survey-form d-inline" data-event="<%= survey.EventName || 'this event' %>">
+                                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                             <input type="hidden" name="SurveyID" value="<%= survey.SurveyID %>">
                                             <button type="submit" class="btn btn-outline-danger">Delete</button>
                                         </form>
@@ -200,6 +201,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="addSurveyForm" action="/surveys/add" method="POST">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <div class="mb-3">
                             <label class="form-label">Registration *</label>
                             <input type="text" class="form-control mb-2" id="addRegistrationSearch" placeholder="Search participant or event" autocomplete="off">
@@ -257,6 +259,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="editSurveyForm" action="/surveys/edit" method="POST">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <input type="hidden" name="SurveyID" id="editSurveyId">
                         <div class="alert alert-light border mb-3" id="editSurveyRegistrationInfo"></div>
                         <div class="row g-3">

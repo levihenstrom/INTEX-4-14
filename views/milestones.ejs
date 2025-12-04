@@ -139,6 +139,7 @@
                                             Edit
                                         </button>
                                         <form action="/milestones/delete" method="POST" class="delete-milestone-form d-inline" data-title="<%= milestone.MilestoneTitle %>">
+                                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                             <input type="hidden" name="MilestoneID" value="<%= milestone.MilestoneID %>">
                                             <button type="submit" class="btn btn-outline-danger">Delete</button>
                                         </form>
@@ -192,6 +193,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="addMilestoneForm" action="/milestones/add" method="POST">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <div class="mb-3">
                             <label for="addMilestoneTitle" class="form-label">Milestone Title *</label>
                             <input type="text" class="form-control" id="addMilestoneTitle" name="MilestoneTitle" required>
@@ -240,6 +242,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="editMilestoneForm" action="/milestones/edit" method="POST">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <input type="hidden" name="MilestoneID" id="editMilestoneId">
                         <div class="mb-3">
                             <label for="editMilestoneTitle" class="form-label">Milestone Title *</label>
