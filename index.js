@@ -104,6 +104,7 @@ app.use(session({
 // Middleware to extract CSRF token from headers for AJAX requests
 app.use((req, res, next) => {
     if (req.method === 'POST' && req.headers['x-csrf-token']) {
+        // Ensure req.body exists before setting _csrf
         if (!req.body) {
             req.body = {};
         }
@@ -993,11 +994,113 @@ app.get('/events', async (req, res) => {
             pageTitle: 'Events',
             event_templates,
             upcomingEvents,
+            isAdmin: req.session.isAdmin || false,
         });
     } catch (err) {
         console.error('Error loading events:', err);
         console.error('Error stack:', err.stack);
         res.status(500).send(`Error loading events: ${err.message}`);
+    }
+});
+
+// POST /events/add: Admin create a new event template
+app.post('/events/add', async (req, res) => {
+    try {
+        if (!req.session.isAdmin) {
+            return res.status(403).redirect('/events?error=' + encodeURIComponent('Admin access required'));
+        }
+
+        const { EventName, EventType, EventDescription, EventRecurrencePattern, EventDefaultCapacity } = req.body || {};
+        
+        if (!EventName || !EventType || !EventRecurrencePattern) {
+            return res.status(400).redirect('/events?error=' + encodeURIComponent('Event Name, Event Type, and Recurrence Pattern are required'));
+        }
+
+        // Validate EventName is unique
+        const existingEvent = await knex('Event_Templates')
+            .where('EventName', EventName.trim())
+            .first();
+
+        if (existingEvent) {
+            return res.status(400).redirect('/events?error=' + encodeURIComponent('An event with this name already exists'));
+        }
+
+        // Parse EventDefaultCapacity if provided
+        let defaultCapacity = null;
+        if (EventDefaultCapacity) {
+            const parsed = parseInt(EventDefaultCapacity, 10);
+            if (!isNaN(parsed) && parsed > 0) {
+                defaultCapacity = parsed;
+            }
+        }
+
+        // Insert the new event template
+        await knex('Event_Templates')
+            .insert({
+                EventName: EventName.trim(),
+                EventType: EventType.trim(),
+                EventDescription: EventDescription ? EventDescription.trim() : null,
+                EventRecurrencePattern: EventRecurrencePattern.trim(),
+                EventDefaultCapacity: defaultCapacity
+            });
+
+        return res.redirect('/events?success=' + encodeURIComponent('Event created successfully'));
+    } catch (err) {
+        console.error('Error creating event:', err);
+        return res.status(500).redirect('/events?error=' + encodeURIComponent('Error creating event. Please try again.'));
+    }
+});
+
+// POST /events/delete: Admin delete an event template
+app.post('/events/delete', async (req, res) => {
+    try {
+        if (!req.session.isAdmin) {
+            return res.status(403).redirect('/events?error=' + encodeURIComponent('Admin access required'));
+        }
+
+        const { eventId } = req.body || {};
+        
+        if (!eventId) {
+            return res.status(400).redirect('/events?error=' + encodeURIComponent('Event ID is required'));
+        }
+
+        const eventIdNum = parseInt(eventId, 10);
+        if (isNaN(eventIdNum)) {
+            return res.status(400).redirect('/events?error=' + encodeURIComponent('Invalid event ID'));
+        }
+
+        // Check if event exists
+        const eventTemplate = await knex('Event_Templates')
+            .where('EventID', eventIdNum)
+            .first();
+
+        if (!eventTemplate) {
+            return res.status(404).redirect('/events?error=' + encodeURIComponent('Event not found'));
+        }
+
+        // Delete all registrations for occurrences of this event
+        await knex('Registration')
+            .whereIn('OccurrenceID', function() {
+                this.select('OccurrenceID')
+                    .from('Event_Occurrence')
+                    .where('EventID', eventIdNum);
+            })
+            .delete();
+
+        // Delete all occurrences of this event
+        await knex('Event_Occurrence')
+            .where('EventID', eventIdNum)
+            .delete();
+
+        // Delete the event template
+        await knex('Event_Templates')
+            .where('EventID', eventIdNum)
+            .delete();
+
+        return res.redirect('/events?success=' + encodeURIComponent('Event deleted successfully'));
+    } catch (err) {
+        console.error('Error deleting event:', err);
+        return res.status(500).redirect('/events?error=' + encodeURIComponent('Error deleting event. Please try again.'));
     }
 });
 
@@ -3167,10 +3270,11 @@ app.get('/profile', async (req, res) => {
             });
         } catch (err) {
             console.error('Error fetching profile:', err);
-            return res.render('/', { 
+            return res.render('landing', { 
                 layout: 'public', 
                 pageTitle: 'Home',
                 participant: null,
+                upcomingEvents: [],
                 error: 'Error loading your profile. Please try again.',
                 profileDOBDisplay: null,
                 profileDOBInput: null,
@@ -3595,19 +3699,35 @@ app.use((err, req, res, next) => {
     if (err.code === 'EBADCSRFTOKEN') {
         // Handle CSRF token errors
         console.error('CSRF token validation failed');
-        
-        // Return JSON for API routes
-        if (req.path.startsWith('/admin/') || req.path.startsWith('/api/')) {
-            return res.status(403).json({ success: false, error: 'CSRF token validation failed. Please refresh the page and try again.' });
+
+        // 1) Check if path is clearly an API/admin route
+        const isAdminOrApi = 
+            req.path.startsWith('/admin/') || 
+            req.path.startsWith('/api/');
+
+        // 2) Check if this is an AJAX / JSON-style request
+        const isAjax =
+            req.xhr ||
+            (req.headers.accept && req.headers.accept.includes('application/json')) ||
+            req.headers['x-csrf-token'] ||
+            (req.headers['content-type'] && req.headers['content-type'].includes('application/json'));
+
+        if (isAdminOrApi || isAjax) {
+            // Return JSON for programmatic calls
+            return res.status(403).json({
+                success: false,
+                error: 'Session expired or CSRF token invalid. Please refresh the page and try again.'
+            });
         }
-        
-        // Generate a new CSRF token for the error page
+
+        // 3) Generate a new CSRF token for normal form submissions (login page)
         let csrfToken = '';
         try {
             csrfToken = req.csrfToken ? req.csrfToken() : '';
         } catch (e) {
-            // If we can't generate a token, continue without it
+            // If we can't generate a token, just continue without it
         }
+
         return res.status(403).render('login', {
             layout: 'public',
             pageTitle: 'Error',
@@ -3617,8 +3737,10 @@ app.use((err, req, res, next) => {
             csrfToken: csrfToken
         });
     }
+
     next(err);
 });
+
 
 // 6. Start Server
 app.listen(port, () => {
