@@ -5170,7 +5170,7 @@ body:not(.has-hero) {
 }
 
 .role-pill-volunteer {
-    background-color: #978EC4;
+    background-color: #F4B092;
     color: white;
 }
 
@@ -5180,7 +5180,7 @@ body:not(.has-hero) {
 }
 
 .role-pill-participant {
-    background-color: #3A3F3B;
+    background-color: #99B7C6;
     color: white;
 }
 
@@ -5194,6 +5194,71 @@ body:not(.has-hero) {
     box-shadow: 0 0 0 0.2rem rgba(0,0,0,0.15);
 }
 
+/* Role pill colors for filter pills and modal pills - override event-label-type colors */
+/* Admin - Red */
+.add-role-pill[data-role-value="a"],
+.edit-role-pill[data-role-value="a"],
+.users-role-pill[data-role-value="a"] {
+    background-color: #CE325B20 !important;
+    border-color: #CE325B !important;
+    color: #CE325B !important;
+}
+.add-role-pill.filter-selected[data-role-value="a"],
+.edit-role-pill.filter-selected[data-role-value="a"],
+.users-role-pill.filter-selected[data-role-value="a"] {
+    background-color: #CE325B !important;
+    border-color: #CE325B !important;
+    color: white !important;
+}
+
+/* Participant - Blue */
+.add-role-pill[data-role-value="p"],
+.edit-role-pill[data-role-value="p"],
+.users-role-pill[data-role-value="p"] {
+    background-color: #99B7C620 !important;
+    border-color: #99B7C6 !important;
+    color: #99B7C6 !important;
+}
+.add-role-pill.filter-selected[data-role-value="p"],
+.edit-role-pill.filter-selected[data-role-value="p"],
+.users-role-pill.filter-selected[data-role-value="p"] {
+    background-color: #99B7C6 !important;
+    border-color: #99B7C6 !important;
+    color: white !important;
+}
+
+/* Volunteer - Yellow/Orange */
+.add-role-pill[data-role-value="v"],
+.edit-role-pill[data-role-value="v"],
+.users-role-pill[data-role-value="v"] {
+    background-color: #F4B09220 !important;
+    border-color: #F4B092 !important;
+    color: #F4B092 !important;
+}
+.add-role-pill.filter-selected[data-role-value="v"],
+.edit-role-pill.filter-selected[data-role-value="v"],
+.users-role-pill.filter-selected[data-role-value="v"] {
+    background-color: #F4B092 !important;
+    border-color: #F4B092 !important;
+    color: white !important;
+}
+
+/* Donor - Green */
+.add-role-pill[data-role-value="d"],
+.edit-role-pill[data-role-value="d"],
+.users-role-pill[data-role-value="d"] {
+    background-color: #9AB59D20 !important;
+    border-color: #9AB59D !important;
+    color: #9AB59D !important;
+}
+.add-role-pill.filter-selected[data-role-value="d"],
+.edit-role-pill.filter-selected[data-role-value="d"],
+.users-role-pill.filter-selected[data-role-value="d"] {
+    background-color: #9AB59D !important;
+    border-color: #9AB59D !important;
+    color: white !important;
+}
+
 /* Role dropdown menu styling */
 .role-dropdown {
     position: relative;
@@ -5201,7 +5266,7 @@ body:not(.has-hero) {
 }
 
 .role-dropdown-menu {
-    min-width: 120px;
+    min-width: 140px;
     padding: 0.5rem;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -5211,6 +5276,14 @@ body:not(.has-hero) {
     background: white !important;
     margin-top: 0.25rem;
     overflow: visible !important;
+}
+
+.role-dropdown-menu.dropdown-menu-top {
+    bottom: 100% !important;
+    top: auto !important;
+    margin-bottom: 0.5rem !important;
+    margin-top: 0 !important;
+    transform: translateY(0) !important;
 }
 
 /* Ensure dropdown appears above all cards */
@@ -5229,13 +5302,20 @@ body:not(.has-hero) {
     font-size: 0.85rem;
     font-weight: 600;
     transition: all 0.2s ease;
-    text-align: center;
+    text-align: left;
     width: 100%;
     border: none;
     color: white;
     cursor: pointer;
-    display: block;
+    display: flex;
+    align-items: center;
     white-space: nowrap;
+}
+
+.role-dropdown-item i {
+    margin-right: 0.5rem;
+    width: 16px;
+    text-align: center;
 }
 
 /* Color-coded role pills in dropdown */

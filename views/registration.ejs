@@ -1356,9 +1356,18 @@
                         const res = await fetch(`/admin/registrations/${registrationId}/delete`, { 
                             method: 'POST',
                             headers: {
-                                'X-CSRF-Token': csrfToken
+                                'X-CSRF-Token': csrfToken,
+                                'Content-Type': 'application/json'
                             }
                         });
+                        
+                        // Check if response is JSON
+                        const contentType = res.headers.get('content-type');
+                        if (!contentType || !contentType.includes('application/json')) {
+                            const text = await res.text();
+                            throw new Error('Server returned an error. Please refresh the page and try again.');
+                        }
+                        
                         const data = await res.json();
                         if (!data.success) {
                             throw new Error(data.error || 'Delete failed');
