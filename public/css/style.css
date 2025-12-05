@@ -2331,12 +2331,15 @@ body:not(.has-hero) {
 .event-details {
     border-bottom: 2px solid #F0F0F0;
     flex: 1;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
 }
 
 .event-labels {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
+    margin-bottom: 2rem;
 }
 
 .filter-labels {
@@ -2522,7 +2525,7 @@ body:not(.has-hero) {
 }
 
 .occurrences-section {
-    margin-top: 3rem;
+    margin-top: 2.5rem;
 }
 
 .occurrences-section h2 {
