@@ -31,40 +31,6 @@
         </form>
         
         <div class="users-actions">
-            <!-- Sort Options -->
-            <div class="dropdown">
-                <button type="button" class="btn btn-outline-secondary users-sort-btn" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa-solid fa-sort"></i> Sort
-                </button>
-                <ul class="dropdown-menu">
-                    <li>
-                        <button type="button" class="dropdown-item <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantID' ? 'active' : '' %>" onclick="sortTable('ParticipantID')">
-                            ID <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantID' ? (typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲') : '' %>
-                        </button>
-                    </li>
-                    <li>
-                        <button type="button" class="dropdown-item <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantFirstName' ? 'active' : '' %>" onclick="sortTable('ParticipantFirstName')">
-                            First <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantFirstName' ? (typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲') : '' %>
-                        </button>
-                    </li>
-                    <li>
-                        <button type="button" class="dropdown-item <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantLastName' ? 'active' : '' %>" onclick="sortTable('ParticipantLastName')">
-                            Last <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantLastName' ? (typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲') : '' %>
-                        </button>
-                    </li>
-                    <li>
-                        <button type="button" class="dropdown-item <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantEmail' ? 'active' : '' %>" onclick="sortTable('ParticipantEmail')">
-                            Email <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantEmail' ? (typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲') : '' %>
-                        </button>
-                    </li>
-                    <li>
-                        <button type="button" class="dropdown-item <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantRole' ? 'active' : '' %>" onclick="sortTable('ParticipantRole')">
-                            Role <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantRole' ? (typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲') : '' %>
-                        </button>
-                    </li>
-                </ul>
-            </div>
-            
             <button type="button" class="btn btn-primary users-add-btn" data-bs-toggle="modal" data-bs-target="#addUserModal">
                 <i class="fa-solid fa-plus"></i> Add New User
             </button>
@@ -90,6 +56,50 @@
                 </span>
                 <span class="event-label event-label-type-arts filter-pill users-role-pill" data-role-value="d">
                     <i class="fa-solid fa-hand-holding-dollar"></i>Donor
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sort Options Pills -->
+    <div class="mb-4">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <span class="filter-label"><i class="fa-solid fa-sort"></i> Sort by:</span>
+            <div class="event-labels filter-labels" id="users-sort-pills">
+                <span class="event-label event-label-type-stem filter-pill users-sort-pill <%= (typeof sortColumn === 'undefined' || sortColumn === 'ParticipantID') ? 'filter-selected' : '' %>" 
+                      data-sort-column="ParticipantID">
+                    <i class="fa-solid fa-hashtag"></i>ID
+                    <% if ((typeof sortColumn === 'undefined' || sortColumn === 'ParticipantID')) { %>
+                        <i class="fa-solid <%= (typeof sortDir !== 'undefined' && sortDir === 'desc') ? 'fa-arrow-down' : 'fa-arrow-up' %>"></i>
+                    <% } %>
+                </span>
+                <span class="event-label event-label-type-stem filter-pill users-sort-pill <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantFirstName' ? 'filter-selected' : '' %>" 
+                      data-sort-column="ParticipantFirstName">
+                    <i class="fa-solid fa-signature"></i>First Name
+                    <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantFirstName') { %>
+                        <i class="fa-solid <%= (typeof sortDir !== 'undefined' && sortDir === 'desc') ? 'fa-arrow-down' : 'fa-arrow-up' %>"></i>
+                    <% } %>
+                </span>
+                <span class="event-label event-label-type-stem filter-pill users-sort-pill <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantLastName' ? 'filter-selected' : '' %>" 
+                      data-sort-column="ParticipantLastName">
+                    <i class="fa-solid fa-signature"></i>Last Name
+                    <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantLastName') { %>
+                        <i class="fa-solid <%= (typeof sortDir !== 'undefined' && sortDir === 'desc') ? 'fa-arrow-down' : 'fa-arrow-up' %>"></i>
+                    <% } %>
+                </span>
+                <span class="event-label event-label-type-stem filter-pill users-sort-pill <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantEmail' ? 'filter-selected' : '' %>" 
+                      data-sort-column="ParticipantEmail">
+                    <i class="fa-solid fa-envelope"></i>Email
+                    <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantEmail') { %>
+                        <i class="fa-solid <%= (typeof sortDir !== 'undefined' && sortDir === 'desc') ? 'fa-arrow-down' : 'fa-arrow-up' %>"></i>
+                    <% } %>
+                </span>
+                <span class="event-label event-label-type-stem filter-pill users-sort-pill <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantRole' ? 'filter-selected' : '' %>" 
+                      data-sort-column="ParticipantRole">
+                    <i class="fa-solid fa-user-tag"></i>Role
+                    <% if (typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantRole') { %>
+                        <i class="fa-solid <%= (typeof sortDir !== 'undefined' && sortDir === 'desc') ? 'fa-arrow-down' : 'fa-arrow-up' %>"></i>
+                    <% } %>
                 </span>
             </div>
         </div>
@@ -620,6 +630,17 @@ function sortTable(column) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Sort pill click handlers
+    const sortPills = document.querySelectorAll('.users-sort-pill');
+    sortPills.forEach(pill => {
+        pill.addEventListener('click', function() {
+            const column = this.getAttribute('data-sort-column');
+            if (column) {
+                sortTable(column);
+            }
+        });
+    });
+    
     // Role filter pills - refresh page with filter
     const rolePills = Array.from(document.querySelectorAll('#users-role-pills .users-role-pill'));
     
@@ -1188,8 +1209,7 @@ document.addEventListener('DOMContentLoaded', function() {
         align-items: center;
     }
 
-    /* Sort and Add User Buttons */
-    .users-sort-btn,
+    /* Add User Button */
     .users-add-btn {
         border-radius: 999px;
         padding: 0.6rem 1.3rem;
@@ -1202,17 +1222,16 @@ document.addEventListener('DOMContentLoaded', function() {
         border: none;
     }
 
-    .users-sort-btn {
-        background: #F0F0F0;
-        color: #3A3F3B;
-        border: 2px solid #E0E0E0;
+    /* Sort pills styling */
+    .users-sort-pill {
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .users-sort-btn:hover {
-        background: #E0E0E0;
-        color: #3A3F3B;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    .users-sort-pill i.fa-arrow-up,
+    .users-sort-pill i.fa-arrow-down {
+        margin-left: 0.3rem;
+        font-size: 0.75rem;
     }
 
     /* Role Filter Pills Section */
