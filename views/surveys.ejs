@@ -50,7 +50,13 @@
         <div class="row mb-4">
             <div class="col-12">
                 <div style="position: relative; height: 180px; width: 100%;">
-                    <canvas id="surveysRadarChart"></canvas>
+                    <canvas id="surveysRadarChart"
+                        data-search="<%= searchValue || '' %>"
+                        data-filter-event-id="<%= filterValues.filterEventID || '' %>"
+                        data-filter-nps="<%= filterValues.filterNPS || '' %>"
+                        data-filter-start-date="<%= filterValues.filterStartDate || '' %>"
+                        data-filter-end-date="<%= filterValues.filterEndDate || '' %>">
+                    </canvas>
                 </div>
             </div>
         </div>

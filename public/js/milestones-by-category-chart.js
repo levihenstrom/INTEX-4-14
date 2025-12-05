@@ -32,8 +32,23 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedCategory = currentFilterCategory;
     }
 
+    // Get filter parameters from canvas data attributes
+    const search = canvas.dataset.search || '';
+    const filterTitle = canvas.dataset.filterTitle || '';
+    const filterCategory = canvas.dataset.filterCategory || '';
+    const filterParticipantId = canvas.dataset.filterParticipantId || '';
+
+    // Build query string with filters
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (filterTitle) params.append('filterTitle', filterTitle);
+    // Don't include filterCategory in API call - we want to show all categories but highlight the selected one
+    if (filterParticipantId) params.append('filterParticipantID', filterParticipantId);
+
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+
     // Fetch milestones by category and create chart
-    fetch('/api/milestones-by-category')
+    fetch('/api/milestones-by-category' + queryString)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -58,6 +73,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 const isSelected = !selectedCategory || item.category === selectedCategory;
                 const baseColor = categoryColors[index % categoryColors.length];
 
+                // Only round outer edges: left side of first segment, right side of last segment
+                let borderRadius = 0;
+                if (index === 0) {
+                    // First segment - round left corners only
+                    borderRadius = { topLeft: 12, bottomLeft: 12, topRight: 0, bottomRight: 0 };
+                } else if (index === data.length - 1) {
+                    // Last segment - round right corners only
+                    borderRadius = { topLeft: 0, bottomLeft: 0, topRight: 12, bottomRight: 12 };
+                }
+
                 return {
                     label: item.category,
                     data: [percentage],
@@ -65,6 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderColor: isSelected ? baseColor : '#D0D0D0',
                     borderWidth: 0,
                     borderSkipped: false,
+                    borderRadius: borderRadius,
                     categoryIndex: index,
                     rawCount: parseInt(item.count),
                     percentage: percentage

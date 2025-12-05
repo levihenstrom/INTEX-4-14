@@ -54,8 +54,25 @@ document.addEventListener('DOMContentLoaded', function() {
         return; // Exit if chart canvas doesn't exist
     }
 
+    // Get filter parameters from canvas data attributes
+    const search = canvas.dataset.search || '';
+    const filterStartDate = canvas.dataset.filterStartDate || '';
+    const filterEndDate = canvas.dataset.filterEndDate || '';
+    const filterMinAmount = canvas.dataset.filterMinAmount || '';
+    const filterMaxAmount = canvas.dataset.filterMaxAmount || '';
+
+    // Build query string with filters
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (filterStartDate) params.append('filterStartDate', filterStartDate);
+    if (filterEndDate) params.append('filterEndDate', filterEndDate);
+    if (filterMinAmount) params.append('filterMinAmount', filterMinAmount);
+    if (filterMaxAmount) params.append('filterMaxAmount', filterMaxAmount);
+
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+
     // Fetch donations by month and create chart
-    fetch('/api/donations-by-month')
+    fetch('/api/donations-by-month' + queryString)
         .then(response => response.json())
         .then(data => {
             fullData = data;
