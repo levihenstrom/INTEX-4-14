@@ -978,7 +978,13 @@
                 btn.addEventListener('click', async () => {
                     btn.disabled = true;
                     try {
-                        const res = await fetch(`/registrations/${regId}/check-in`, { method: 'POST' });
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                        const res = await fetch(`/registrations/${regId}/check-in`, { 
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-Token': csrfToken
+                            }
+                        });
                         const data = await res.json();
                         if (!data.success) throw new Error(data.error || 'Error');
                         card.setAttribute('data-attended', 'true');
@@ -1004,9 +1010,13 @@
                     if (!confirmed) return;
                     btn.disabled = true;
                     try {
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
                         const res = await fetch('/unregister-occurrence', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'X-CSRF-Token': csrfToken
+                            },
                             body: JSON.stringify({ occurrenceId: Number(occId) })
                         });
                         const data = await res.json();
@@ -1033,7 +1043,13 @@
                     if (!confirmed) return;
                     btn.disabled = true;
                     try {
-                        const res = await fetch(`/registrations/${regId}/cancel`, { method: 'POST' });
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                        const res = await fetch(`/registrations/${regId}/cancel`, { 
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-Token': csrfToken
+                            }
+                        });
                         const data = await res.json();
                         if (!data.success) throw new Error(data.error || 'Error');
                         card.setAttribute('data-status', 'Cancelled');
@@ -1213,9 +1229,13 @@
                 submitBtn.textContent = 'Submitting...';
 
                 try {
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
                     const res = await fetch('/surveys/create', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': csrfToken
+                        },
                         body: JSON.stringify({
                             registrationId: document.getElementById('surveyRegistrationId').value,
                             satisfaction: parseInt(surveySatisfaction.value, 10),
