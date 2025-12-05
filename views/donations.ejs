@@ -602,13 +602,19 @@
     <% const donationCountValue = typeof metricsData.count === 'number' ? metricsData.count : 0; %>
 
     <div class="milestones-page">
-        <div class="row g-3 mb-4">
-                <h1 class="mb-1">Donations</h1>
-                <p class="text-muted mb-0">Track generosity and giving impact.</p>
-                <% if(!isAdmin) { %>
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#DonateModal">Donate</button>
-                <% } %>
+        <!-- Donations Header -->
+        <div class="events-header">
+            <h1>DONATIONS</h1>
+            <p>Track generosity and giving impact. Your contributions help empower young women through education, art, and community programs that build confidence and open doors to higher education.</p>
         </div>
+        
+        <% if(!isAdmin) { %>
+            <div class="mb-4 text-center">
+                <button type="button" class="btn btn-primary donations-user-donate-btn" data-bs-toggle="modal" data-bs-target="#DonateModal">
+                    <i class="fa-solid fa-hand-holding-heart"></i> Donate
+                </button>
+            </div>
+        <% } %>
 
         <!-- Donations Chart -->
         <% if (isAdmin) { %>
@@ -623,52 +629,293 @@
 
         <div class="row g-3 mb-4">
             <div class="col-md-4">
-                <div class="card text-center shadow-sm h-100">
+                <div class="card text-center shadow-sm h-100 donation-kpi-card">
                     <div class="card-body">
-                        <p class="text-muted mb-1">Total Donation Amount</p>
-                        <h3 class="mb-0"><%= formatCurrency(totalAmountValue) %></h3>
+                        <p class="text-muted text-uppercase small mb-1" style="font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 1px;">Total Donation Amount</p>
+                        <h3 class="mb-0" style="font-family: 'DM Serif Display', serif; color: #3A3F3B; font-size: 2rem;"><%= formatCurrency(totalAmountValue) %></h3>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card text-center shadow-sm h-100">
+                <div class="card text-center shadow-sm h-100 donation-kpi-card">
                     <div class="card-body">
-                        <p class="text-muted mb-1">Donations This Month</p>
-                        <h3 class="mb-0"><%= formatCurrency(monthAmountValue) %></h3>
+                        <p class="text-muted text-uppercase small mb-1" style="font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 1px;">Donations This Month</p>
+                        <h3 class="mb-0" style="font-family: 'DM Serif Display', serif; color: #3A3F3B; font-size: 2rem;"><%= formatCurrency(monthAmountValue) %></h3>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card text-center shadow-sm h-100">
+                <div class="card text-center shadow-sm h-100 donation-kpi-card">
                     <div class="card-body">
-                        <p class="text-muted mb-1">Number of Donations</p>
-                        <h3 class="mb-0"><%= donationCountValue %></h3>
+                        <p class="text-muted text-uppercase small mb-1" style="font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 1px;">Number of Donations</p>
+                        <h3 class="mb-0" style="font-family: 'DM Serif Display', serif; color: #3A3F3B; font-size: 2rem;"><%= donationCountValue %></h3>
                     </div>
                 </div>
             </div>
         </div>
 
         <% if (isAdmin) { %>
-            <div class="d-flex flex-column flex-md-row gap-3 mb-4 align-items-md-center">
-                <form method="GET" action="/donations" class="flex-grow-1">
+            <div class="donations-top-bar mb-4">
+                <form method="GET" action="/donations" class="donations-search-form">
                     <% filterPairs.forEach(function(pair) { %>
                         <input type="hidden" name="<%= pair.key %>" value="<%= pair.value %>">
                     <% }); %>
                     <input type="hidden" name="sort" value="<%= typeof sortColumn !== 'undefined' ? sortColumn : 'DonationDate' %>">
                     <input type="hidden" name="sortDir" value="<%= typeof sortDir !== 'undefined' ? sortDir : 'desc' %>">
                     <input type="hidden" name="page" value="1">
-                    <div class="input-group">
-                        <input type="text" class="form-control" name="search" placeholder="Search by donor, amount, or ID..." value="<%= searchValue %>">
-                        <button type="submit" class="btn btn-primary">Search</button>
-                        <% if (searchValue) { %>
-                            <a href="/donations" class="btn btn-outline-secondary">Clear</a>
-                        <% } %>
+                    <div class="donations-search-input-wrapper">
+                        <i class="fa-solid fa-search donations-search-icon"></i>
+                        <input type="text" class="form-control donations-search-input" name="search" placeholder="Search by donor, amount, or ID..." value="<%= searchValue %>">
                     </div>
+                    <% if (searchValue) { %>
+                        <a href="/donations" class="btn btn-outline-secondary donations-clear-btn donations-search-clear-btn">Clear</a>
+                    <% } %>
                 </form>
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#donationFilterModal">Filters</button>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#donationSortModal">Sort</button>
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDonationModal">+ Add Donation</button>
+                <div class="donations-actions">
+                    <button type="button" class="btn btn-outline-secondary donations-filter-btn" data-bs-toggle="collapse" data-bs-target="#donationsFilterSection" aria-expanded="false" aria-controls="donationsFilterSection">
+                        <i class="fa-solid fa-filter"></i> Filter
+                    </button>
+                    <button type="button" class="btn btn-primary donations-add-btn" id="addDonationBtn">
+                        <i class="fa-solid fa-plus"></i> Add Donation
+                    </button>
+                </div>
+            </div>
+
+            <!-- Collapsible Filters + Sorting Section -->
+            <div class="collapse mb-4" id="donationsFilterSection">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Filters & Sorting</h5>
+                            </div>
+                            <div class="card-body donations-filter-section">
+                                <form method="GET" action="/donations" id="donationsFilterForm">
+                                    <% if (searchValue) { %>
+                                        <input type="hidden" name="search" value="<%= searchValue %>">
+                                    <% } %>
+                                    <input type="hidden" name="page" value="1">
+                                    
+                                    <div class="donations-filter-grid">
+                                        <!-- Donation Date Range -->
+                                        <div class="donations-filter-group">
+                                            <label class="donations-filter-group-label">Donation Date Range</label>
+                                            <div class="donations-range-controls">
+                                                <div class="donations-range-slider-row">
+                                                    <div class="donations-range-input-group">
+                                                        <label class="donations-range-label">From</label>
+                                                        <input type="date" class="form-control donations-range-input" name="filterStartDate" id="filterStartDate" value="<%= filterValues.filterStartDate || '' %>">
+                                                    </div>
+                                                    <div class="donations-range-input-group">
+                                                        <label class="donations-range-label">To</label>
+                                                        <input type="date" class="form-control donations-range-input" name="filterEndDate" id="filterEndDate" value="<%= filterValues.filterEndDate || '' %>">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Location -->
+                                        <div class="donations-filter-group">
+                                            <label class="donations-filter-group-label">Location</label>
+                                            <div class="donations-range-controls">
+                                                <div class="donations-range-slider-row">
+                                                    <div class="donations-range-input-group">
+                                                        <label class="donations-range-label">City</label>
+                                                        <input type="text" class="form-control donations-range-input" name="filterCity" value="<%= filterValues.filterCity || '' %>">
+                                                    </div>
+                                                    <div class="donations-range-input-group">
+                                                        <label class="donations-range-label">State</label>
+                                                        <input type="text" class="form-control donations-range-input" name="filterState" value="<%= filterValues.filterState || '' %>">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Amount Range -->
+                                        <div class="donations-filter-group">
+                                            <label class="donations-filter-group-label">Donation Amount Range</label>
+                                            <div class="donations-range-controls">
+                                                <div class="donations-range-with-inputs">
+                                                    <!-- Min input -->
+                                                    <div class="donations-range-input-group donations-range-input-group-min">
+                                                        <label class="donations-range-label">Min</label>
+                                                        <input
+                                                            type="text"
+                                                            class="form-control donations-range-input"
+                                                            name="filterMinAmount"
+                                                            id="filterMinAmount"
+                                                            value="<%= filterValues.filterMinAmount || '' %>"
+                                                            placeholder="min"
+                                                        >
+                                                    </div>
+
+                                                    <!-- Dual slider -->
+                                                    <div class="donations-dual-range-wrapper">
+                                                        <input
+                                                            type="range"
+                                                            class="donations-dual-range donations-dual-range-min"
+                                                            id="amountMinSlider"
+                                                            min="0"
+                                                            max="10000"
+                                                            step="10"
+                                                            value="<%= filterValues.filterMinAmount ? Math.min(parseFloat(filterValues.filterMinAmount), 10000) : 0 %>"
+                                                        >
+                                                        <input
+                                                            type="range"
+                                                            class="donations-dual-range donations-dual-range-max"
+                                                            id="amountMaxSlider"
+                                                            min="0"
+                                                            max="10000"
+                                                            step="10"
+                                                            value="<%= filterValues.filterMaxAmount ? Math.min(parseFloat(filterValues.filterMaxAmount), 10000) : 10000 %>"
+                                                        >
+                                                    </div>
+
+                                                    <!-- Max input -->
+                                                    <div class="donations-range-input-group donations-range-input-group-max">
+                                                        <label class="donations-range-label">Max</label>
+                                                        <input
+                                                            type="text"
+                                                            class="form-control donations-range-input"
+                                                            name="filterMaxAmount"
+                                                            id="filterMaxAmount"
+                                                            value="<%= filterValues.filterMaxAmount || '' %>"
+                                                            placeholder="max"
+                                                        >
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Age Range -->
+                                        <div class="donations-filter-group">
+                                            <label class="donations-filter-group-label">Age Range</label>
+                                            <div class="donations-range-controls">
+                                                <div class="donations-range-with-inputs">
+                                                    <!-- Min input -->
+                                                    <div class="donations-range-input-group donations-range-input-group-min">
+                                                        <label class="donations-range-label">Min</label>
+                                                        <input
+                                                            type="text"
+                                                            class="form-control donations-range-input"
+                                                            name="filterMinAge"
+                                                            id="filterMinAge"
+                                                            value="<%= filterValues.filterMinAge || '' %>"
+                                                            placeholder="min"
+                                                        >
+                                                    </div>
+
+                                                    <!-- Dual slider -->
+                                                    <div class="donations-dual-range-wrapper">
+                                                        <input
+                                                            type="range"
+                                                            class="donations-dual-range donations-dual-range-min"
+                                                            id="ageMinSlider"
+                                                            min="0"
+                                                            max="100"
+                                                            step="1"
+                                                            value="<%= filterValues.filterMinAge ? Math.min(parseInt(filterValues.filterMinAge), 100) : 0 %>"
+                                                        >
+                                                        <input
+                                                            type="range"
+                                                            class="donations-dual-range donations-dual-range-max"
+                                                            id="ageMaxSlider"
+                                                            min="0"
+                                                            max="100"
+                                                            step="1"
+                                                            value="<%= filterValues.filterMaxAge ? Math.min(parseInt(filterValues.filterMaxAge), 100) : 100 %>"
+                                                        >
+                                                    </div>
+
+                                                    <!-- Max input -->
+                                                    <div class="donations-range-input-group donations-range-input-group-max">
+                                                        <label class="donations-range-label">Max</label>
+                                                        <input
+                                                            type="text"
+                                                            class="form-control donations-range-input"
+                                                            name="filterMaxAge"
+                                                            id="filterMaxAge"
+                                                            value="<%= filterValues.filterMaxAge || '' %>"
+                                                            placeholder="max"
+                                                        >
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        
+
+                                        <!-- Participant Role (Icon-based) -->
+                                        <div class="donations-filter-group">
+                                            <label class="donations-filter-group-label">Participant Role</label>
+                                            <div class="event-labels filter-labels" id="donation-role-pills">
+                                                <span class="event-label event-label-type-stem filter-pill donation-role-pill" data-role-value="">
+                                                    <i class="fa-solid fa-sliders"></i>Any
+                                                </span>
+                                                <span class="event-label event-label-type-leadership filter-pill donation-role-pill <%= filterValues.filterRole === 'a' ? 'filter-selected' : '' %>" data-role-value="a">
+                                                    <i class="fa-solid fa-user-shield"></i>Admin
+                                                </span>
+                                                <span class="event-label event-label-type-stem filter-pill donation-role-pill <%= filterValues.filterRole === 'p' ? 'filter-selected' : '' %>" data-role-value="p">
+                                                    <i class="fa-solid fa-user"></i>Participant
+                                                </span>
+                                            </div>
+                                            <input type="hidden" name="filterRole" id="filterRoleInput" value="<%= filterValues.filterRole || '' %>">
+                                        </div>
+
+                                        <!-- Field of Interest (Icon-based) -->
+                                        <div class="donations-filter-group">
+                                            <label class="donations-filter-group-label">Field of Interest</label>
+                                            <div class="event-labels filter-labels" id="donation-interest-pills">
+                                                <span class="event-label event-label-type-stem filter-pill donation-interest-pill" data-interest-value="">
+                                                    <i class="fa-solid fa-sliders"></i>Any
+                                                </span>
+                                                <span class="event-label event-label-type-stem filter-pill donation-interest-pill <%= filterValues.filterInterest === 'STEM' ? 'filter-selected' : '' %>" data-interest-value="STEM">
+                                                    <i class="fa-solid fa-gear"></i>STEM
+                                                </span>
+                                                <span class="event-label event-label-type-arts filter-pill donation-interest-pill <%= filterValues.filterInterest === 'Arts' ? 'filter-selected' : '' %>" data-interest-value="Arts">
+                                                    <i class="fa-solid fa-paintbrush"></i>Arts
+                                                </span>
+                                                <span class="event-label event-label-type-annual-conference filter-pill donation-interest-pill <%= filterValues.filterInterest === 'Both' ? 'filter-selected' : '' %>" data-interest-value="Both">
+                                                    <i class="fa-solid fa-layer-group"></i>Both
+                                                </span>
+                                            </div>
+                                            <input type="hidden" name="filterInterest" id="filterInterestInput" value="<%= filterValues.filterInterest || '' %>">
+                                        </div>
+
+                                        <!-- Sorting -->
+                                        <div class="donations-filter-group">
+                                            <label class="donations-filter-group-label">Sorting</label>
+                                            <div class="donations-range-controls">
+                                                <div class="donations-range-slider-row">
+                                                    <div class="donations-range-input-group">
+                                                        <label class="donations-range-label">Sort By</label>
+                                                        <select class="form-select donations-range-input" name="sort">
+                                                            <option value="DonationDate" <%= sortColumn === 'DonationDate' ? 'selected' : '' %>>Donation Date</option>
+                                                            <option value="DonationAmount" <%= sortColumn === 'DonationAmount' ? 'selected' : '' %>>Donation Amount</option>
+                                                            <option value="DonationID" <%= sortColumn === 'DonationID' ? 'selected' : '' %>>Donation ID</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="donations-range-input-group">
+                                                        <label class="donations-range-label">Direction</label>
+                                                        <select class="form-select donations-range-input" name="sortDir">
+                                                            <option value="desc" <%= sortDir === 'desc' ? 'selected' : '' %>>Descending</option>
+                                                            <option value="asc" <%= sortDir === 'asc' ? 'selected' : '' %>>Ascending</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                <!-- Action Buttons -->
+                                <div class="donations-filter-actions">
+                                    <a href="/donations<%= searchValue ? '?search=' + encodeURIComponent(searchValue) : '' %>" class="btn btn-outline-secondary donations-filter-reset-btn">Reset</a>
+                                    <button type="submit" class="btn btn-primary donations-filter-apply-btn">Apply</button>
+                                </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         <% } else { %>
@@ -685,43 +932,73 @@
         <% } %>
 
         <% if (Array.isArray(donations) && donations.length) { %>
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3  g-4">
-                <% donations.forEach(function(donation) { %>
+            <%
+            // Sort donations: most recent first, "date not set" at the end
+            // This ensures donations without dates don't appear on the first page
+            const sortedDonations = donations.slice().sort(function(a, b) {
+                const dateA = a.DonationDate ? new Date(a.DonationDate) : null;
+                const dateB = b.DonationDate ? new Date(b.DonationDate) : null;
+                
+                // Check if dates are null/undefined (date not set)
+                const aHasDate = dateA !== null && dateA !== undefined && !isNaN(dateA.getTime());
+                const bHasDate = dateB !== null && dateB !== undefined && !isNaN(dateB.getTime());
+                
+                // If both have dates, sort by date (most recent first)
+                if (aHasDate && bHasDate) {
+                    return dateB - dateA;
+                }
+                // If only A has a date, A comes first (dates before no dates)
+                if (aHasDate && !bHasDate) {
+                    return -1;
+                }
+                // If only B has a date, B comes first (dates before no dates)
+                if (!aHasDate && bHasDate) {
+                    return 1;
+                }
+                // If neither has a date, maintain original order (both at the end)
+                return 0;
+            });
+            %>
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+                <% sortedDonations.forEach(function(donation) { %>
                     <div class="col">
-                        <div class="card h-100 shadow-sm">
+                        <div class="card h-100 shadow-sm donation-card">
                             <div class="card-body d-flex flex-column">
-                                <div class="d-flex w-100 justify-content-between align-items-start mb-2">
-                                    <div>
-                                        <h5 class="card-title mb-1"><%= formatCurrency(donation.DonationAmountValue) %></h5>
-                                        <small class="text-muted"><%= donation.DonationDateDisplay || 'Date not set' %></small>
+                                <div class="d-flex w-100 justify-content-between align-items-start mb-3">
+                                    <div class="donation-amount-section">
+                                        <h5 class="donation-amount mb-1"><%= formatCurrency(donation.DonationAmountValue) %></h5>
+                                        <small class="donation-date"><%= donation.DonationDateDisplay || 'Date not set' %></small>
                                     </div>
                                     <% if (isAdmin) { %>
-                                        <div class="btn-group btn-group-sm ms-2">
+                                        <div class="donation-actions-group">
                                         <button type="button"
-                                                class="btn btn-outline-primary edit-donation-btn"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#editDonationModal"
+                                                class="btn btn-outline-primary donation-edit-btn"
                                                 data-donation-id="<%= donation.DonationID %>"
                                                 data-date="<%= donation.DonationDate ? new Date(donation.DonationDate).toISOString().split('T')[0] : '' %>"
                                                 data-amount="<%= donation.DonationAmountValue %>"
                                                 data-participant-id="<%= donation.ParticipantID %>"
                                                 data-participant-display="<%= donation.ParticipantFirstName %> <%= donation.ParticipantLastName %> (#<%= donation.ParticipantID %>) - <%= donation.ParticipantEmail %>">
-                                            Edit
+                                            <i class="fa-solid fa-pencil"></i>
                                         </button>
-                                            <form action="/donations/delete" method="POST" class="delete-donation-form d-inline" data-amount="<%= formatCurrency(donation.DonationAmountValue) %>">
-                                                <input type="hidden" name="DonationID" value="<%= donation.DonationID %>">
-                                                <button type="submit" class="btn btn-outline-danger">Delete</button>
-                                            </form>
+                                            <button type="button" class="btn btn-outline-danger donation-delete-btn" 
+                                                    data-donation-id="<%= donation.DonationID %>"
+                                                    data-amount="<%= formatCurrency(donation.DonationAmountValue) %>">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
                                         </div>
                                     <% } %>
                                 </div>
-                                <p class="mb-1">
-                                    <strong>Participant:</strong>
-                                    <span class="participant-tooltip" data-bs-toggle="tooltip" data-bs-html="true" title="<%= donation.ParticipantFirstName %> <%= donation.ParticipantLastName %><br>Age: <%= typeof donation.ParticipantAge === 'number' ? donation.ParticipantAge : 'N/A' %><br>City: <%= donation.ParticipantCity || 'N/A' %><br>State: <%= donation.ParticipantState || 'N/A' %><br>Interest: <%= donation.ParticipantFieldOfInterest || 'N/A' %><br>Email: <%= donation.ParticipantEmail %>">
-                                        <%= donation.ParticipantFirstName %> <%= donation.ParticipantLastName %>
-                                    </span>
-                                </p>
-                                <p class="text-muted mb-0">Donation ID: <%= donation.DonationID %></p>
+                                <div class="donation-participant-info mb-2">
+                                    <p class="mb-1 donation-participant-label">
+                                        <strong>Participant:</strong>
+                                    </p>
+                                    <p class="mb-0 donation-participant-name">
+                                        <span class="participant-tooltip" data-bs-toggle="tooltip" data-bs-html="true" title="<%= donation.ParticipantFirstName %> <%= donation.ParticipantLastName %><br>Age: <%= typeof donation.ParticipantAge === 'number' ? donation.ParticipantAge : 'N/A' %><br>City: <%= donation.ParticipantCity || 'N/A' %><br>State: <%= donation.ParticipantState || 'N/A' %><br>Interest: <%= donation.ParticipantFieldOfInterest || 'N/A' %><br>Email: <%= donation.ParticipantEmail %>">
+                                            <%= donation.ParticipantFirstName %> <%= donation.ParticipantLastName %>
+                                        </span>
+                                    </p>
+                                </div>
+                                <p class="text-muted mb-0 donation-id">Donation ID: <%= donation.DonationID %></p>
                             </div>
                         </div>
                     </div>
@@ -733,15 +1010,15 @@
                 <div class="mt-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                     <div>
                         <% if (currentPage > 1) { %>
-                            <a href="/donations?page=<%= currentPage - 1 %><%= searchValue ? '&search=' + encodeURIComponent(searchValue) : '' %><%= filterQueryString %><%= sortQueryString %>" class="btn btn-secondary">&larr; Previous Page</a>
+                            <a href="/donations?page=<%= currentPage - 1 %><%= searchValue ? '&search=' + encodeURIComponent(searchValue) : '' %><%= filterQueryString %><%= sortQueryString %>" class="btn btn-secondary donations-pagination-btn">&larr; Previous Page</a>
                         <% } %>
                     </div>
-                    <div class="text-muted text-center">
+                    <div class="text-muted text-center" style="font-family: 'Montserrat', sans-serif;">
                         Showing <%= startIndex %> - <%= endIndex %> of <%= totalDonations %> donations (Page <%= currentPage %> of <%= totalPages %>)
                     </div>
                     <div class="text-end">
                         <% if (hasNextPage) { %>
-                            <a href="/donations?page=<%= currentPage + 1 %><%= searchValue ? '&search=' + encodeURIComponent(searchValue) : '' %><%= filterQueryString %><%= sortQueryString %>" class="btn btn-primary">Next Page &rarr;</a>
+                            <a href="/donations?page=<%= currentPage + 1 %><%= searchValue ? '&search=' + encodeURIComponent(searchValue) : '' %><%= filterQueryString %><%= sortQueryString %>" class="btn btn-primary donations-pagination-btn">Next Page &rarr;</a>
                         <% } %>
                     </div>
                 </div>
@@ -751,44 +1028,36 @@
         <% } %>
     </div>
 
-
     <% if (isAdmin) { %>
-        <div class="modal fade" id="addDonationModal" tabindex="-1" aria-labelledby="addDonationModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addDonationModalLabel">Add Donation</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="addDonationForm" action="/donations/add" method="POST">
-                            <div class="mb-3">
-                                <label class="form-label">Participant *</label>
-                                <input type="text" class="form-control mb-2" id="donationParticipantSearch" placeholder="Search by name or email" autocomplete="off">
-                                <select class="form-select" id="donationParticipantSelect" name="ParticipantID" size="6" required>
-                                    <option value="">Select participant</option>
-                                    <% participantChoices.forEach(function(participant) { %>
-                                        <option value="<%= participant.ParticipantID %>">
-                                            <%= participant.ParticipantFirstName %> <%= participant.ParticipantLastName %> (#<%= participant.ParticipantID %>) - <%= participant.ParticipantEmail %>
-                                        </option>
-                                    <% }); %>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="addDonationAmount" class="form-label">Amount *</label>
-                                <input type="number" step="0.01" min="0.01" class="form-control" id="addDonationAmount" name="DonationAmount" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="addDonationDate" class="form-label">Donation Date</label>
-                                <input type="date" class="form-control" id="addDonationDate" name="DonationDate" value="<%= new Date().toISOString().split('T')[0] %>">
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" form="addDonationForm" class="btn btn-success">Save Donation</button>
-                    </div>
+        <!-- Modern Add Donation Modal -->
+        <div class="add-donation-backdrop" id="addDonationBackdrop">
+            <div class="add-donation-modal">
+                <div class="add-donation-header">
+                    <h4>Add Donation</h4>
+                    <button type="button" class="add-donation-close" id="addDonationClose">&times;</button>
                 </div>
+                <form id="addDonationForm" action="/donations/add" method="POST">
+                    <div class="add-donation-form-group">
+                        <label>Participant *</label>
+                        <div style="position: relative;">
+                            <input type="text" class="form-control reg-participant-search" id="addDonationParticipantSearch" placeholder="Search participants..." autocomplete="off">
+                            <div class="reg-search-results" id="addDonationParticipantResults"></div>
+                        </div>
+                        <input type="hidden" id="addDonationParticipantId" name="ParticipantID" required>
+                    </div>
+                    <div class="add-donation-form-group">
+                        <label for="addDonationAmount">Amount *</label>
+                        <input type="number" step="0.01" min="0.01" class="form-control" id="addDonationAmount" name="DonationAmount" required>
+                    </div>
+                    <div class="add-donation-form-group">
+                        <label for="addDonationDate">Donation Date</label>
+                        <input type="date" class="form-control" id="addDonationDate" name="DonationDate" value="<%= new Date().toISOString().split('T')[0] %>">
+                    </div>
+                    <div class="add-donation-actions">
+                        <button type="button" class="btn btn-outline-secondary donations-modal-cancel-btn" id="addDonationCancel">Cancel</button>
+                        <button type="submit" class="btn btn-primary donations-modal-save-btn">Save Donation</button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -804,15 +1073,11 @@
                             <input type="hidden" name="DonationID" id="editDonationId">
                             <div class="mb-3">
                                 <label class="form-label">Participant *</label>
-                                <input type="text" class="form-control mb-2" id="editDonationParticipantSearch" placeholder="Search by name or email" autocomplete="off">
-                                <select class="form-select" id="editDonationParticipantSelect" name="ParticipantID" size="6" required>
-                                    <option value="">Select participant</option>
-                                    <% participantChoices.forEach(function(participant) { %>
-                                        <option value="<%= participant.ParticipantID %>">
-                                            <%= participant.ParticipantFirstName %> <%= participant.ParticipantLastName %> (#<%= participant.ParticipantID %>) - <%= participant.ParticipantEmail %>
-                                        </option>
-                                    <% }); %>
-                                </select>
+                                <div style="position: relative;">
+                                    <input type="text" class="form-control reg-participant-search" id="editDonationParticipantSearch" placeholder="Search participants..." autocomplete="off">
+                                    <div class="reg-search-results" id="editDonationParticipantResults"></div>
+                                </div>
+                                <input type="hidden" id="editDonationParticipantId" name="ParticipantID" required>
                             </div>
                             <div class="mb-3">
                                 <label for="editDonationAmount" class="form-label">Amount *</label>
@@ -825,135 +1090,20 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" form="editDonationForm" class="btn btn-primary">Update Donation</button>
+                        <button type="button" class="btn btn-secondary donations-modal-cancel-btn" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" form="editDonationForm" class="btn btn-primary donations-modal-save-btn">Update Donation</button>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="modal fade" id="donationFilterModal" tabindex="-1" aria-labelledby="donationFilterModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="donationFilterModalLabel">Filter Donations</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form method="GET" action="/donations">
-                        <div class="modal-body">
-                            <% if (searchValue) { %>
-                                <input type="hidden" name="search" value="<%= searchValue %>">
-                            <% } %>
-                            <% if (filterValues.filterParticipantID) { %>
-                                <input type="hidden" name="filterParticipantID" value="<%= filterValues.filterParticipantID %>">
-                                <% } %>
-                                <% if (filterValues.filterMilestoneID) { %>
-                                    <input type="hidden" name="filterMilestoneID" value="<%= filterValues.filterMilestoneID %>">
-                                <% } %>
-                            <input type="hidden" name="sort" value="<%= typeof sortColumn !== 'undefined' ? sortColumn : 'DonationDate' %>">
-                            <input type="hidden" name="sortDir" value="<%= typeof sortDir !== 'undefined' ? sortDir : 'desc' %>">
-                            <input type="hidden" name="page" value="1">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Donation Date From</label>
-                                    <input type="date" class="form-control" name="filterStartDate" value="<%= filterValues.filterStartDate || '' %>">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Donation Date To</label>
-                                    <input type="date" class="form-control" name="filterEndDate" value="<%= filterValues.filterEndDate || '' %>">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Minimum Amount</label>
-                                    <input type="number" step="0.01" min="0" class="form-control" name="filterMinAmount" value="<%= filterValues.filterMinAmount || '' %>">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Maximum Amount</label>
-                                    <input type="number" step="0.01" min="0" class="form-control" name="filterMaxAmount" value="<%= filterValues.filterMaxAmount || '' %>">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Minimum Age</label>
-                                    <input type="number" min="0" class="form-control" name="filterMinAge" value="<%= filterValues.filterMinAge || '' %>">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Maximum Age</label>
-                                    <input type="number" min="0" class="form-control" name="filterMaxAge" value="<%= filterValues.filterMaxAge || '' %>">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">City</label>
-                                    <input type="text" class="form-control" name="filterCity" value="<%= filterValues.filterCity || '' %>">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">State</label>
-                                    <input type="text" class="form-control" name="filterState" value="<%= filterValues.filterState || '' %>">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Participant Role</label>
-                                    <select class="form-select" name="filterRole">
-                                        <option value="">Any</option>
-                                        <option value="a" <%= filterValues.filterRole === 'a' ? 'selected' : '' %>>Admin</option>
-                                        <option value="p" <%= filterValues.filterRole === 'p' ? 'selected' : '' %>>Participant</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Field of Interest</label>
-                                    <select class="form-select" name="filterInterest">
-                                        <option value="">Any</option>
-                                        <option value="STEM" <%= filterValues.filterInterest === 'STEM' ? 'selected' : '' %>>STEM</option>
-                                        <option value="Arts" <%= filterValues.filterInterest === 'Arts' ? 'selected' : '' %>>Arts</option>
-                                        <option value="Both" <%= filterValues.filterInterest === 'Both' ? 'selected' : '' %>>Both</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <% if (!searchValue) { %>
-                            <a href="/donations" class="btn btn-outline-secondary">Clear Filters</a>
-                                <% } %>
-                            <% if (searchValue) { %>
-                            <a href="/donations<%= searchValue ? '?search=' + encodeURIComponent(searchValue) : '' %><%= sortQueryString %>" class="btn btn-outline-secondary">Clear Filters</a>
-                                <% } %>
-                            <button type="submit" class="btn btn-primary">Apply Filters</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        <div class="modal fade" id="donationSortModal" tabindex="-1" aria-labelledby="donationSortModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="donationSortModalLabel">Sort Donations</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form method="GET" action="/donations">
-                        <div class="modal-body">
-                            <% if (searchValue) { %>
-                                <input type="hidden" name="search" value="<%= searchValue %>">
-                            <% } %>
-                            <% filterPairs.forEach(function(pair) { %>
-                                <input type="hidden" name="<%= pair.key %>" value="<%= pair.value %>">
-                            <% }); %>
-                            <input type="hidden" name="page" value="1">
-                            <div class="mb-3">
-                                <label class="form-label">Sort field</label>
-                                <select class="form-select" name="sort">
-                                    <option value="DonationDate" <%= sortColumn === 'DonationDate' ? 'selected' : '' %>>Donation Date</option>
-                                    <option value="DonationAmount" <%= sortColumn === 'DonationAmount' ? 'selected' : '' %>>Donation Amount</option>
-                                    <option value="DonationID" <%= sortColumn === 'DonationID' ? 'selected' : '' %>>Donation ID</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Direction</label>
-                                <select class="form-select" name="sortDir">
-                                    <option value="desc" <%= sortDir === 'desc' ? 'selected' : '' %>>Descending</option>
-                                    <option value="asc" <%= sortDir === 'asc' ? 'selected' : '' %>>Ascending</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Apply Sort</button>
-                        </div>
-                    </form>
+        <!-- Delete Donation Confirmation Modal -->
+        <div class="reg-confirm-backdrop" id="deleteDonationConfirmBackdrop" aria-modal="true" role="dialog">
+            <div class="reg-confirm-modal">
+                <h4 style="margin: 0;">Confirm Delete</h4>
+                <p id="deleteDonationConfirmMessage" style="margin: 0;">Are you sure?</p>
+                <div class="reg-confirm-actions">
+                    <button type="button" class="btn btn-outline-secondary" id="deleteDonationConfirmNo">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="deleteDonationConfirmYes">Delete</button>
                 </div>
             </div>
         </div>
@@ -990,8 +1140,8 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" form="DonateForm" class="btn btn-success">Save Donation</button>
+                        <button type="button" class="btn btn-secondary donations-modal-cancel-btn" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" form="DonateForm" class="btn btn-primary donations-modal-save-btn">Save Donation</button>
                     </div>
                 </div>
             </div>
@@ -1015,82 +1165,234 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const addSearchInput = document.getElementById('donationParticipantSearch');
-        const addSelect = document.getElementById('donationParticipantSelect');
+        // Add Donation Modal - Participant Search
+        const addSearchInput = document.getElementById('addDonationParticipantSearch');
+        const addSearchResults = document.getElementById('addDonationParticipantResults');
+        const addParticipantIdInput = document.getElementById('addDonationParticipantId');
+        let addActiveSearchId = null;
+
+        // Edit Donation Modal - Participant Search
         const editSearchInput = document.getElementById('editDonationParticipantSearch');
-        const editSelect = document.getElementById('editDonationParticipantSelect');
+        const editSearchResults = document.getElementById('editDonationParticipantResults');
+        const editParticipantIdInput = document.getElementById('editDonationParticipantId');
         const editIdInput = document.getElementById('editDonationId');
         const editAmountInput = document.getElementById('editDonationAmount');
         const editDateInput = document.getElementById('editDonationDate');
+        let editActiveSearchId = null;
 
-        function resetSelect(selectElement) {
-            if (!selectElement) return;
-            Array.from(selectElement.options).forEach(function(option, index) {
-                option.hidden = false;
-                if (index === 0) {
-                    option.selected = true;
+        // Participant search functionality (same as registration.ejs)
+        function setupParticipantSearch(searchInput, searchResults, participantIdInput, activeSearchIdObj) {
+            if (!searchInput || !searchResults || !participantIdInput) return;
+
+            const hideResults = () => {
+                if (searchResults) searchResults.style.display = 'none';
+            };
+
+            const showResults = () => {
+                if (searchResults) searchResults.style.display = 'block';
+            };
+
+            searchInput.addEventListener('input', async () => {
+                const q = searchInput.value.trim();
+                if (activeSearchIdObj) activeSearchIdObj.value = null;
+                if (!q || !searchResults) {
+                    hideResults();
+                    participantIdInput.value = '';
+                    return;
                 }
-            });
-        }
-
-        function bindFilter(input, selectElement) {
-            if (!input || !selectElement) return;
-            input.addEventListener('input', function() {
-                const term = (input.value || '').toLowerCase();
-                Array.from(selectElement.options).forEach(function(option, index) {
-                    if (index === 0) {
-                        option.hidden = false;
+                try {
+                    const res = await fetch(`/admin/participants/search?q=${encodeURIComponent(q)}`);
+                    const data = await res.json();
+                    if (!data.success) {
+                        hideResults();
                         return;
                     }
-                    option.hidden = term && !option.textContent.toLowerCase().includes(term);
-                });
+                    searchResults.innerHTML = '';
+                    data.results.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'result-item';
+                        div.textContent = `${item.name} (#${item.participantId}) - ${item.email}`;
+                        div.addEventListener('click', () => {
+                            searchInput.value = `${item.name} (#${item.participantId})`;
+                            if (activeSearchIdObj) activeSearchIdObj.value = item.participantId;
+                            participantIdInput.value = item.participantId;
+                            hideResults();
+                        });
+                        searchResults.appendChild(div);
+                    });
+                    showResults();
+                } catch (err) {
+                    console.error(err);
+                    hideResults();
+                }
+            });
+
+            // Hide results when clicking outside
+            document.addEventListener('click', (e) => {
+                if (searchResults && !searchResults.contains(e.target) && e.target !== searchInput) {
+                    hideResults();
+                }
             });
         }
 
-        bindFilter(addSearchInput, addSelect);
-        bindFilter(editSearchInput, editSelect);
+        // Setup search for add donation modal
+        const addActiveSearchIdObj = { value: null };
+        setupParticipantSearch(addSearchInput, addSearchResults, addParticipantIdInput, addActiveSearchIdObj);
 
-        const addModal = document.getElementById('addDonationModal');
-        if (addModal) {
-            addModal.addEventListener('show.bs.modal', function() {
-                if (addSearchInput) addSearchInput.value = '';
-                resetSelect(addSelect);
-            });
+        // Setup search for edit donation modal
+        const editActiveSearchIdObj = { value: null };
+        setupParticipantSearch(editSearchInput, editSearchResults, editParticipantIdInput, editActiveSearchIdObj);
+
+        // Edit donation button click handler
+        const editDonationModal = document.getElementById('editDonationModal');
+        let editModalInstance = null;
+        if (editDonationModal && typeof bootstrap !== 'undefined') {
+            editModalInstance = new bootstrap.Modal(editDonationModal);
         }
 
-        document.querySelectorAll('.edit-donation-btn').forEach(function(button) {
-            button.addEventListener('click', function() {
+        document.querySelectorAll('.donation-edit-btn').forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const donationId = this.getAttribute('data-donation-id') || '';
+                const participantId = this.getAttribute('data-participant-id') || '';
                 const participantDisplay = this.getAttribute('data-participant-display') || '';
-                if (editSearchInput) {
+                const amount = this.getAttribute('data-amount') || '';
+                const date = this.getAttribute('data-date') || '';
+
+                // Set donation ID
+                if (editIdInput) editIdInput.value = donationId;
+
+                // Set participant search value and ID
+                if (editSearchInput && participantDisplay) {
                     editSearchInput.value = participantDisplay;
-                    // Trigger filter so only that participant shows
-                    editSearchInput.dispatchEvent(new Event('input', { bubbles: true }));
-                } else {
-                    resetSelect(editSelect);
                 }
-                if (editIdInput) editIdInput.value = this.getAttribute('data-donation-id') || '';
-                if (editAmountInput) editAmountInput.value = this.getAttribute('data-amount') || '';
-                if (editDateInput) editDateInput.value = this.getAttribute('data-date') || '';
-                if (editSelect) {
-                    const participantId = this.getAttribute('data-participant-id') || '';
-                    editSelect.value = participantId;
+                if (editParticipantIdInput && participantId) {
+                    editParticipantIdInput.value = participantId;
+                    if (editActiveSearchIdObj) editActiveSearchIdObj.value = participantId;
+                }
+
+                // Set amount - ensure it's a number with 2 decimal places
+                if (editAmountInput && amount) {
+                    const amountNum = parseFloat(amount);
+                    if (!isNaN(amountNum)) {
+                        editAmountInput.value = amountNum.toFixed(2);
+                    } else {
+                        editAmountInput.value = amount;
+                    }
+                }
+
+                // Set date - only if date exists
+                if (editDateInput) {
+                    if (date) {
+                        editDateInput.value = date;
+                    } else {
+                        editDateInput.value = '';
+                    }
+                }
+
+                // Open modal after values are set
+                if (editModalInstance) {
+                    editModalInstance.show();
+                } else if (editDonationModal) {
+                    // Fallback if Bootstrap is not available
+                    editDonationModal.classList.add('show');
+                    editDonationModal.style.display = 'block';
                 }
             });
         });
 
-        document.querySelectorAll('.delete-donation-form').forEach(function(form) {
-            form.addEventListener('submit', function(e) {
-                const summary = form.getAttribute('data-amount') || 'this donation';
-                if (!confirm('Delete ' + summary + '?')) {
-                    e.preventDefault();
+        // Delete donation confirmation modal
+        const deleteConfirmBackdrop = document.getElementById('deleteDonationConfirmBackdrop');
+        const deleteConfirmMessage = document.getElementById('deleteDonationConfirmMessage');
+        const deleteConfirmYes = document.getElementById('deleteDonationConfirmYes');
+        const deleteConfirmNo = document.getElementById('deleteDonationConfirmNo');
+        let pendingDeleteForm = null;
+
+        const openDeleteConfirm = (form, amount) => {
+            if (!deleteConfirmBackdrop || !deleteConfirmMessage) {
+                // Fallback to console confirm if modal doesn't exist
+                if (confirm('Delete ' + (amount || 'this donation') + '?')) {
+                    form.submit();
                 }
+                return;
+            }
+            pendingDeleteForm = form;
+            deleteConfirmMessage.textContent = 'Delete ' + (amount || 'this donation') + '?';
+            deleteConfirmBackdrop.classList.add('active');
+        };
+
+        if (deleteConfirmYes) {
+            deleteConfirmYes.addEventListener('click', function() {
+                if (pendingDeleteForm) {
+                    pendingDeleteForm.submit();
+                }
+                if (deleteConfirmBackdrop) {
+                    deleteConfirmBackdrop.classList.remove('active');
+                }
+                pendingDeleteForm = null;
+            });
+        }
+
+        if (deleteConfirmNo) {
+            deleteConfirmNo.addEventListener('click', function() {
+                if (deleteConfirmBackdrop) {
+                    deleteConfirmBackdrop.classList.remove('active');
+                }
+                pendingDeleteForm = null;
+            });
+        }
+
+        if (deleteConfirmBackdrop) {
+            deleteConfirmBackdrop.addEventListener('click', (e) => {
+                if (e.target === deleteConfirmBackdrop) {
+                    deleteConfirmBackdrop.classList.remove('active');
+                    pendingDeleteForm = null;
+                }
+            });
+        }
+
+        // Delete donation button click handler
+        document.querySelectorAll('.donation-delete-btn').forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const donationId = this.getAttribute('data-donation-id');
+                const amount = this.getAttribute('data-amount') || 'this donation';
+                
+                // Create a form to submit
+                const form = document.createElement('form');
+                form.action = '/donations/delete';
+                form.method = 'POST';
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'DonationID';
+                input.value = donationId;
+                form.appendChild(input);
+                document.body.appendChild(form);
+                
+                openDeleteConfirm(form, amount);
             });
         });
 
+        // Tooltips
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.forEach(function(triggerEl) {
             new bootstrap.Tooltip(triggerEl);
         });
+
+        // Reset and open add donation modal when button is clicked
+        const addDonationBtn = document.getElementById('addDonationBtn');
+        const addDonationBackdrop = document.getElementById('addDonationBackdrop');
+        if (addDonationBtn && addDonationBackdrop) {
+            addDonationBtn.addEventListener('click', () => {
+                // Reset form
+                if (addSearchInput) addSearchInput.value = '';
+                if (addParticipantIdInput) addParticipantIdInput.value = '';
+                if (addActiveSearchIdObj) addActiveSearchIdObj.value = null;
+                if (addSearchResults) addSearchResults.style.display = 'none';
+                // Open modal
+                addDonationBackdrop.classList.add('active');
+            });
+        }
     });
     </script>
 
@@ -1099,4 +1401,1030 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="/js/donations-by-month-chart.js"></script>
     <% } %>
+
+    <style>
+    /* Donations KPI Cards */
+    .donation-kpi-card {
+        border-radius: 16px;
+        border: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        background: white;
+    }
+
+    .donation-kpi-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .donation-kpi-card .card-body {
+        padding: 2rem;
+    }
+
+    /* Donations Top Bar */
+    .donations-top-bar {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    @media (min-width: 768px) {
+        .donations-top-bar {
+            flex-direction: row;
+            align-items: center;
+            gap: 1rem;
+        }
+    }
+
+    .donations-search-form {
+        flex: 1;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .donations-search-input-wrapper {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .donations-search-icon {
+        position: absolute;
+        left: 1rem;
+        color: #5A5E5A;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .donations-search-input {
+        flex: 1;
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem 0.6rem 2.75rem;
+        height: auto;
+        border: 2px solid #E0E0E0;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+    }
+
+    .donations-search-input:focus {
+        outline: none;
+        border-color: #978EC4;
+        box-shadow: 0 0 0 3px rgba(151, 142, 196, 0.1);
+    }
+
+    .donations-clear-btn {
+        white-space: nowrap;
+    }
+
+    .donations-search-clear-btn {
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+        transition: all 0.2s ease;
+        background: white;
+        color: #3A3F3B;
+        border: 2px solid #E0E0E0;
+        text-decoration: none;
+    }
+
+    .donations-search-clear-btn:hover {
+        background: #F0F0F0;
+        color: #3A3F3B;
+        border-color: #D0D0D0;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .donations-actions {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    /* Filter and Add Donation Buttons */
+    .donations-filter-btn,
+    .donations-add-btn {
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .donations-filter-btn {
+        background: #F0F0F0;
+        color: #3A3F3B;
+        border: 2px solid #E0E0E0;
+    }
+
+    .donations-filter-btn:hover {
+        background: #E0E0E0;
+        color: #3A3F3B;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .donations-add-btn {
+        background: #978EC4;
+        color: white;
+        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+    }
+
+    .donations-add-btn:hover {
+        background: #897FB8;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+    }
+
+    /* Donation Cards */
+    .donation-card {
+        border-radius: 16px;
+        border: none;
+        background: white;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        overflow: hidden;
+    }
+
+    .donation-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .donation-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .donation-amount-section {
+        flex: 1;
+    }
+
+    .donation-amount {
+        font-family: 'DM Serif Display', serif;
+        font-size: 1.75rem;
+        color: #3A3F3B;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .donation-date {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.85rem;
+        color: #5A5E5A;
+        display: block;
+        margin-top: 0.25rem;
+    }
+
+    .donation-actions-group {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .donation-edit-btn,
+    .donation-delete-btn {
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        font-weight: 600;
+        font-family: 'Montserrat', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        border: 2px solid;
+        min-width: 36px;
+        height: 36px;
+    }
+
+    .donation-edit-btn {
+        background: white;
+        color: #978EC4;
+        border-color: #978EC4;
+    }
+
+    .donation-edit-btn:hover {
+        background: #978EC4;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(151, 142, 196, 0.3);
+    }
+
+    .donation-delete-btn {
+        background: white;
+        color: #CE325B;
+        border-color: #CE325B;
+    }
+
+    .donation-delete-btn:hover {
+        background: #CE325B;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(206, 50, 91, 0.3);
+    }
+
+    .donation-participant-info {
+        flex: 1;
+    }
+
+    .donation-participant-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.85rem;
+        color: #5A5E5A;
+        margin: 0;
+    }
+
+    .donation-participant-name {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1rem;
+        color: #3A3F3B;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .donation-id {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.85rem;
+        color: #7A7E7A;
+        margin: 0;
+    }
+
+    /* Pagination Buttons */
+    .donations-pagination-btn {
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .donations-pagination-btn.btn-secondary {
+        background: #F0F0F0;
+        color: #3A3F3B;
+        border: 2px solid #E0E0E0;
+    }
+
+    .donations-pagination-btn.btn-secondary:hover {
+        background: #E0E0E0;
+        color: #3A3F3B;
+        border-color: #D0D0D0;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .donations-pagination-btn.btn-primary {
+        background: #978EC4;
+        color: white;
+        border: 2px solid #978EC4;
+        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+    }
+
+    .donations-pagination-btn.btn-primary:hover {
+        background: #897FB8;
+        border-color: #897FB8;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+    }
+
+    /* User Donate Button - Green like status-pill--good */
+    .donations-user-donate-btn {
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #9AB59D;
+        color: white;
+        border: 2px solid #9AB59D;
+        box-shadow: 0 6px 16px rgba(154, 181, 157, 0.35);
+    }
+
+    .donations-user-donate-btn:hover {
+        background: #7fa082;
+        border-color: #7fa082;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(154, 181, 157, 0.4);
+    }
+
+    /* Modal Buttons */
+    .donations-modal-cancel-btn,
+    .donations-modal-save-btn {
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+        transition: all 0.2s ease;
+    }
+
+    .donations-modal-cancel-btn {
+        background: white;
+        color: #3A3F3B;
+        border: 2px solid #E0E0E0;
+    }
+
+    .donations-modal-cancel-btn:hover {
+        background: #F0F0F0;
+        color: #3A3F3B;
+        border-color: #D0D0D0;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .donations-modal-save-btn {
+        background: #978EC4;
+        color: white;
+        border: 2px solid #978EC4;
+        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+    }
+
+    .donations-modal-save-btn:hover {
+        background: #897FB8;
+        border-color: #897FB8;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+    }
+
+    /* Participant Search (same as registration.ejs) */
+    .reg-participant-search {
+        min-width: 220px;
+    }
+
+    .reg-search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #E6E0D4;
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        z-index: 10;
+        display: none;
+        max-height: 220px;
+        overflow-y: auto;
+    }
+
+    .reg-search-results .result-item {
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+    }
+
+    .reg-search-results .result-item:hover {
+        background: #F0F0F0;
+    }
+
+    /* Delete Confirmation Modal (same as registration.ejs) */
+    .reg-confirm-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.3);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+    }
+
+    .reg-confirm-backdrop.active {
+        display: flex;
+    }
+
+    .reg-confirm-modal {
+        background: white;
+        border-radius: 12px;
+        padding: 1.2rem 1.4rem;
+        box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+        max-width: 420px;
+        width: 90%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+    }
+
+    .reg-confirm-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.6rem;
+    }
+
+
+    /* Modern Add Donation Modal */
+    .add-donation-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.3);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+    }
+
+    .add-donation-backdrop.active {
+        display: flex;
+    }
+
+    .add-donation-modal {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+        max-width: 600px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .add-donation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #F0F0F0;
+    }
+
+    .add-donation-header h4 {
+        margin: 0;
+        font-family: 'DM Serif Display', serif;
+        font-size: 1.5rem;
+        color: #3A3F3B;
+    }
+
+    .add-donation-close {
+        background: transparent;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #4B4F4B;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: background 0.2s;
+    }
+
+    .add-donation-close:hover {
+        background: #F0F0F0;
+    }
+
+    .add-donation-form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .add-donation-form-group label {
+        display: block;
+        font-weight: 600;
+        color: #3A3F3B;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .add-donation-form-group input,
+    .add-donation-form-group select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #E0E0E0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+    }
+
+    .add-donation-form-group input:focus,
+    .add-donation-form-group select:focus {
+        outline: none;
+        border-color: #978EC4;
+    }
+
+
+    .add-donation-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #F0F0F0;
+    }
+
+    /* Donations Filter Section */
+    .donations-filter-section {
+        padding: 1.5rem;
+    }
+
+    .donations-filter-title {
+        font-family: 'DM Serif Display', serif;
+        font-size: 1.5rem;
+        color: #3A3F3B;
+        margin: 0;
+    }
+
+    .donations-filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (min-width: 992px) {
+        .donations-filter-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .donations-filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .donations-filter-group-label {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #3A3F3B;
+        margin: 0;
+    }
+
+    .donations-range-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .donations-range-with-inputs {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        column-gap: 0.75rem;
+        align-items: center;
+    }
+
+    .donations-range-input-group-min,
+    .donations-range-input-group-max {
+        min-width: 60px;
+        max-width: 70px;
+    }
+
+    .donations-range-input-group-min .donations-range-input,
+    .donations-range-input-group-max .donations-range-input {
+        padding-inline: 0.4rem;
+        padding-block: 0.4rem;
+        text-align: center;
+        font-size: 0.9rem;
+    }
+
+    .donations-range-input-group-min .donations-range-label,
+    .donations-range-input-group-max .donations-range-label {
+        font-size: 0.8rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .donations-range-slider-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .donations-range-slider-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .donations-range-slider-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    /* Dual-handle range slider */
+    .donations-dual-range-wrapper {
+        position: relative;
+        width: 100%;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .donations-dual-range {
+        position: absolute;
+        width: 100%;
+        height: 8px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+        outline: none;
+        pointer-events: none;
+    }
+
+    .donations-dual-range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #978EC4;
+        cursor: pointer;
+        pointer-events: all;
+        position: relative;
+        z-index: 2;
+        transition: background 0.2s, transform 0.2s;
+    }
+
+    .donations-dual-range::-webkit-slider-thumb:hover {
+        background: #7A6FA3;
+        transform: scale(1.1);
+    }
+
+    .donations-dual-range::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #978EC4;
+        cursor: pointer;
+        border: none;
+        pointer-events: all;
+        position: relative;
+        z-index: 2;
+        transition: background 0.2s, transform 0.2s;
+    }
+
+    .donations-dual-range::-moz-range-thumb:hover {
+        background: #7A6FA3;
+        transform: scale(1.1);
+    }
+
+    .donations-dual-range-wrapper::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 8px;
+        background: #E0E0E0;
+        border-radius: 4px;
+        z-index: 0;
+    }
+
+    .donations-dual-range-min {
+        z-index: 1;
+    }
+
+    .donations-dual-range-max {
+        z-index: 1;
+    }
+
+    /* Active track between handles */
+    .donations-dual-range-wrapper::after {
+        content: '';
+        position: absolute;
+        height: 8px;
+        background: #978EC4;
+        border-radius: 4px;
+        z-index: 1;
+        left: var(--track-left, 0%);
+        right: var(--track-right, 0%);
+        pointer-events: none;
+    }
+
+    .donations-range-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        flex: 1;
+    }
+
+    .donations-range-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #4B4F4B;
+    }
+
+    .donations-range-input {
+        padding: 0.5rem 0.75rem;
+        border: 2px solid #E0E0E0;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: border-color 0.2s;
+    }
+
+    .donations-range-input:focus {
+        outline: none;
+        border-color: #978EC4;
+    }
+
+    .donations-filter-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #E0E0E0;
+    }
+
+    .donations-filter-reset-btn,
+    .donations-filter-apply-btn {
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+        transition: all 0.2s ease;
+    }
+
+    .donations-filter-reset-btn {
+        background: white;
+        color: #3A3F3B;
+        border: 2px solid #E0E0E0;
+    }
+
+    .donations-filter-reset-btn:hover {
+        background: #F0F0F0;
+        color: #3A3F3B;
+        border-color: #D0D0D0;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .donations-filter-apply-btn {
+        background: #978EC4;
+        color: white;
+        border: 2px solid #978EC4;
+        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+    }
+
+    .donations-filter-apply-btn:hover {
+        background: #897FB8;
+        border-color: #897FB8;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+    }
+
+    @media (max-width: 767px) {
+        .donations-filter-section {
+            padding: 1rem;
+        }
+
+        .donations-filter-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+    }
+    </style>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Dual-handle range slider functionality
+        function setupDualRangeSlider(wrapper, minSliderId, maxSliderId, minInputId, maxInputId, minVal, maxVal, step) {
+            // Handle both selector string and element
+            if (typeof wrapper === 'string') {
+                wrapper = document.querySelector(wrapper);
+            }
+            
+            const minSlider = document.getElementById(minSliderId);
+            const maxSlider = document.getElementById(maxSliderId);
+            const minInput = document.getElementById(minInputId);
+            const maxInput = document.getElementById(maxInputId);
+
+            if (!wrapper || !minSlider || !maxSlider || !minInput || !maxInput) return;
+
+            // Initialize with current values or defaults (full range)
+            let currentMin = minInput.value ? parseFloat(minInput.value) : minVal;
+            let currentMax = maxInput.value ? parseFloat(maxInput.value) : maxVal;
+            
+            // If no values set, use full range
+            if (!minInput.value && !maxInput.value) {
+                currentMin = minVal;
+                currentMax = maxVal;
+                // Optionally set placeholder values in inputs to show the range
+                minInput.placeholder = minVal.toString();
+                maxInput.placeholder = maxVal.toString();
+            }
+            
+            minSlider.value = Math.max(minVal, Math.min(currentMin, maxVal));
+            maxSlider.value = Math.max(minVal, Math.min(currentMax, maxVal));
+            
+            // Only set input values if they were provided (don't override empty state)
+            if (minInput.value) {
+                minInput.value = parseFloat(minSlider.value).toFixed(step < 1 ? 2 : 0);
+            }
+            if (maxInput.value) {
+                maxInput.value = parseFloat(maxSlider.value).toFixed(step < 1 ? 2 : 0);
+            }
+
+            // Update active track between handles
+            function updateActiveTrack() {
+                const min = parseFloat(minSlider.value);
+                const max = parseFloat(maxSlider.value);
+                const minPercent = ((min - minVal) / (maxVal - minVal)) * 100;
+                const maxPercent = ((max - minVal) / (maxVal - minVal)) * 100;
+                
+                wrapper.style.setProperty('--track-left', minPercent + '%');
+                wrapper.style.setProperty('--track-right', (100 - maxPercent) + '%');
+            }
+
+            // Update min value
+            function updateMin() {
+                const min = parseFloat(minSlider.value);
+                const max = parseFloat(maxSlider.value);
+                
+                if (min > max) {
+                    minSlider.value = max;
+                    minInput.value = max.toFixed(step < 1 ? 2 : 0);
+                } else {
+                    // Always update input when slider moves (even if it was empty)
+                    minInput.value = min.toFixed(step < 1 ? 2 : 0);
+                }
+                updateActiveTrack();
+            }
+
+            // Update max value
+            function updateMax() {
+                const min = parseFloat(minSlider.value);
+                const max = parseFloat(maxSlider.value);
+                
+                if (max < min) {
+                    maxSlider.value = min;
+                    maxInput.value = min.toFixed(step < 1 ? 2 : 0);
+                } else {
+                    // Always update input when slider moves (even if it was empty)
+                    maxInput.value = max.toFixed(step < 1 ? 2 : 0);
+                }
+                updateActiveTrack();
+            }
+
+            // Sync from input to slider
+            function syncFromInput(input, slider, otherSlider, isMin) {
+                const raw = (input.value || '').trim().toLowerCase();
+                let value;
+
+                // Allow the user to type "min" / "max"
+                if (raw === 'min') {
+                    value = minVal;
+                } else if (raw === 'max') {
+                    value = maxVal;
+                } else if (raw === '') {
+                    // Empty means full range on that side
+                    value = isMin ? minVal : maxVal;
+                } else {
+                    value = parseFloat(raw);
+                    if (isNaN(value)) {
+                        // Invalid input – don’t change the slider
+                        return;
+                    }
+                }
+
+                // Clamp to slider range
+                value = Math.max(minVal, Math.min(value, maxVal));
+
+                const otherValue = parseFloat(isMin ? maxSlider.value : minSlider.value);
+
+                // Enforce min <= max
+                if (isMin && value > otherValue) {
+                    value = otherValue;
+                } else if (!isMin && value < otherValue) {
+                    value = otherValue;
+                }
+
+                slider.value = value;
+
+                // Normalize what's actually stored/submitted:
+                // convert "min"/"max" to the numeric value so the backend gets a number.
+                const displayValue = value.toFixed(step < 1 ? 2 : 0);
+                input.value = displayValue;
+
+                if (isMin) {
+                    updateMin();
+                } else {
+                    updateMax();
+                }
+            }
+
+
+            // Event listeners
+            minSlider.addEventListener('input', updateMin);
+            maxSlider.addEventListener('input', updateMax);
+            minInput.addEventListener('input', () => syncFromInput(minInput, minSlider, maxSlider, true));
+            maxInput.addEventListener('input', () => syncFromInput(maxInput, maxSlider, minSlider, false));
+            minInput.addEventListener('blur', () => {
+                if (!minInput.value) {
+                    minInput.value = minVal.toFixed(step < 1 ? 2 : 0);
+                    minSlider.value = minVal;
+                    updateMin();
+                }
+            });
+            maxInput.addEventListener('blur', () => {
+                if (!maxInput.value) {
+                    maxInput.value = maxVal.toFixed(step < 1 ? 2 : 0);
+                    maxSlider.value = maxVal;
+                    updateMax();
+                }
+            });
+
+            // Initialize active track
+            updateActiveTrack();
+        }
+
+        // Setup dual-handle range sliders
+        // Amount range
+        const amountWrapper = document.querySelector('#amountMinSlider')?.closest('.donations-dual-range-wrapper');
+        if (amountWrapper) {
+            setupDualRangeSlider(amountWrapper, 'amountMinSlider', 'amountMaxSlider', 'filterMinAmount', 'filterMaxAmount', 0, 10000, 0.01);
+        }
+        
+        // Age range
+        const ageWrapper = document.querySelector('#ageMinSlider')?.closest('.donations-dual-range-wrapper');
+        if (ageWrapper) {
+            setupDualRangeSlider(ageWrapper, 'ageMinSlider', 'ageMaxSlider', 'filterMinAge', 'filterMaxAge', 0, 100, 1);
+        }
+
+        // Date range validation
+        const startDateInput = document.getElementById('filterStartDate');
+        const endDateInput = document.getElementById('filterEndDate');
+        
+        if (startDateInput && endDateInput) {
+            function validateDateRange() {
+                const startDate = startDateInput.value;
+                const endDate = endDateInput.value;
+                
+                if (startDate && endDate && startDate > endDate) {
+                    endDateInput.setCustomValidity('End date must be after start date');
+                    endDateInput.reportValidity();
+                } else {
+                    endDateInput.setCustomValidity('');
+                }
+            }
+            
+            startDateInput.addEventListener('change', validateDateRange);
+            endDateInput.addEventListener('change', validateDateRange);
+        }
+
+        // Icon-based filter pills for Role
+        const rolePills = document.querySelectorAll('.donation-role-pill');
+        const roleInput = document.getElementById('filterRoleInput');
+        
+        rolePills.forEach(pill => {
+            pill.addEventListener('click', function() {
+                rolePills.forEach(p => p.classList.remove('filter-selected'));
+                this.classList.add('filter-selected');
+                const value = this.getAttribute('data-role-value');
+                if (roleInput) roleInput.value = value || '';
+            });
+        });
+
+        // Icon-based filter pills for Interest
+        const interestPills = document.querySelectorAll('.donation-interest-pill');
+        const interestInput = document.getElementById('filterInterestInput');
+        
+        interestPills.forEach(pill => {
+            pill.addEventListener('click', function() {
+                interestPills.forEach(p => p.classList.remove('filter-selected'));
+                this.classList.add('filter-selected');
+                const value = this.getAttribute('data-interest-value');
+                if (interestInput) interestInput.value = value || '';
+            });
+        });
+
+        // Add Donation Modal - open/close handlers
+        const addDonationBtn = document.getElementById('addDonationBtn');
+        const addDonationBackdrop = document.getElementById('addDonationBackdrop');
+        const addDonationClose = document.getElementById('addDonationClose');
+        const addDonationCancel = document.getElementById('addDonationCancel');
+
+        const closeAddDonationModal = () => {
+            if (addDonationBackdrop) {
+                addDonationBackdrop.classList.remove('active');
+            }
+        };
+
+        if (addDonationClose) {
+            addDonationClose.addEventListener('click', closeAddDonationModal);
+        }
+        if (addDonationCancel) {
+            addDonationCancel.addEventListener('click', closeAddDonationModal);
+        }
+        if (addDonationBackdrop) {
+            addDonationBackdrop.addEventListener('click', (e) => {
+                if (e.target === addDonationBackdrop) {
+                    closeAddDonationModal();
+                }
+            });
+        }
+    });
+    </script>
 <% } %>

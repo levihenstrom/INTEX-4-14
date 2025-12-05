@@ -384,7 +384,7 @@ app.get('/donations', async (req, res) => {
     try {
         const searchTerm = (req.query.search || '').trim();
         const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
-        const limit = 50;
+        const limit = 30;
         const filterParticipantID = req.query.filterParticipantID || '';
         const filterDonationID = req.query.filterDonationID || '';
         const filterStartDate = req.query.filterStartDate || '';
@@ -495,7 +495,7 @@ app.get('/donations', async (req, res) => {
         const safeSortColumn = sortOptions[normalizedSortColumn] || 'pd.DonationDate';
         const safeSortDir = sortDir === 'asc' ? 'asc' : 'desc';
 
-        const donationRows = await filteredQuery.clone()
+        const donationRowsQuery = filteredQuery.clone()
             .select(
                 'pd.DonationID',
                 'pd.DonationDate',
@@ -508,11 +508,30 @@ app.get('/donations', async (req, res) => {
                 'p.ParticipantState',
                 'p.ParticipantFieldOfInterest',
                 'p.ParticipantDOB'
-            )
-            .orderBy(safeSortColumn, safeSortDir)
-            .orderBy('pd.DonationID', 'desc')
+            );
+
+        // When sorting by DonationDate, put NULL dates at the end
+        if (normalizedSortColumn === 'DonationDate') {
+            if (safeSortDir === 'desc') {
+                // Descending: newest dates first, then NULL dates at the end
+                // Use NULLS LAST to ensure NULL dates appear at the end
+                // Match the column reference format used in select
+                donationRowsQuery.orderByRaw('pd."DonationDate" DESC NULLS LAST');
+            } else {
+                // Ascending: oldest dates first, then NULL dates at the end
+                donationRowsQuery.orderByRaw('pd."DonationDate" ASC NULLS LAST');
+            }
+        } else {
+            // For other sort columns, use normal sorting
+            donationRowsQuery.orderBy(safeSortColumn, safeSortDir);
+        }
+
+        // Always add DonationID as secondary sort
+        donationRowsQuery.orderBy('pd.DonationID', 'desc')
             .limit(limit)
             .offset(offset);
+
+        const donationRows = await donationRowsQuery;
 
         const donations = donationRows.map((donation) => ({
             ...donation,
