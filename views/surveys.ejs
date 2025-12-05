@@ -50,7 +50,7 @@
     <% if (isAdmin) { %>
         <div class="row mb-4">
             <div class="col-12">
-                <div style="position: relative; height: 180px; width: 100%;">
+                <div class="chart-container-small">
                     <canvas id="surveysRadarChart"
                         data-search="<%= searchValue || '' %>"
                         data-filter-event-id="<%= filterValues.filterEventID || '' %>"
@@ -67,24 +67,24 @@
         <div class="col-md-4">
             <div class="card text-center shadow-sm h-100 survey-kpi-card">
                 <div class="card-body">
-                    <p class="text-muted text-uppercase small mb-1" style="font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 1px;">Total Surveys Submitted</p>
-                    <h3 class="mb-0" style="font-family: 'DM Serif Display', serif; color: #3A3F3B; font-size: 2rem;"><%= totalSurveyValue %></h3>
+                    <p class="text-muted text-uppercase small mb-1 kpi-label">Total Surveys Submitted</p>
+                    <h3 class="mb-0 kpi-value"><%= totalSurveyValue %></h3>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card text-center shadow-sm h-100 survey-kpi-card">
                 <div class="card-body">
-                    <p class="text-muted text-uppercase small mb-1" style="font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 1px;">Average Overall Score</p>
-                    <h3 class="mb-0" style="font-family: 'DM Serif Display', serif; color: #3A3F3B; font-size: 2rem;"><%= formatScore(avgSurveyValue) %></h3>
+                    <p class="text-muted text-uppercase small mb-1 kpi-label">Average Overall Score</p>
+                    <h3 class="mb-0 kpi-value"><%= formatScore(avgSurveyValue) %></h3>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card text-center shadow-sm h-100 survey-kpi-card">
                 <div class="card-body">
-                    <p class="text-muted text-uppercase small mb-1" style="font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 1px;">Survey Completion Rate</p>
-                    <h3 class="mb-0" style="font-family: 'DM Serif Display', serif; color: #3A3F3B; font-size: 2rem;"><%= completionRateValue.toFixed(1) %>%</h3>
+                    <p class="text-muted text-uppercase small mb-1 kpi-label">Survey Completion Rate</p>
+                    <h3 class="mb-0 kpi-value"><%= completionRateValue.toFixed(1) %>%</h3>
                 </div>
             </div>
         </div>
@@ -170,13 +170,13 @@
                                         <label class="surveys-filter-group-label">Location</label>
                                         <div class="surveys-range-controls">
                                             <div class="surveys-range-slider-row">
-                                                <div class="surveys-range-input-group" style="position: relative;">
+                                                <div class="surveys-range-input-group filter-input-relative">
                                                     <label class="surveys-range-label">City</label>
                                                     <input type="text" class="form-control reg-participant-search surveys-range-input" id="surveysFilterCitySearch" placeholder="Search city..." value="<%= filterValues.filterCity || '' %>" autocomplete="off">
                                                     <div class="reg-search-results" id="surveysFilterCityResults"></div>
                                                     <input type="hidden" name="filterCity" id="surveysFilterCityInput" value="<%= filterValues.filterCity || '' %>">
                                                 </div>
-                                                <div class="surveys-range-input-group" style="position: relative;">
+                                                <div class="surveys-range-input-group filter-input-relative">
                                                     <label class="surveys-range-label">State</label>
                                                     <input type="text" class="form-control reg-participant-search surveys-range-input" id="surveysFilterStateSearch" placeholder="Search state..." value="<%= filterValues.filterState || '' %>" autocomplete="off">
                                                     <div class="reg-search-results" id="surveysFilterStateResults"></div>
@@ -208,7 +208,7 @@
                                     </div>
 
                                     <!-- Event Title -->
-                                    <div class="surveys-filter-group" style="position: relative;">
+                                    <div class="surveys-filter-group filter-input-relative">
                                         <label class="surveys-filter-group-label">Event Title</label>
                                         <input type="text" class="form-control reg-participant-search surveys-range-input" id="surveysFilterEventTitleSearch" placeholder="Search event title..." value="<%= filterValues.filterEventTitle || '' %>" autocomplete="off">
                                         <div class="reg-search-results" id="surveysFilterEventTitleResults"></div>
@@ -236,6 +236,29 @@
                                             </span>
                                         </div>
                                         <input type="hidden" name="filterEventType" id="surveyFilterEventTypeInput" value="<%= filterValues.filterEventType || '' %>">
+                                    </div>
+
+                                    <!-- Participant Role (Icon-based) -->
+                                    <div class="surveys-filter-group">
+                                        <label class="surveys-filter-group-label">Participant Role</label>
+                                        <div class="event-labels filter-labels" id="survey-role-pills">
+                                            <span class="event-label event-label-type-stem filter-pill survey-role-pill" data-role-value="">
+                                                <i class="fa-solid fa-sliders"></i>Any
+                                            </span>
+                                            <span class="event-label event-label-type-leadership filter-pill survey-role-pill <%= filterValues.filterRole === 'a' ? 'filter-selected' : '' %>" data-role-value="a">
+                                                <i class="fa-solid fa-user-shield"></i>Admin
+                                            </span>
+                                            <span class="event-label event-label-type-stem filter-pill survey-role-pill <%= filterValues.filterRole === 'p' ? 'filter-selected' : '' %>" data-role-value="p">
+                                                <i class="fa-solid fa-user"></i>Participant
+                                            </span>
+                                            <span class="event-label event-label-type-leadership filter-pill survey-role-pill <%= filterValues.filterRole === 'v' ? 'filter-selected' : '' %>" data-role-value="v">
+                                                <i class="fa-solid fa-users"></i>Volunteer
+                                            </span>
+                                            <span class="event-label event-label-type-arts filter-pill survey-role-pill <%= filterValues.filterRole === 'd' ? 'filter-selected' : '' %>" data-role-value="d">
+                                                <i class="fa-solid fa-hand-holding-dollar"></i>Donor
+                                            </span>
+                                        </div>
+                                        <input type="hidden" name="filterRole" id="surveyFilterRoleInput" value="<%= filterValues.filterRole || '' %>">
                                     </div>
                                 </div>
 
@@ -361,49 +384,49 @@
                     <form id="addSurveyForm" action="/surveys/add" method="POST">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <div class="mb-4">
-                            <label class="form-label" style="font-weight: 600; color: #3A3F3B; margin-bottom: 0.5rem; display: block;">Registration *</label>
-                            <div style="position: relative;">
+                            <label class="form-label survey-form-label">Registration *</label>
+                            <div class="filter-input-relative">
                                 <input type="text" class="form-control reg-participant-search" id="addSurveyRegistrationSearch" placeholder="Search participant or event..." autocomplete="off">
                                 <div class="reg-search-results" id="addSurveyRegistrationResults"></div>
                             </div>
                             <input type="hidden" id="addSurveyRegistrationId" name="RegistrationID" required>
                         </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="survey-rating-grid">
                             <div>
-                                <label class="form-label" style="font-weight: 600; color: #3A3F3B; margin-bottom: 0.5rem; display: block;">Satisfaction *</label>
-                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                    <input type="range" id="addSurveySatisfaction" name="SurveySatisfactionScore" min="0" max="5" value="3" step="1" style="flex: 1;" required>
-                                    <span id="addSurveySatisfactionValue" style="min-width: 30px; text-align: center; font-weight: 700; color: #978EC4;">3</span>
+                                <label class="form-label survey-form-label">Satisfaction *</label>
+                                <div class="survey-rating-container">
+                                    <input type="range" id="addSurveySatisfaction" name="SurveySatisfactionScore" min="0" max="5" value="3" step="1" class="survey-range-input" required>
+                                    <span id="addSurveySatisfactionValue" class="survey-rating-value">3</span>
                                 </div>
                             </div>
                             <div>
-                                <label class="form-label" style="font-weight: 600; color: #3A3F3B; margin-bottom: 0.5rem; display: block;">Usefulness *</label>
-                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                    <input type="range" id="addSurveyUsefulness" name="SurveyUsefulnessScore" min="0" max="5" value="3" step="1" style="flex: 1;" required>
-                                    <span id="addSurveyUsefulnessValue" style="min-width: 30px; text-align: center; font-weight: 700; color: #978EC4;">3</span>
+                                <label class="form-label survey-form-label">Usefulness *</label>
+                                <div class="survey-rating-container">
+                                    <input type="range" id="addSurveyUsefulness" name="SurveyUsefulnessScore" min="0" max="5" value="3" step="1" class="survey-range-input" required>
+                                    <span id="addSurveyUsefulnessValue" class="survey-rating-value">3</span>
                                 </div>
                             </div>
                             <div>
-                                <label class="form-label" style="font-weight: 600; color: #3A3F3B; margin-bottom: 0.5rem; display: block;">Instructor *</label>
-                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                    <input type="range" id="addSurveyInstructor" name="SurveyInstructorScore" min="0" max="5" value="3" step="1" style="flex: 1;" required>
-                                    <span id="addSurveyInstructorValue" style="min-width: 30px; text-align: center; font-weight: 700; color: #978EC4;">3</span>
+                                <label class="form-label survey-form-label">Instructor *</label>
+                                <div class="survey-rating-container">
+                                    <input type="range" id="addSurveyInstructor" name="SurveyInstructorScore" min="0" max="5" value="3" step="1" class="survey-range-input" required>
+                                    <span id="addSurveyInstructorValue" class="survey-rating-value">3</span>
                                 </div>
                             </div>
                             <div>
-                                <label class="form-label" style="font-weight: 600; color: #3A3F3B; margin-bottom: 0.5rem; display: block;">Recommendation *</label>
-                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                    <input type="range" id="addSurveyRecommendation" name="SurveyRecommendationScore" min="0" max="5" value="3" step="1" style="flex: 1;" required>
-                                    <span id="addSurveyRecommendationValue" style="min-width: 30px; text-align: center; font-weight: 700; color: #978EC4;">3</span>
+                                <label class="form-label survey-form-label">Recommendation *</label>
+                                <div class="survey-rating-container">
+                                    <input type="range" id="addSurveyRecommendation" name="SurveyRecommendationScore" min="0" max="5" value="3" step="1" class="survey-range-input" required>
+                                    <span id="addSurveyRecommendationValue" class="survey-rating-value">3</span>
                                 </div>
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label" style="font-weight: 600; color: #3A3F3B; margin-bottom: 0.5rem; display: block;">Comments</label>
+                            <label class="form-label survey-form-label">Comments</label>
                             <textarea class="form-control" name="SurveyComments" rows="3" placeholder="Optional feedback..."></textarea>
                         </div>
                         <div class="mb-0">
-                            <label class="form-label" style="font-weight: 600; color: #3A3F3B; margin-bottom: 0.5rem; display: block;">Submission Date</label>
+                            <label class="form-label survey-form-label">Submission Date</label>
                             <input type="date" class="form-control" name="SurveySubmissionDate">
                         </div>
                     </form>
@@ -467,8 +490,8 @@
         <!-- Delete Survey Confirmation Modal -->
         <div class="reg-confirm-backdrop" id="deleteSurveyConfirmBackdrop" aria-modal="true" role="dialog">
             <div class="reg-confirm-modal">
-                <h4 style="margin: 0;">Confirm Delete</h4>
-                <p id="deleteSurveyConfirmMessage" style="margin: 0;">Are you sure?</p>
+                <h4 class="modal-confirm-title">Confirm Delete</h4>
+                <p id="deleteSurveyConfirmMessage" class="modal-confirm-message">Are you sure?</p>
                 <div class="reg-confirm-actions">
                     <button type="button" class="btn btn-outline-secondary" id="deleteSurveyConfirmNo">Cancel</button>
                     <button type="button" class="btn btn-danger" id="deleteSurveyConfirmYes">Delete</button>
@@ -754,6 +777,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Participant role filter pill handlers
+    const rolePills = document.querySelectorAll('.survey-role-pill');
+    const roleInput = document.getElementById('surveyFilterRoleInput');
+    rolePills.forEach(pill => {
+        pill.addEventListener('click', function() {
+            rolePills.forEach(p => p.classList.remove('filter-selected'));
+            this.classList.add('filter-selected');
+            const value = this.getAttribute('data-role-value');
+            if (roleInput) roleInput.value = value || '';
+        });
+    });
+
     // City/State/Event Title filter search selectors
     const citySearchInput = document.getElementById('surveysFilterCitySearch');
     const citySearchResults = document.getElementById('surveysFilterCityResults');
@@ -887,695 +922,3 @@ document.addEventListener('DOMContentLoaded', function() {
     <script src="/js/surveys-radar-chart.js"></script>
 <% } %>
 
-<style>
-    /* Surveys KPI Cards */
-    .survey-kpi-card {
-        border-radius: 16px;
-        border: none;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        background: white;
-    }
-
-    .survey-kpi-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    }
-
-    .survey-kpi-card .card-body {
-        padding: 2rem;
-    }
-
-    /* Surveys Top Bar */
-    .surveys-top-bar {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    @media (min-width: 768px) {
-        .surveys-top-bar {
-            flex-direction: row;
-            align-items: center;
-            gap: 1rem;
-        }
-    }
-
-    .surveys-search-form {
-        flex: 1;
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-    }
-
-    .surveys-search-input-wrapper {
-        flex: 1;
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
-
-    .surveys-search-icon {
-        position: absolute;
-        left: 1rem;
-        color: #5A5E5A;
-        z-index: 1;
-        pointer-events: none;
-    }
-
-    .surveys-search-input {
-        flex: 1;
-        border-radius: 999px;
-        padding: 0.6rem 1.3rem 0.6rem 2.75rem;
-        height: auto;
-        border: 2px solid #E0E0E0;
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.95rem;
-        transition: all 0.2s ease;
-    }
-
-    .surveys-search-input:focus {
-        outline: none;
-        border-color: #978EC4;
-        box-shadow: 0 0 0 3px rgba(151, 142, 196, 0.1);
-    }
-
-    .surveys-clear-btn {
-        white-space: nowrap;
-    }
-
-    .surveys-search-clear-btn {
-        border-radius: 999px;
-        padding: 0.6rem 1.3rem;
-        font-weight: 700;
-        font-family: 'Montserrat', sans-serif;
-        transition: all 0.2s ease;
-        background: white;
-        color: #3A3F3B;
-        border: 2px solid #E0E0E0;
-        text-decoration: none;
-    }
-
-    .surveys-search-clear-btn:hover {
-        background: #F0F0F0;
-        color: #3A3F3B;
-        border-color: #D0D0D0;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .surveys-actions {
-        display: flex;
-        gap: 0.75rem;
-        align-items: center;
-    }
-
-    /* Filter and Add Survey Buttons */
-    .surveys-filter-btn,
-    .surveys-add-btn {
-        border-radius: 999px;
-        padding: 0.6rem 1.3rem;
-        font-weight: 700;
-        font-family: 'Montserrat', sans-serif;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s ease;
-        border: none;
-    }
-
-    .surveys-filter-btn {
-        background: #F0F0F0;
-        color: #3A3F3B;
-        border: 2px solid #E0E0E0;
-    }
-
-    .surveys-filter-btn:hover {
-        background: #E0E0E0;
-        color: #3A3F3B;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .surveys-add-btn {
-        background: #978EC4;
-        color: white;
-        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
-    }
-
-    .surveys-add-btn:hover {
-        background: #897FB8;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
-    }
-
-    /* Survey Cards */
-    .survey-card {
-        border-radius: 16px;
-        border: none;
-        background: white;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        overflow: hidden;
-    }
-
-    .survey-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    }
-
-    .survey-card .card-body {
-        padding: 1.5rem;
-    }
-
-    .survey-title-section {
-        flex: 1;
-    }
-
-    .survey-title {
-        font-family: 'DM Serif Display', serif;
-        font-size: 1.5rem;
-        color: #3A3F3B;
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .survey-date {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.85rem;
-        color: #5A5E5A;
-        display: block;
-        margin-top: 0.25rem;
-    }
-
-    .survey-actions-group {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-    }
-
-    .survey-edit-btn,
-    .survey-delete-btn {
-        border-radius: 8px;
-        padding: 0.5rem 0.75rem;
-        font-weight: 600;
-        font-family: 'Montserrat', sans-serif;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        border: 2px solid;
-        min-width: 36px;
-        height: 36px;
-    }
-
-    .survey-edit-btn {
-        background: white;
-        color: #978EC4;
-        border-color: #978EC4;
-    }
-
-    .survey-edit-btn:hover {
-        background: #978EC4;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(151, 142, 196, 0.3);
-    }
-
-    .survey-delete-btn {
-        background: white;
-        color: #CE325B;
-        border-color: #CE325B;
-    }
-
-    .survey-delete-btn:hover {
-        background: #CE325B;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(206, 50, 91, 0.3);
-    }
-
-    .survey-score-section {
-        margin-bottom: 0.5rem;
-    }
-
-    .survey-score-label {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.85rem;
-        color: #5A5E5A;
-        margin: 0;
-    }
-
-    .survey-score-value {
-        font-family: 'DM Serif Display', serif;
-        font-size: 1.25rem;
-        color: #3A3F3B;
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .survey-participant-info {
-        flex: 1;
-    }
-
-    .survey-participant-label {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.85rem;
-        color: #5A5E5A;
-        margin: 0;
-    }
-
-    .survey-participant-name {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 1rem;
-        color: #3A3F3B;
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .survey-event-date {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.9rem;
-        color: #4B4F4B;
-        margin: 0;
-    }
-
-    .survey-comments {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.9rem;
-        color: #5A5E5A;
-        font-style: italic;
-        margin: 0;
-    }
-
-    .survey-id {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.85rem;
-        color: #7A7E7A;
-        margin: 0;
-    }
-
-    /* Surveys Filter Section (same as donations/milestones) */
-    .surveys-filter-section {
-        padding: 1.5rem;
-    }
-
-    .surveys-filter-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-        margin-bottom: 2rem;
-    }
-
-    @media (min-width: 992px) {
-        .surveys-filter-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    .surveys-filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .surveys-filter-group-label {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 600;
-        font-size: 0.95rem;
-        color: #3A3F3B;
-        margin: 0;
-    }
-
-    .surveys-range-controls {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .surveys-range-slider-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-    }
-
-    .surveys-range-input-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        flex: 1;
-    }
-
-    .surveys-range-label {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #4B4F4B;
-    }
-
-    .surveys-range-input {
-        padding: 0.5rem 0.75rem;
-        border: 2px solid #E0E0E0;
-        border-radius: 8px;
-        font-size: 0.95rem;
-        transition: border-color 0.2s;
-    }
-
-    .surveys-range-input:focus {
-        outline: none;
-        border-color: #978EC4;
-    }
-
-    .surveys-range-with-inputs {
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        column-gap: 0.75rem;
-        align-items: center;
-    }
-
-    .surveys-range-input-group-min,
-    .surveys-range-input-group-max {
-        min-width: 60px;
-        max-width: 70px;
-    }
-
-    .surveys-range-input-group-min .surveys-range-input,
-    .surveys-range-input-group-max .surveys-range-input {
-        padding-inline: 0.4rem;
-        padding-block: 0.4rem;
-        text-align: center;
-        font-size: 0.9rem;
-    }
-
-    .surveys-dual-range-wrapper {
-        position: relative;
-        width: 100%;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .surveys-dual-range {
-        position: absolute;
-        width: 100%;
-        height: 8px;
-        -webkit-appearance: none;
-        appearance: none;
-        background: transparent;
-        outline: none;
-        pointer-events: none;
-    }
-
-    .surveys-dual-range::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #978EC4;
-        cursor: pointer;
-        pointer-events: all;
-        position: relative;
-        z-index: 2;
-        transition: background 0.2s, transform 0.2s;
-    }
-
-    .surveys-dual-range::-webkit-slider-thumb:hover {
-        background: #7A6FA3;
-        transform: scale(1.1);
-    }
-
-    .surveys-dual-range::-moz-range-thumb {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #978EC4;
-        cursor: pointer;
-        border: none;
-        pointer-events: all;
-        position: relative;
-        z-index: 2;
-        transition: background 0.2s, transform 0.2s;
-    }
-
-    .surveys-dual-range-wrapper::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: 8px;
-        background: #E0E0E0;
-        border-radius: 4px;
-        z-index: 0;
-    }
-
-    .surveys-filter-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
-        padding-top: 1.5rem;
-        border-top: 2px solid #E0E0E0;
-    }
-
-    .surveys-filter-reset-btn,
-    .surveys-filter-apply-btn {
-        border-radius: 999px;
-        padding: 0.6rem 1.3rem;
-        font-weight: 700;
-        font-family: 'Montserrat', sans-serif;
-        transition: all 0.2s ease;
-    }
-
-    .surveys-filter-reset-btn {
-        background: white;
-        color: #3A3F3B;
-        border: 2px solid #E0E0E0;
-    }
-
-    .surveys-filter-reset-btn:hover {
-        background: #F0F0F0;
-        color: #3A3F3B;
-        border-color: #D0D0D0;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .surveys-filter-apply-btn {
-        background: #978EC4;
-        color: white;
-        border: 2px solid #978EC4;
-        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
-    }
-
-    .surveys-filter-apply-btn:hover {
-        background: #897FB8;
-        border-color: #897FB8;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
-    }
-
-    /* Pagination Buttons */
-    .surveys-pagination-btn {
-        border-radius: 999px;
-        padding: 0.6rem 1.3rem;
-        font-weight: 700;
-        font-family: 'Montserrat', sans-serif;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .surveys-pagination-btn.btn-secondary {
-        background: #F0F0F0;
-        color: #3A3F3B;
-        border: 2px solid #E0E0E0;
-    }
-
-    .surveys-pagination-btn.btn-secondary:hover {
-        background: #E0E0E0;
-        color: #3A3F3B;
-        border-color: #D0D0D0;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .surveys-pagination-btn.btn-primary {
-        background: #978EC4;
-        color: white;
-        border: 2px solid #978EC4;
-        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
-    }
-
-    .surveys-pagination-btn.btn-primary:hover {
-        background: #897FB8;
-        border-color: #897FB8;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
-    }
-
-    /* Modal Buttons */
-    .surveys-modal-cancel-btn,
-    .surveys-modal-save-btn {
-        border-radius: 999px;
-        padding: 0.6rem 1.3rem;
-        font-weight: 700;
-        font-family: 'Montserrat', sans-serif;
-        transition: all 0.2s ease;
-    }
-
-    .surveys-modal-cancel-btn {
-        background: white;
-        color: #3A3F3B;
-        border: 2px solid #E0E0E0;
-    }
-
-    .surveys-modal-cancel-btn:hover {
-        background: #F0F0F0;
-        color: #3A3F3B;
-        border-color: #D0D0D0;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .surveys-modal-save-btn {
-        background: #978EC4;
-        color: white;
-        border: 2px solid #978EC4;
-        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
-    }
-
-    .surveys-modal-save-btn:hover {
-        background: #897FB8;
-        border-color: #897FB8;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
-    }
-
-    /* Delete Confirmation Modal (same as donations/milestones) */
-    .reg-confirm-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.3);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 2000;
-    }
-
-    .reg-confirm-backdrop.active {
-        display: flex;
-    }
-
-    .reg-confirm-modal {
-        background: white;
-        border-radius: 12px;
-        padding: 1.2rem 1.4rem;
-        box-shadow: 0 16px 40px rgba(0,0,0,0.18);
-        max-width: 420px;
-        width: 90%;
-        display: flex;
-        flex-direction: column;
-        gap: 0.9rem;
-    }
-
-    .reg-confirm-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.6rem;
-    }
-
-    /* Registration Search (for surveys) */
-    .reg-participant-search {
-        min-width: 220px;
-    }
-
-    .reg-search-results {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: white;
-        border: 1px solid #E6E0D4;
-        border-radius: 8px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-        z-index: 10;
-        display: none;
-        max-height: 220px;
-        overflow-y: auto;
-    }
-
-    .reg-search-results .result-item {
-        padding: 0.5rem 0.75rem;
-        cursor: pointer;
-    }
-
-    .reg-search-results .result-item:hover {
-        background: #F0F0F0;
-    }
-
-    /* Survey Slider Styling (matching profile page) */
-    #addSurveyModal input[type="range"] {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 100%;
-        height: 8px;
-        border-radius: 4px;
-        background: #E0E0E0;
-        outline: none;
-        transition: background 0.2s;
-    }
-
-    #addSurveyModal input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #978EC4;
-        cursor: pointer;
-        transition: background 0.2s, transform 0.2s;
-    }
-
-    #addSurveyModal input[type="range"]::-webkit-slider-thumb:hover {
-        background: #7A6FA3;
-        transform: scale(1.1);
-    }
-
-    #addSurveyModal input[type="range"]::-moz-range-thumb {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #978EC4;
-        cursor: pointer;
-        border: none;
-        transition: background 0.2s, transform 0.2s;
-    }
-
-    #addSurveyModal input[type="range"]::-moz-range-thumb:hover {
-        background: #7A6FA3;
-        transform: scale(1.1);
-    }
-
-    #addSurveyModal input[type="range"]:focus {
-        background: #D0D0D0;
-    }
-
-    @media (max-width: 767px) {
-        .surveys-filter-section {
-            padding: 1rem;
-        }
-
-        .surveys-filter-grid {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-
-        #addSurveyModal .modal-body > form > div[style*="grid"] {
-            grid-template-columns: 1fr !important;
-        }
-    }
-</style>
