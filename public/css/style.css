@@ -712,6 +712,7 @@ p, li, a, .nav-link {
     transition: all 0.2s ease;
     text-decoration: none;
     display: block;
+    text-align: center;
     font-size: 0.9rem;
     font-weight: 500;
     border-radius: 50px;
