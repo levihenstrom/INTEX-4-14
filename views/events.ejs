@@ -26,9 +26,9 @@
                         <div class="upcoming-event-content">
                             <div class="upcoming-event-header">
                                 <h3 class="upcoming-event-name"><%= event.EventName %></h3>
-                                <span class="status-badge <%= event.isFull ? 'status-full' : 'status-available' %>">
-                                    <i class="fa-solid fa-users"></i>
-                                    <%= event.isFull ? 'Full' : 'Space Available' %>
+                                <span class="status-badge <%= typeof event.isRegistrationClosed !== 'undefined' && event.isRegistrationClosed ? 'status-closed' : (event.isFull ? 'status-full' : 'status-available') %>">
+                                    <i class="fa-solid <%= typeof event.isRegistrationClosed !== 'undefined' && event.isRegistrationClosed ? 'fa-lock' : 'fa-users' %>"></i>
+                                    <%= typeof event.isRegistrationClosed !== 'undefined' && event.isRegistrationClosed ? 'Registration Closed' : (event.isFull ? 'Full' : 'Space Available') %>
                                 </span>
                             </div>
                             <div class="upcoming-event-details">

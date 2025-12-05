@@ -100,7 +100,8 @@
                                             <% const isRegistered = typeof registeredOccurrenceIds !== 'undefined' && registeredOccurrenceIds.includes(occurrence.OccurrenceID); %>
                                             <% const isPast = typeof occurrence.isPast !== 'undefined' && occurrence.isPast; %>
                                             <% const isFull = typeof occurrence.isFull !== 'undefined' && occurrence.isFull; %>
-                                            <% const disableRegister = isFull && !isRegistered; %>
+                                            <% const isRegistrationClosed = typeof occurrence.isRegistrationClosed !== 'undefined' && occurrence.isRegistrationClosed; %>
+                                            <% const disableRegister = (isFull && !isRegistered) || (isRegistrationClosed && !isRegistered); %>
                                             <div class="occurrence-card <%= typeof focusedOccurrenceId !== 'undefined' && focusedOccurrenceId === occurrence.OccurrenceID ? 'occurrence-focused' : '' %> <%= isPast ? 'occurrence-past' : '' %>" 
                                                 id="<%= typeof focusedOccurrenceId !== 'undefined' && focusedOccurrenceId === occurrence.OccurrenceID ? 'focused-occurrence' : '' %>"
                                                 data-occurrence-id="<%= occurrence.OccurrenceID %>"
@@ -144,9 +145,9 @@
                                                            </div>
                                            
                                                            <% if (!isPast) { %>
-                                                               <span class="status-badge <%= occurrence.isFull ? 'status-full' : 'status-available' %>">
-                                                                   <i class="fa-solid fa-users"></i>
-                                                                   <%= occurrence.isFull ? 'Full' : 'Space Available' %>
+                                                               <span class="status-badge <%= isRegistrationClosed ? 'status-closed' : (occurrence.isFull ? 'status-full' : 'status-available') %>">
+                                                                   <i class="fa-solid <%= isRegistrationClosed ? 'fa-lock' : 'fa-users' %>"></i>
+                                                                   <%= isRegistrationClosed ? 'Registration Closed' : (occurrence.isFull ? 'Full' : 'Space Available') %>
                                                                </span>
                                                            <% } else if (typeof isAdmin !== 'undefined' && isAdmin) { %>
                                                                <span class="status-badge status-past">
@@ -191,7 +192,7 @@
                                                            data-is-registered="<%= isRegistered %>"
                                                            data-is-full="<%= isFull %>"
                                                            <%= disableRegister ? 'disabled aria-disabled=\"true\"' : '' %>>
-                                                       <%= disableRegister ? 'Full' : (isRegistered ? 'Unregister' : 'Register') %>
+                                                       <%= disableRegister && !isRegistrationClosed ? 'Full' : (isRegistered ? 'Unregister' : 'Register') %>
                                                    </button>
                                                <% } else if (!isPast && (typeof isAdmin === 'undefined' || !isAdmin)) { %>
                                                    <a href="/login?redirect=/registration/<%= eventTemplate.EventID %>" class="btn btn-primary">
@@ -1561,6 +1562,7 @@
             const createEventEnd = document.getElementById('createEventEnd');
             const createEventLocation = document.getElementById('createEventLocation');
             const createEventCapacity = document.getElementById('createEventCapacity');
+            const createEventRegistrationDeadline = document.getElementById('createEventRegistrationDeadline');
 
             // Populate location datalist
             const createEventLocationDatalist = document.getElementById('createEventLocationOptions');
@@ -1691,6 +1693,7 @@
                 if (createEventEnd) createEventEnd.value = '';
                 if (createEventLocation) createEventLocation.value = '';
                 if (createEventCapacity) createEventCapacity.value = '';
+                if (createEventRegistrationDeadline) createEventRegistrationDeadline.value = '';
             };
 
             // Event listeners
@@ -1722,6 +1725,7 @@
                     const endTime = createEventEnd?.value || '';
                     const location = createEventLocation?.value || '';
                     const capacity = parseInt(createEventCapacity?.value || '0', 10);
+                    const registrationDeadline = createEventRegistrationDeadline?.value || '';
 
                     if (!date || !startTime || !capacity || capacity < 1) {
                         alert('Please fill in all required fields (Date, Start Time, and Capacity).');
@@ -1745,7 +1749,8 @@
                                 startTime,
                                 endTime: endTime || null,
                                 location: location || null,
-                                capacity
+                                capacity,
+                                registrationDeadline: registrationDeadline || null
                             })
                         });
 
@@ -1860,6 +1865,12 @@
                     <div class="reg-form-group">
                         <label for="createEventCapacity">Capacity *</label>
                         <input type="number" id="createEventCapacity" class="form-control" min="1" required>
+                    </div>
+                </div>
+                <div class="reg-form-row">
+                    <div class="reg-form-group">
+                        <label for="createEventRegistrationDeadline">Registration Deadline</label>
+                        <input type="datetime-local" id="createEventRegistrationDeadline" class="form-control">
                     </div>
                 </div>
             </div>
