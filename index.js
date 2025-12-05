@@ -3013,10 +3013,11 @@ app.get('/profile', async (req, res) => {
             });
         } catch (err) {
             console.error('Error fetching profile:', err);
-            return res.render('/', { 
+            return res.render('landing', { 
                 layout: 'public', 
                 pageTitle: 'Home',
                 participant: null,
+                upcomingEvents: [],
                 error: 'Error loading your profile. Please try again.',
                 profileDOBDisplay: null,
                 profileDOBInput: null,
