@@ -155,6 +155,11 @@ app.use((req, res, next) => {
         return next();
     }
 
+    // Not logged in → check if this is an API route
+    if (req.path.startsWith('/admin/') || req.path.startsWith('/api/')) {
+        return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    
     // Not logged in → show login (ONE response, then stop)
     let csrfToken = '';
     try {
@@ -1747,7 +1752,7 @@ app.get('/milestones', async (req, res) => {
     try {
         const searchTerm = (req.query.search || '').trim();
         const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
-        const limit = 50;
+        const limit = 30;
         const filterParticipantID = req.query.filterParticipantID || '';
         const filterMilestoneID = req.query.filterMilestoneID || '';
         const filterStartDate = req.query.filterStartDate || '';
@@ -2109,7 +2114,7 @@ app.get('/surveys', async (req, res) => {
     try {
         const searchTerm = (req.query.search || '').trim();
         const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
-        const limit = 50;
+        const limit = 30;
         const filterStartDate = req.query.filterStartDate || '';
         const filterEndDate = req.query.filterEndDate || '';
         const filterEventStartDate = req.query.filterEventStartDate || '';
@@ -2697,9 +2702,10 @@ app.get('/users', async (req, res) => {
     if(req.session.isAdmin){
         try {
             const page = parseInt(req.query.page) || 1;
-            const limit = 50;
+            const limit = 30;
             const offset = (page - 1) * limit;
             const searchTerm = req.query.search || '';
+            const filterRole = req.query.filterRole || '';
             const sortColumn = req.query.sort || 'ParticipantID';
             const sortDir = req.query.sortDir || 'asc';
 
@@ -2718,7 +2724,7 @@ app.get('/users', async (req, res) => {
             const safeSortColumn = validColumns.includes(sortColumn) ? sortColumn : 'ParticipantID';
             const safeSortDir = validSortDir.includes(sortDir.toLowerCase()) ? sortDir.toLowerCase() : 'asc';
 
-            // Build query with optional search
+            // Build query with optional search and role filter
             let query = knex('Participants')
                 .select(
                     'ParticipantID',
@@ -2735,6 +2741,11 @@ app.get('/users', async (req, res) => {
                     'ParticipantRole'
                 );
 
+            // Add role filter if specified
+            if (filterRole) {
+                query = query.where('ParticipantRole', filterRole);
+            }
+
             // Add search conditions if search term exists
             if (searchTerm) {
                 const searchPattern = `%${searchTerm}%`;
@@ -2750,8 +2761,11 @@ app.get('/users', async (req, res) => {
                 });
             }
 
-            // Get total count for pagination (with search filter)
+            // Get total count for pagination (with search and role filter)
             const countQuery = knex('Participants');
+            if (filterRole) {
+                countQuery.where('ParticipantRole', filterRole);
+            }
             if (searchTerm) {
                 const searchPattern = `%${searchTerm}%`;
                 countQuery.where(function() {
@@ -2774,6 +2788,102 @@ app.get('/users', async (req, res) => {
                 .orderBy(safeSortColumn, safeSortDir)
                 .limit(limit)
                 .offset(offset);
+
+            // Progress data for progress modal
+            const participantIds = users.map(u => u.ParticipantID);
+            const participantProgress = {};
+            participantIds.forEach((id) => {
+                participantProgress[id] = {
+                    events: [],
+                    milestones: [],
+                    donations: [],
+                    summary: {
+                        eventsAttended: 0,
+                        surveysCompleted: 0,
+                        surveyCompletionRate: 0,
+                        milestonesTotal: 0,
+                        totalDonations: 0,
+                        donationsCount: 0
+                    }
+                };
+            });
+
+            if (participantIds.length > 0) {
+                // Event attendance + survey completion
+                const eventRows = await knex('Registration as r')
+                    .join('Event_Occurrence as o', 'r.OccurrenceID', 'o.OccurrenceID')
+                    .join('Event_Templates as et', 'o.EventID', 'et.EventID')
+                    .leftJoin('Surveys as s', 'r.RegistrationID', 's.RegistrationID')
+                    .whereIn('r.ParticipantID', participantIds)
+                    .select(
+                        'r.ParticipantID',
+                        'r.RegistrationAttendedFlag',
+                        'o.EventDateTimeStart',
+                        'et.EventName',
+                        's.SurveyID'
+                    );
+
+                eventRows.forEach((row) => {
+                    const progress = participantProgress[row.ParticipantID];
+                    if (!progress) return;
+                    const attended = !!row.RegistrationAttendedFlag;
+                    const surveyCompleted = !!row.SurveyID;
+                    progress.events.push({
+                        eventName: row.EventName,
+                        eventDate: formatDateForDisplay(row.EventDateTimeStart),
+                        attended,
+                        surveyCompleted
+                    });
+                    if (attended) {
+                        progress.summary.eventsAttended += 1;
+                    }
+                    if (surveyCompleted) {
+                        progress.summary.surveysCompleted += 1;
+                    }
+                });
+
+                Object.values(participantProgress).forEach((progress) => {
+                    const totalEvents = progress.events.length;
+                    if (totalEvents > 0) {
+                        progress.summary.surveyCompletionRate = Math.round(
+                            (progress.summary.surveysCompleted / totalEvents) * 100
+                        );
+                    }
+                });
+
+                // Milestones
+                const milestoneRows = await knex('Participant_Milestone')
+                    .whereIn('ParticipantID', participantIds)
+                    .select('ParticipantID', 'MilestoneID', 'MilestoneTitle', 'MilestoneCategory', 'MilestoneDate');
+
+                milestoneRows.forEach((row) => {
+                    const progress = participantProgress[row.ParticipantID];
+                    if (!progress) return;
+                    progress.milestones.push({
+                        title: row.MilestoneTitle,
+                        category: row.MilestoneCategory,
+                        date: formatDateForDisplay(row.MilestoneDate)
+                    });
+                    progress.summary.milestonesTotal += 1;
+                });
+
+                // Donations
+                const donationRows = await knex('Participant_Donation')
+                    .whereIn('ParticipantID', participantIds)
+                    .select('ParticipantID', 'DonationDate', 'DonationAmount');
+
+                donationRows.forEach((row) => {
+                    const progress = participantProgress[row.ParticipantID];
+                    if (!progress) return;
+                    const amount = row.DonationAmount ? Number(row.DonationAmount) : 0;
+                    progress.donations.push({
+                        date: formatDateForDisplay(row.DonationDate),
+                        amount
+                    });
+                    progress.summary.totalDonations += amount;
+                    progress.summary.donationsCount += 1;
+                });
+            }
             
             res.render('users', { 
                 layout: 'public', 
@@ -2784,8 +2894,10 @@ app.get('/users', async (req, res) => {
                 totalUsers: totalUsers,
                 hasNextPage: page < totalPages,
                 searchTerm: searchTerm,
+                filterRole: filterRole,
                 sortColumn: safeSortColumn,
                 sortDir: safeSortDir,
+                participantProgress: participantProgress,
                 error: req.query.error || null,
                 success: req.query.success || null
             });
@@ -2795,6 +2907,15 @@ app.get('/users', async (req, res) => {
                 layout: 'public', 
                 pageTitle: 'Users',
                 users: [],
+                currentPage: 1,
+                totalPages: 1,
+                totalUsers: 0,
+                hasNextPage: false,
+                searchTerm: req.query.search || '',
+                filterRole: req.query.filterRole || '',
+                sortColumn: req.query.sort || 'ParticipantID',
+                sortDir: req.query.sortDir || 'asc',
+                participantProgress: {},
                 error: 'Error loading users. Please try again.',
                 success: null
             });
@@ -2894,7 +3015,37 @@ app.post('/users/delete', async (req, res) => {
             return res.status(400).json({ error: 'Participant ID required' });
         }
 
-        // Delete participant
+        // Get all registration IDs for this participant first
+        const registrations = await knex('Registration')
+            .where('ParticipantID', participantId)
+            .select('RegistrationID');
+
+        const registrationIds = registrations.map(r => r.RegistrationID);
+
+        // Delete related records first (in order of dependencies)
+        // 1. Delete surveys (which reference Registration)
+        if (registrationIds.length > 0) {
+            await knex('Surveys')
+                .whereIn('RegistrationID', registrationIds)
+                .del();
+        }
+
+        // 2. Delete registrations (which reference ParticipantID)
+        await knex('Registration')
+            .where('ParticipantID', participantId)
+            .del();
+
+        // 3. Delete milestones
+        await knex('Participant_Milestone')
+            .where('ParticipantID', participantId)
+            .del();
+
+        // 4. Delete donations
+        await knex('Participant_Donation')
+            .where('ParticipantID', participantId)
+            .del();
+
+        // 5. Finally, delete the participant
         await knex('Participants')
             .where('ParticipantID', participantId)
             .del();
@@ -3350,6 +3501,7 @@ app.post('/participants', async (req, res) => {
             ParticipantZip,
             ParticipantSchoolOrEmployer,
             ParticipantFieldOfInterest,
+            ParticipantRole,
             preserveSearch,
             preserveSort,
             preserveSortDir,
@@ -3371,26 +3523,34 @@ app.post('/participants', async (req, res) => {
         }
 
         // Update participant
+        const updateData = {
+            ParticipantFirstName,
+            ParticipantLastName,
+            ParticipantDOB: ParticipantDOB || null,
+            ParticipantPhone: ParticipantPhone || null,
+            ParticipantCity: ParticipantCity || null,
+            ParticipantState: ParticipantState || null,
+            ParticipantZip: ParticipantZip || null,
+            ParticipantSchoolOrEmployer: ParticipantSchoolOrEmployer || null,
+            ParticipantFieldOfInterest: ParticipantFieldOfInterest || null
+        };
+        
+        // Only update role if provided and user is admin
+        if (req.session.isAdmin && ParticipantRole) {
+            updateData.ParticipantRole = ParticipantRole;
+        }
+        
         await knex('Participants')
             .where('ParticipantID', targetParticipantId)
-            .update({
-                ParticipantFirstName,
-                ParticipantLastName,
-                ParticipantDOB: ParticipantDOB || null,
-                ParticipantPhone: ParticipantPhone || null,
-                ParticipantCity: ParticipantCity || null,
-                ParticipantState: ParticipantState || null,
-                ParticipantZip: ParticipantZip || null,
-                ParticipantSchoolOrEmployer: ParticipantSchoolOrEmployer || null,
-                ParticipantFieldOfInterest: ParticipantFieldOfInterest || null
-            });
+            .update(updateData);
 
         // Build redirect URL
         if (req.session.isAdmin) {
             if (redirectTo) {
                 return res.redirect(redirectTo);
             }
-            let redirectUrl = '/participants?';
+            // Check if redirectTo is for /users or /participants
+            let redirectUrl = '/users?';
             const params = [];
             if (preserveSearch) params.push('search=' + encodeURIComponent(preserveSearch));
             if (preserveSort) params.push('sort=' + encodeURIComponent(preserveSort));
@@ -3400,7 +3560,7 @@ app.post('/participants', async (req, res) => {
             if (params.length > 0) {
                 redirectUrl += params.join('&');
             } else {
-                redirectUrl = '/participants';
+                redirectUrl = '/users';
             }
             return res.redirect(redirectUrl);
         } else {
@@ -3539,28 +3699,35 @@ app.use((err, req, res, next) => {
     if (err.code === 'EBADCSRFTOKEN') {
         // Handle CSRF token errors
         console.error('CSRF token validation failed');
-        
-        // Check if this is an AJAX request expecting JSON
-        const isAjax = req.xhr || 
-                       req.headers.accept?.includes('application/json') ||
-                       req.headers['x-csrf-token'] ||
-                       req.headers['content-type']?.includes('application/json');
-        
-        if (isAjax) {
-            // Return JSON for AJAX requests
-            return res.status(403).json({ 
-                success: false, 
-                error: 'Session expired. Please refresh the page and try again.' 
+
+        // 1) Check if path is clearly an API/admin route
+        const isAdminOrApi = 
+            req.path.startsWith('/admin/') || 
+            req.path.startsWith('/api/');
+
+        // 2) Check if this is an AJAX / JSON-style request
+        const isAjax =
+            req.xhr ||
+            (req.headers.accept && req.headers.accept.includes('application/json')) ||
+            req.headers['x-csrf-token'] ||
+            (req.headers['content-type'] && req.headers['content-type'].includes('application/json'));
+
+        if (isAdminOrApi || isAjax) {
+            // Return JSON for programmatic calls
+            return res.status(403).json({
+                success: false,
+                error: 'Session expired or CSRF token invalid. Please refresh the page and try again.'
             });
         }
-        
-        // Generate a new CSRF token for the error page (form submissions)
+
+        // 3) Generate a new CSRF token for normal form submissions (login page)
         let csrfToken = '';
         try {
             csrfToken = req.csrfToken ? req.csrfToken() : '';
         } catch (e) {
-            // If we can't generate a token, continue without it
+            // If we can't generate a token, just continue without it
         }
+
         return res.status(403).render('login', {
             layout: 'public',
             pageTitle: 'Error',
@@ -3570,8 +3737,10 @@ app.use((err, req, res, next) => {
             csrfToken: csrfToken
         });
     }
+
     next(err);
 });
+
 
 // 6. Start Server
 app.listen(port, () => {

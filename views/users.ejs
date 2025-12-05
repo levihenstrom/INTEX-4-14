@@ -1,47 +1,96 @@
 <div class="users-page">
+    <% const currentFilterRole = typeof filterRole !== 'undefined' ? filterRole : ''; %>
     <h1 class="mb-4">User Management</h1>
     
     <!-- Search Box, Sort Options, and Add Button - Full Width -->
-    <div class="mb-3 d-flex align-items-center gap-3 flex-wrap">
-        <form method="GET" action="/users" class="flex-grow-1" style="min-width: 250px;">
+    <div class="users-top-bar mb-4">
+        <form method="GET" action="/users" class="users-search-form">
             <input type="hidden" name="sort" value="<%= typeof sortColumn !== 'undefined' ? sortColumn : 'ParticipantID' %>">
             <input type="hidden" name="sortDir" value="<%= typeof sortDir !== 'undefined' ? sortDir : 'asc' %>">
-            <div class="input-group">
-                <input type="text" class="form-control" name="search" id="searchInput" 
+            <% if (currentFilterRole) { %>
+                <input type="hidden" name="filterRole" value="<%= currentFilterRole %>">
+            <% } %>
+            <div class="users-search-input-wrapper">
+                <i class="fa-solid fa-search users-search-icon"></i>
+                <input type="text" class="form-control users-search-input" name="search" id="searchInput" 
                        placeholder="Search users by name, ID, or school/employer..." 
                        value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
-                <button type="submit" class="btn btn-outline-secondary">Search</button>
-                <% if (typeof searchTerm !== 'undefined' && searchTerm) { %>
-                    <a href="/users?sort=<%= typeof sortColumn !== 'undefined' ? sortColumn : 'ParticipantID' %>&sortDir=<%= typeof sortDir !== 'undefined' ? sortDir : 'asc' %>" class="btn btn-outline-secondary">Clear</a>
-                <% } %>
             </div>
+            <% if (typeof searchTerm !== 'undefined' && searchTerm) { %>
+                <% 
+                    const clearParams = [];
+                    if (typeof sortColumn !== 'undefined') clearParams.push('sort=' + encodeURIComponent(sortColumn));
+                    if (typeof sortDir !== 'undefined') clearParams.push('sortDir=' + encodeURIComponent(sortDir));
+                    if (currentFilterRole) clearParams.push('filterRole=' + encodeURIComponent(currentFilterRole));
+                    const clearUrl = '/users' + (clearParams.length > 0 ? '?' + clearParams.join('&') : '');
+                %>
+                <a href="<%= clearUrl %>" class="btn btn-outline-secondary users-clear-btn users-search-clear-btn">Clear</a>
+            <% } %>
         </form>
         
-        <!-- Sort Options -->
-        <div class="d-flex align-items-center gap-2 flex-wrap flex-grow-1" style="min-width: 300px;">
-            <span class="text-muted small">Sort:</span>
-            <div class="btn-group btn-group-sm flex-grow-1" role="group">
-                <button type="button" class="btn btn-outline-secondary <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantID' ? 'active' : '' %>" onclick="sortTable('ParticipantID')">
-                    ID <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantID' ? (typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲') : '' %>
+        <div class="users-actions">
+            <!-- Sort Options -->
+            <div class="dropdown">
+                <button type="button" class="btn btn-outline-secondary users-sort-btn" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa-solid fa-sort"></i> Sort
                 </button>
-                <button type="button" class="btn btn-outline-secondary <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantFirstName' ? 'active' : '' %>" onclick="sortTable('ParticipantFirstName')">
-                    First <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantFirstName' ? (typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲') : '' %>
-                </button>
-                <button type="button" class="btn btn-outline-secondary <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantLastName' ? 'active' : '' %>" onclick="sortTable('ParticipantLastName')">
-                    Last <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantLastName' ? (typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲') : '' %>
-                </button>
-                <button type="button" class="btn btn-outline-secondary <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantEmail' ? 'active' : '' %>" onclick="sortTable('ParticipantEmail')">
-                    Email <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantEmail' ? (typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲') : '' %>
-                </button>
-                <button type="button" class="btn btn-outline-secondary <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantRole' ? 'active' : '' %>" onclick="sortTable('ParticipantRole')">
-                    Role <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantRole' ? (typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲') : '' %>
-                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <button type="button" class="dropdown-item <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantID' ? 'active' : '' %>" onclick="sortTable('ParticipantID')">
+                            ID <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantID' ? (typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲') : '' %>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantFirstName' ? 'active' : '' %>" onclick="sortTable('ParticipantFirstName')">
+                            First <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantFirstName' ? (typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲') : '' %>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantLastName' ? 'active' : '' %>" onclick="sortTable('ParticipantLastName')">
+                            Last <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantLastName' ? (typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲') : '' %>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantEmail' ? 'active' : '' %>" onclick="sortTable('ParticipantEmail')">
+                            Email <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantEmail' ? (typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲') : '' %>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantRole' ? 'active' : '' %>" onclick="sortTable('ParticipantRole')">
+                            Role <%= typeof sortColumn !== 'undefined' && sortColumn === 'ParticipantRole' ? (typeof sortDir !== 'undefined' && sortDir === 'desc' ? '▼' : '▲') : '' %>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            
+            <button type="button" class="btn btn-primary users-add-btn" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                <i class="fa-solid fa-plus"></i> Add New User
+            </button>
+        </div>
+    </div>
+
+    <!-- Role Filter Pills -->
+    <div class="mb-4">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <span class="filter-label"><i class="fa-solid fa-filter"></i> Filter by Role:</span>
+            <div class="event-labels filter-labels" id="users-role-pills">
+                <span class="event-label event-label-type-stem filter-pill users-role-pill filter-selected" data-role-value="all">
+                    <i class="fa-solid fa-sliders"></i>All Roles
+                </span>
+                <span class="event-label event-label-type-leadership filter-pill users-role-pill" data-role-value="a">
+                    <i class="fa-solid fa-user-shield"></i>Admin
+                </span>
+                <span class="event-label event-label-type-stem filter-pill users-role-pill" data-role-value="p">
+                    <i class="fa-solid fa-user"></i>Participant
+                </span>
+                <span class="event-label event-label-type-leadership filter-pill users-role-pill" data-role-value="v">
+                    <i class="fa-solid fa-users"></i>Volunteer
+                </span>
+                <span class="event-label event-label-type-arts filter-pill users-role-pill" data-role-value="d">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>Donor
+                </span>
             </div>
         </div>
-        
-        <button type="button" class="btn btn-success flex-shrink-0" style="background-color: #28a745; border-color: #28a745;" data-bs-toggle="modal" data-bs-target="#addUserModal">
-            + Add New User
-        </button>
     </div>
     
     <% if (typeof error !== 'undefined' && error) { %>
@@ -68,7 +117,7 @@
     <div class="users-profile-rows">
         <% if (typeof users !== 'undefined' && users.length > 0) { %>
             <% users.forEach(function(user) { %>
-                <div class="user-profile-card card shadow-sm mb-2">
+                <div class="user-profile-card card shadow-sm mb-2" data-user-role="<%= user.ParticipantRole || '' %>">
                     <div class="card-body py-2">
                         <div class="row align-items-center">
                             <!-- Profile Picture -->
@@ -100,79 +149,22 @@
                             <!-- Action Icons -->
                             <div class="col-auto">
                                 <div class="d-flex gap-2 align-items-center">
-                                    <!-- Role Dropdown (Pill-shaped) -->
-                                    <div class="dropdown role-dropdown">
-                                        <button class="btn btn-sm role-pill-btn <%= user.ParticipantRole === 'a' ? 'role-pill-admin' : (user.ParticipantRole === 'v' ? 'role-pill-volunteer' : (user.ParticipantRole === 'd' ? 'role-pill-donor' : 'role-pill-participant')) %>" 
-                                                type="button" 
-                                                id="roleDropdown<%= user.ParticipantID %>" 
-                                                data-bs-toggle="dropdown" 
-                                                aria-expanded="false"
-                                                data-user-id="<%= user.ParticipantID %>"
-                                                data-current-role="<%= user.ParticipantRole %>">
-                                            <%= user.ParticipantRole === 'a' ? 'Admin' : (user.ParticipantRole === 'v' ? 'Volunteer' : (user.ParticipantRole === 'd' ? 'Donor' : 'Participant')) %>
-                                        </button>
-                                        <ul class="dropdown-menu role-dropdown-menu" aria-labelledby="roleDropdown<%= user.ParticipantID %>">
-                                            <% if (user.ParticipantRole !== 'a') { %>
-                                                <li>
-                                                    <form action="/users" method="POST" class="role-change-form role-form-admin" data-user-id="<%= user.ParticipantID %>">
-                                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                                        <input type="hidden" name="participantId" value="<%= user.ParticipantID %>">
-                                                        <input type="hidden" name="newRole" value="a">
-                                                        <input type="hidden" name="preserveSearch" value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
-                                                        <input type="hidden" name="preserveSort" value="<%= typeof sortColumn !== 'undefined' ? sortColumn : 'ParticipantID' %>">
-                                                        <input type="hidden" name="preserveSortDir" value="<%= typeof sortDir !== 'undefined' ? sortDir : 'asc' %>">
-                                                        <input type="hidden" name="preservePage" value="<%= typeof currentPage !== 'undefined' ? currentPage : 1 %>">
-                                                        <button type="submit" class="dropdown-item role-dropdown-item role-item-admin">Admin</button>
-                                                    </form>
-                                                </li>
-                                            <% } %>
-                                            <% if (user.ParticipantRole !== 'v') { %>
-                                                <li>
-                                                    <form action="/users" method="POST" class="role-change-form role-form-volunteer" data-user-id="<%= user.ParticipantID %>">
-                                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                                        <input type="hidden" name="participantId" value="<%= user.ParticipantID %>">
-                                                        <input type="hidden" name="newRole" value="v">
-                                                        <input type="hidden" name="preserveSearch" value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
-                                                        <input type="hidden" name="preserveSort" value="<%= typeof sortColumn !== 'undefined' ? sortColumn : 'ParticipantID' %>">
-                                                        <input type="hidden" name="preserveSortDir" value="<%= typeof sortDir !== 'undefined' ? sortDir : 'asc' %>">
-                                                        <input type="hidden" name="preservePage" value="<%= typeof currentPage !== 'undefined' ? currentPage : 1 %>">
-                                                        <button type="submit" class="dropdown-item role-dropdown-item role-item-volunteer">Volunteer</button>
-                                                    </form>
-                                                </li>
-                                            <% } %>
-                                            <% if (user.ParticipantRole !== 'd') { %>
-                                                <li>
-                                                    <form action="/users" method="POST" class="role-change-form role-form-donor" data-user-id="<%= user.ParticipantID %>">
-                                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                                        <input type="hidden" name="participantId" value="<%= user.ParticipantID %>">
-                                                        <input type="hidden" name="newRole" value="d">
-                                                        <input type="hidden" name="preserveSearch" value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
-                                                        <input type="hidden" name="preserveSort" value="<%= typeof sortColumn !== 'undefined' ? sortColumn : 'ParticipantID' %>">
-                                                        <input type="hidden" name="preserveSortDir" value="<%= typeof sortDir !== 'undefined' ? sortDir : 'asc' %>">
-                                                        <input type="hidden" name="preservePage" value="<%= typeof currentPage !== 'undefined' ? currentPage : 1 %>">
-                                                        <button type="submit" class="dropdown-item role-dropdown-item role-item-donor">Donor</button>
-                                                    </form>
-                                                </li>
-                                            <% } %>
-                                            <% if (user.ParticipantRole !== 'p') { %>
-                                                <li>
-                                                    <form action="/users" method="POST" class="role-change-form role-form-participant" data-user-id="<%= user.ParticipantID %>">
-                                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                                        <input type="hidden" name="participantId" value="<%= user.ParticipantID %>">
-                                                        <input type="hidden" name="newRole" value="p">
-                                                        <input type="hidden" name="preserveSearch" value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
-                                                        <input type="hidden" name="preserveSort" value="<%= typeof sortColumn !== 'undefined' ? sortColumn : 'ParticipantID' %>">
-                                                        <input type="hidden" name="preserveSortDir" value="<%= typeof sortDir !== 'undefined' ? sortDir : 'asc' %>">
-                                                        <input type="hidden" name="preservePage" value="<%= typeof currentPage !== 'undefined' ? currentPage : 1 %>">
-                                                        <button type="submit" class="dropdown-item role-dropdown-item role-item-participant">Participant</button>
-                                                    </form>
-                                                </li>
-                                            <% } %>
-                                        </ul>
-                                    </div>
+                                    <!-- Role Label (Non-clickable) -->
+                                    <span class="role-pill-label <%= user.ParticipantRole === 'a' ? 'role-pill-admin' : (user.ParticipantRole === 'v' ? 'role-pill-volunteer' : (user.ParticipantRole === 'd' ? 'role-pill-donor' : 'role-pill-participant')) %>">
+                                        <i class="fa-solid <%= user.ParticipantRole === 'a' ? 'fa-user-shield' : (user.ParticipantRole === 'v' ? 'fa-users' : (user.ParticipantRole === 'd' ? 'fa-hand-holding-dollar' : 'fa-user')) %>"></i> <%= user.ParticipantRole === 'a' ? 'Admin' : (user.ParticipantRole === 'v' ? 'Volunteer' : (user.ParticipantRole === 'd' ? 'Donor' : 'Participant')) %>
+                                    </span>
+                                    <!-- View Progress Button -->
+                                    <button type="button" 
+                                            class="btn btn-outline-primary user-view-progress-btn" 
+                                            data-participant-id="<%= user.ParticipantID %>"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#progressModal"
+                                            title="View Progress">
+                                        <i class="fa-solid fa-chart-line"></i> View Progress
+                                    </button>
                                     <!-- Edit Icon -->
                                     <button type="button" 
-                                            class="btn btn-sm btn-link p-0 edit-user-btn" 
+                                            class="btn btn-outline-primary user-edit-btn" 
                                             data-participant-id="<%= user.ParticipantID %>"
                                             data-first-name="<%= user.ParticipantFirstName || '' %>"
                                             data-last-name="<%= user.ParticipantLastName || '' %>"
@@ -183,14 +175,15 @@
                                             data-zip="<%= user.ParticipantZip || '' %>"
                                             data-school="<%= user.ParticipantSchoolOrEmployer || '' %>"
                                             data-interest="<%= user.ParticipantFieldOfInterest || '' %>"
+                                            data-email="<%= user.ParticipantEmail || '' %>"
                                             data-bs-toggle="modal" 
                                             data-bs-target="#editParticipantModal"
                                             title="Edit User">
-                                        <i class="fas fa-edit text-primary" style="font-size: 1.2rem;"></i>
+                                        <i class="fa-solid fa-pencil"></i>
                                     </button>
                                     <!-- Delete Icon -->
                                     <button type="button" 
-                                            class="btn btn-sm btn-link p-0 delete-user-btn" 
+                                            class="btn btn-outline-danger user-delete-btn" 
                                             data-user-id="<%= user.ParticipantID %>"
                                             data-user-name="<%= user.ParticipantFirstName %> <%= user.ParticipantLastName %>"
                                             data-preserve-search="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>"
@@ -198,7 +191,7 @@
                                             data-preserve-sort-dir="<%= typeof sortDir !== 'undefined' ? sortDir : 'asc' %>"
                                             data-preserve-page="<%= typeof currentPage !== 'undefined' ? currentPage : 1 %>"
                                             title="Delete User">
-                                        <i class="fas fa-trash text-danger" style="font-size: 1.2rem;"></i>
+                                        <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </div>
                             </div>
@@ -219,21 +212,39 @@
     <div class="mt-4 d-flex justify-content-between align-items-center">
         <div>
             <% if (typeof currentPage !== 'undefined' && currentPage > 1) { %>
-                <a href="/users?page=<%= currentPage - 1 %><%= typeof searchTerm !== 'undefined' && searchTerm ? '&search=' + encodeURIComponent(searchTerm) : '' %><%= typeof sortColumn !== 'undefined' ? '&sort=' + sortColumn : '' %><%= typeof sortDir !== 'undefined' ? '&sortDir=' + sortDir : '' %>" class="btn btn-secondary me-2">
-                    ← Previous Page
+                <% 
+                    const prevParams = [];
+                    if (typeof searchTerm !== 'undefined' && searchTerm) prevParams.push('search=' + encodeURIComponent(searchTerm));
+                    if (currentFilterRole) prevParams.push('filterRole=' + encodeURIComponent(currentFilterRole));
+                    if (typeof sortColumn !== 'undefined') prevParams.push('sort=' + encodeURIComponent(sortColumn));
+                    if (typeof sortDir !== 'undefined') prevParams.push('sortDir=' + encodeURIComponent(sortDir));
+                    prevParams.push('page=' + (currentPage - 1));
+                    const prevUrl = '/users?' + prevParams.join('&');
+                %>
+                <a href="<%= prevUrl %>" class="btn btn-secondary users-pagination-btn">
+                    &larr; Previous Page
                 </a>
             <% } %>
         </div>
         <div class="text-muted">
-            Showing <%= typeof users !== 'undefined' && users.length > 0 ? ((currentPage - 1) * 50 + 1) : 0 %> - 
-            <%= typeof users !== 'undefined' && users.length > 0 ? Math.min(currentPage * 50, totalUsers) : 0 %> 
+            Showing <%= typeof users !== 'undefined' && users.length > 0 ? ((currentPage - 1) * 30 + 1) : 0 %> - 
+            <%= typeof users !== 'undefined' && users.length > 0 ? Math.min(currentPage * 30, totalUsers) : 0 %> 
             of <%= typeof totalUsers !== 'undefined' ? totalUsers : 0 %> users
             (Page <%= typeof currentPage !== 'undefined' ? currentPage : 1 %> of <%= typeof totalPages !== 'undefined' ? totalPages : 1 %>)
         </div>
         <div>
             <% if (typeof hasNextPage !== 'undefined' && hasNextPage) { %>
-                <a href="/users?page=<%= currentPage + 1 %><%= typeof searchTerm !== 'undefined' && searchTerm ? '&search=' + encodeURIComponent(searchTerm) : '' %><%= typeof sortColumn !== 'undefined' ? '&sort=' + sortColumn : '' %><%= typeof sortDir !== 'undefined' ? '&sortDir=' + sortDir : '' %>" class="btn btn-primary" id="nextPageBtn">
-                    Next Page →
+                <% 
+                    const nextParams = [];
+                    if (typeof searchTerm !== 'undefined' && searchTerm) nextParams.push('search=' + encodeURIComponent(searchTerm));
+                    if (currentFilterRole) nextParams.push('filterRole=' + encodeURIComponent(currentFilterRole));
+                    if (typeof sortColumn !== 'undefined') nextParams.push('sort=' + encodeURIComponent(sortColumn));
+                    if (typeof sortDir !== 'undefined') nextParams.push('sortDir=' + encodeURIComponent(sortDir));
+                    nextParams.push('page=' + (currentPage + 1));
+                    const nextUrl = '/users?' + nextParams.join('&');
+                %>
+                <a href="<%= nextUrl %>" class="btn btn-primary users-pagination-btn" id="nextPageBtn">
+                    Next Page &rarr;
                 </a>
             <% } %>
         </div>
@@ -312,21 +323,38 @@
 
                         <div class="mb-3">
                             <label class="form-label">Field of Interest</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
-                                       id="edit_interest_stem" value="STEM">
-                                <label class="form-check-label" for="edit_interest_stem">STEM</label>
+                            <div class="event-labels filter-labels" id="editInterestPills">
+                                <span class="event-label event-label-type-stem filter-pill edit-interest-pill" data-interest-value="STEM">
+                                    <i class="fa-solid fa-gear"></i>STEM
+                                </span>
+                                <span class="event-label event-label-type-arts filter-pill edit-interest-pill" data-interest-value="Arts">
+                                    <i class="fa-solid fa-paintbrush"></i>Arts
+                                </span>
+                                <span class="event-label event-label-type-annual-conference filter-pill edit-interest-pill" data-interest-value="Both">
+                                    <i class="fa-solid fa-layer-group"></i>Both
+                                </span>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
-                                       id="edit_interest_arts" value="Arts">
-                                <label class="form-check-label" for="edit_interest_arts">Arts</label>
+                            <input type="hidden" name="ParticipantFieldOfInterest" id="editParticipantFieldOfInterest" value="">
+                        </div>
+
+                        <!-- Role Selection -->
+                        <div class="mb-3">
+                            <label class="form-label">Role *</label>
+                            <div class="event-labels filter-labels" id="editRolePills">
+                                <span class="event-label event-label-type-leadership filter-pill edit-role-pill" data-role-value="a">
+                                    <i class="fa-solid fa-user-shield"></i>Admin
+                                </span>
+                                <span class="event-label event-label-type-stem filter-pill edit-role-pill" data-role-value="p">
+                                    <i class="fa-solid fa-user"></i>Participant
+                                </span>
+                                <span class="event-label event-label-type-leadership filter-pill edit-role-pill" data-role-value="v">
+                                    <i class="fa-solid fa-users"></i>Volunteer
+                                </span>
+                                <span class="event-label event-label-type-arts filter-pill edit-role-pill" data-role-value="d">
+                                    <i class="fa-solid fa-hand-holding-dollar"></i>Donor
+                                </span>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
-                                       id="edit_interest_both" value="Both">
-                                <label class="form-check-label" for="edit_interest_both">Both</label>
-                            </div>
+                            <input type="hidden" name="ParticipantRole" id="editParticipantRole" value="" required>
                         </div>
                     </form>
                 </div>
@@ -425,42 +453,146 @@
                     <!-- Field of Interest -->
                     <div class="mb-3">
                         <label class="form-label">Field of Interest</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
-                                   id="modal_interest_stem" value="STEM">
-                            <label class="form-check-label" for="modal_interest_stem">STEM</label>
+                        <div class="event-labels filter-labels" id="addInterestPills">
+                            <span class="event-label event-label-type-stem filter-pill add-interest-pill" data-interest-value="STEM">
+                                <i class="fa-solid fa-gear"></i>STEM
+                            </span>
+                            <span class="event-label event-label-type-arts filter-pill add-interest-pill" data-interest-value="Arts">
+                                <i class="fa-solid fa-paintbrush"></i>Arts
+                            </span>
+                            <span class="event-label event-label-type-annual-conference filter-pill add-interest-pill" data-interest-value="Both">
+                                <i class="fa-solid fa-layer-group"></i>Both
+                            </span>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
-                                   id="modal_interest_arts" value="Arts">
-                            <label class="form-check-label" for="modal_interest_arts">Arts</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="ParticipantFieldOfInterest" 
-                                   id="modal_interest_both" value="Both">
-                            <label class="form-check-label" for="modal_interest_both">Both</label>
-                        </div>
+                        <input type="hidden" name="ParticipantFieldOfInterest" id="addParticipantFieldOfInterest" value="">
                     </div>
 
                     <!-- Role Selection (Admin Only) -->
                     <div class="mb-3">
                         <label class="form-label">Role *</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="ParticipantRole" 
-                                   id="modal_role_admin" value="a" required>
-                            <label class="form-check-label" for="modal_role_admin">Admin</label>
+                        <div class="event-labels filter-labels" id="addRolePills">
+                            <span class="event-label event-label-type-leadership filter-pill add-role-pill" data-role-value="a">
+                                <i class="fa-solid fa-user-shield"></i>Admin
+                            </span>
+                            <span class="event-label event-label-type-stem filter-pill add-role-pill filter-selected" data-role-value="p">
+                                <i class="fa-solid fa-user"></i>Participant
+                            </span>
+                            <span class="event-label event-label-type-leadership filter-pill add-role-pill" data-role-value="v">
+                                <i class="fa-solid fa-users"></i>Volunteer
+                            </span>
+                            <span class="event-label event-label-type-arts filter-pill add-role-pill" data-role-value="d">
+                                <i class="fa-solid fa-hand-holding-dollar"></i>Donor
+                            </span>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="ParticipantRole" 
-                                   id="modal_role_user" value="p" checked>
-                            <label class="form-check-label" for="modal_role_user">User</label>
-                        </div>
+                        <input type="hidden" name="ParticipantRole" id="addParticipantRole" value="p" required>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" form="addUserForm" class="btn btn-success">Create User</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Modal -->
+<div class="modal fade" id="progressModal" tabindex="-1" aria-labelledby="progressModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title" id="progressModalLabel">User Progress</h5>
+                    <p class="mb-0 text-muted" id="progressParticipantName"></p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- User Details Section -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="text-uppercase text-muted mb-3">User Details</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <strong class="text-muted">Name:</strong>
+                                    <div id="progressUserName"></div>
+                                </div>
+                                <div class="mb-2">
+                                    <strong class="text-muted">Email:</strong>
+                                    <div id="progressUserEmail"></div>
+                                </div>
+                                <div class="mb-2">
+                                    <strong class="text-muted">Phone:</strong>
+                                    <div id="progressUserPhone"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <strong class="text-muted">Location:</strong>
+                                    <div id="progressUserLocation"></div>
+                                </div>
+                                <div class="mb-2">
+                                    <strong class="text-muted">School/Employer:</strong>
+                                    <div id="progressUserSchool"></div>
+                                </div>
+                                <div class="mb-2">
+                                    <strong class="text-muted">Field of Interest:</strong>
+                                    <div id="progressUserInterest"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPIs Section -->
+                <div class="row g-3">
+                    <div class="col-12 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="text-uppercase text-muted mb-2">Events</h6>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <div class="fw-bold fs-3" id="kpiEventsAttended">0</div>
+                                        <small class="text-muted">Events attended</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-bold fs-3" id="kpiSurveyRate">0%</div>
+                                        <small class="text-muted">Survey completion</small>
+                                    </div>
+                                </div>
+                                <div class="small text-muted mb-2">Event history</div>
+                                <div id="eventsList" class="d-grid gap-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="card h-100" id="milestoneSummaryCard" role="button" style="cursor: pointer;">
+                            <div class="card-body">
+                                <h6 class="text-uppercase text-muted mb-2">Milestones</h6>
+                                <div class="d-flex align-items-baseline gap-2 mb-3">
+                                    <div class="fw-bold fs-3" id="kpiMilestones">0</div>
+                                    <small class="text-muted">Total milestones</small>
+                                </div>
+                                <div class="small text-muted mb-2">Milestone cards</div>
+                                <div id="milestoneList" class="d-grid gap-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="card h-100" id="donationSummaryCard" role="button" style="cursor: pointer;">
+                            <div class="card-body">
+                                <h6 class="text-uppercase text-muted mb-2">Donations</h6>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="fw-bold fs-3" id="kpiDonationsTotal">$0.00</div>
+                                    <small class="text-muted" id="kpiDonationsCount">0 gifts</small>
+                                </div>
+                                <div class="small text-muted mb-2">Donation history</div>
+                                <div id="donationList" class="d-grid gap-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -486,24 +618,69 @@ function sortTable(column) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Role change form handlers (for dropdown role changes)
-    const roleChangeForms = document.querySelectorAll('.role-change-form');
-    roleChangeForms.forEach(function(form) {
-        form.addEventListener('submit', function(e) {
-            const userId = form.getAttribute('data-user-id');
-            const newRole = form.querySelector('input[name="newRole"]').value;
-            const roleNames = { 'a': 'Admin', 'v': 'Volunteer', 'd': 'Donor', 'p': 'Participant' };
-            const newRoleName = roleNames[newRole] || 'this role';
+    // Role filter pills - refresh page with filter
+    const rolePills = Array.from(document.querySelectorAll('#users-role-pills .users-role-pill'));
+    
+    // Set active pill based on current filter
+    const currentFilterRole = '<%= currentFilterRole || "all" %>';
+    rolePills.forEach(pill => {
+        const value = pill.getAttribute('data-role-value');
+        if ((currentFilterRole === '' && value === 'all') || currentFilterRole === value) {
+            pill.classList.add('filter-selected');
+        } else {
+            pill.classList.remove('filter-selected');
+        }
+    });
+    
+    rolePills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            const value = pill.getAttribute('data-role-value');
+            const urlParams = new URLSearchParams(window.location.search);
             
-            if (!confirm('Are you sure you want to change this user\'s role to ' + newRoleName + '?')) {
-                e.preventDefault();
-                return false;
+            // Remove page param to go to page 1
+            urlParams.delete('page');
+            
+            // Set or remove filterRole
+            if (value === 'all') {
+                urlParams.delete('filterRole');
+            } else {
+                urlParams.set('filterRole', value);
             }
+            
+            // Preserve search and sort
+            const searchTerm = urlParams.get('search');
+            const sort = urlParams.get('sort');
+            const sortDir = urlParams.get('sortDir');
+            
+            // Build new URL
+            const newParams = [];
+            if (searchTerm) newParams.push('search=' + encodeURIComponent(searchTerm));
+            if (value !== 'all') newParams.push('filterRole=' + encodeURIComponent(value));
+            if (sort) newParams.push('sort=' + encodeURIComponent(sort));
+            if (sortDir) newParams.push('sortDir=' + encodeURIComponent(sortDir));
+            
+            const newUrl = '/users' + (newParams.length > 0 ? '?' + newParams.join('&') : '');
+            window.location.href = newUrl;
         });
     });
 
+    // Auto-submit search form on Enter key
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const form = searchInput.closest('form');
+                if (form) {
+                    form.submit();
+                }
+            }
+        });
+    }
+
+
     // Delete user button handlers
-    const deleteButtons = document.querySelectorAll('.delete-user-btn');
+    const deleteButtons = document.querySelectorAll('.user-delete-btn');
     deleteButtons.forEach(function(button) {
         button.addEventListener('click', function(e) {
             const userId = button.getAttribute('data-user-id');
@@ -563,7 +740,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Edit user modal population
-    const editButtons = document.querySelectorAll('.edit-user-btn');
+    const editButtons = document.querySelectorAll('.user-edit-btn');
     const editFormFields = {
         id: document.getElementById('editParticipantId'),
         firstName: document.getElementById('editParticipantFirstName'),
@@ -573,7 +750,9 @@ document.addEventListener('DOMContentLoaded', function() {
         city: document.getElementById('editParticipantCity'),
         state: document.getElementById('editParticipantState'),
         zip: document.getElementById('editParticipantZip'),
-        school: document.getElementById('editParticipantSchoolOrEmployer')
+        school: document.getElementById('editParticipantSchoolOrEmployer'),
+        interest: document.getElementById('editParticipantFieldOfInterest'),
+        role: document.getElementById('editParticipantRole')
     };
 
     editButtons.forEach(function(button) {
@@ -588,10 +767,95 @@ document.addEventListener('DOMContentLoaded', function() {
             editFormFields.zip.value = button.getAttribute('data-zip') || '';
             editFormFields.school.value = button.getAttribute('data-school') || '';
 
-            const interestValue = button.getAttribute('data-interest');
-            document.querySelectorAll('input[name="ParticipantFieldOfInterest"]').forEach(function(radio) {
-                radio.checked = (radio.value === interestValue);
+            const interestValue = button.getAttribute('data-interest') || '';
+            editFormFields.interest.value = interestValue;
+            
+            // Update interest icon pills
+            const editInterestPills = document.querySelectorAll('.edit-interest-pill');
+            editInterestPills.forEach(function(pill) {
+                pill.classList.remove('filter-selected');
+                if (pill.getAttribute('data-interest-value') === interestValue) {
+                    pill.classList.add('filter-selected');
+                }
             });
+
+            // Get role from user card data attribute
+            const userCard = button.closest('.user-profile-card');
+            const userRole = userCard ? userCard.getAttribute('data-user-role') || 'p' : 'p';
+            if (editFormFields.role) {
+                editFormFields.role.value = userRole;
+            }
+            
+            // Update role icon pills
+            const editRolePills = document.querySelectorAll('.edit-role-pill');
+            editRolePills.forEach(function(pill) {
+                pill.classList.remove('filter-selected');
+                if (pill.getAttribute('data-role-value') === userRole) {
+                    pill.classList.add('filter-selected');
+                }
+            });
+        });
+    });
+
+    // Role pill handlers for Edit modal
+    const editRolePills = document.querySelectorAll('.edit-role-pill');
+    editRolePills.forEach(function(pill) {
+        pill.addEventListener('click', function() {
+            editRolePills.forEach(function(p) {
+                p.classList.remove('filter-selected');
+            });
+            pill.classList.add('filter-selected');
+            const roleValue = pill.getAttribute('data-role-value');
+            if (editFormFields.role) {
+                editFormFields.role.value = roleValue;
+            }
+        });
+    });
+
+    // Icon pill handlers for Edit modal
+    const editInterestPills = document.querySelectorAll('.edit-interest-pill');
+    editInterestPills.forEach(function(pill) {
+        pill.addEventListener('click', function() {
+            editInterestPills.forEach(function(p) {
+                p.classList.remove('filter-selected');
+            });
+            pill.classList.add('filter-selected');
+            const interestValue = pill.getAttribute('data-interest-value');
+            if (editFormFields.interest) {
+                editFormFields.interest.value = interestValue;
+            }
+        });
+    });
+
+    // Icon pill handlers for Add modal
+    const addInterestPills = document.querySelectorAll('.add-interest-pill');
+    const addInterestInput = document.getElementById('addParticipantFieldOfInterest');
+    addInterestPills.forEach(function(pill) {
+        pill.addEventListener('click', function() {
+            addInterestPills.forEach(function(p) {
+                p.classList.remove('filter-selected');
+            });
+            pill.classList.add('filter-selected');
+            const interestValue = pill.getAttribute('data-interest-value');
+            if (addInterestInput) {
+                addInterestInput.value = interestValue;
+            }
+        });
+    });
+
+    // Role pill handlers for Add modal
+    const addRolePills = document.querySelectorAll('.add-role-pill');
+    const addRoleInput = document.getElementById('addParticipantRole');
+    addRolePills.forEach(function(pill) {
+        pill.addEventListener('click', function() {
+            addRolePills.forEach(function(p) {
+                p.classList.remove('filter-selected');
+            });
+            pill.classList.add('filter-selected');
+            const roleValue = pill.getAttribute('data-role-value');
+            if (addRoleInput) {
+                addRoleInput.value = roleValue;
+            }
         });
     });
 
@@ -624,5 +888,544 @@ document.addEventListener('DOMContentLoaded', function() {
 
     attachPhoneMask(document.getElementById('modalParticipantPhone'));
     attachPhoneMask(document.getElementById('editParticipantPhone'));
+
+    // Progress Modal functionality
+    const progressModal = document.getElementById('progressModal');
+    const eventsList = document.getElementById('eventsList');
+    const milestoneList = document.getElementById('milestoneList');
+    const milestoneSummaryCard = document.getElementById('milestoneSummaryCard');
+    const donationSummaryCard = document.getElementById('donationSummaryCard');
+    const donationList = document.getElementById('donationList');
+    const kpiEventsAttended = document.getElementById('kpiEventsAttended');
+    const kpiSurveyRate = document.getElementById('kpiSurveyRate');
+    const kpiMilestones = document.getElementById('kpiMilestones');
+    const kpiDonationsTotal = document.getElementById('kpiDonationsTotal');
+    const kpiDonationsCount = document.getElementById('kpiDonationsCount');
+    const progressParticipantName = document.getElementById('progressParticipantName');
+    const progressUserName = document.getElementById('progressUserName');
+    const progressUserEmail = document.getElementById('progressUserEmail');
+    const progressUserPhone = document.getElementById('progressUserPhone');
+    const progressUserLocation = document.getElementById('progressUserLocation');
+    const progressUserSchool = document.getElementById('progressUserSchool');
+    const progressUserInterest = document.getElementById('progressUserInterest');
+
+    // Read embedded JSON data
+    const dataEl = document.getElementById('userProgressData');
+    let participantProgress = {};
+    let userData = {};
+
+    if (dataEl) {
+        try {
+            const data = JSON.parse(dataEl.textContent);
+            participantProgress = data.progress || {};
+            userData = data.users || {};
+        } catch (err) {
+            console.error('Error parsing userProgressData JSON:', err);
+        }
+    }
+
+    function renderList(target, items, emptyMessage) {
+        if (!target) return;
+        target.innerHTML = '';
+        if (!items || items.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'text-muted small';
+            empty.textContent = emptyMessage;
+            target.appendChild(empty);
+            return;
+        }
+        items.forEach((item) => target.appendChild(item));
+    }
+
+    function createBadge(text, variant) {
+        const badge = document.createElement('span');
+        badge.className = `badge bg-${variant}`;
+        badge.textContent = text;
+        return badge;
+    }
+
+    function formatCurrency(amount) {
+        const safeAmount = Number.isFinite(amount) ? amount : 0;
+        return `$${safeAmount.toFixed(2)}`;
+    }
+
+    const progressButtons = document.querySelectorAll('.user-view-progress-btn');
+    progressButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const participantId = button.getAttribute('data-participant-id');
+            const data = participantProgress[participantId] || {
+                events: [],
+                milestones: [],
+                donations: [],
+                summary: {}
+            };
+            const user = userData[participantId] || {};
+
+            // Set user details
+            if (progressParticipantName) {
+                progressParticipantName.textContent = user.name || `User ${participantId}`;
+            }
+            if (progressUserName) {
+                progressUserName.textContent = user.name || 'N/A';
+            }
+            if (progressUserEmail) {
+                progressUserEmail.textContent = user.email || 'N/A';
+            }
+            if (progressUserPhone) {
+                progressUserPhone.textContent = user.phone || 'N/A';
+            }
+            if (progressUserLocation) {
+                const location = [user.city, user.state, user.zip].filter(Boolean).join(', ') || 'N/A';
+                progressUserLocation.textContent = location;
+            }
+            if (progressUserSchool) {
+                progressUserSchool.textContent = user.school || 'N/A';
+            }
+            if (progressUserInterest) {
+                progressUserInterest.textContent = user.interest || 'N/A';
+            }
+
+            // Set KPIs
+            if (kpiEventsAttended) {
+                kpiEventsAttended.textContent = data.summary.eventsAttended || 0;
+            }
+            const surveyRate = data.summary.surveyCompletionRate || 0;
+            if (kpiSurveyRate) {
+                kpiSurveyRate.textContent = `${surveyRate}%`;
+            }
+            if (kpiMilestones) {
+                kpiMilestones.textContent = data.summary.milestonesTotal || 0;
+            }
+            if (kpiDonationsTotal) {
+                kpiDonationsTotal.textContent = formatCurrency(data.summary.totalDonations || 0);
+            }
+            if (kpiDonationsCount) {
+                kpiDonationsCount.textContent = `${data.summary.donationsCount || 0} gifts`;
+            }
+
+            if (milestoneSummaryCard) {
+                milestoneSummaryCard.onclick = () => {
+                    window.location.href = `/milestones?filterParticipantID=${encodeURIComponent(participantId)}`;
+                };
+            }
+            if (donationSummaryCard) {
+                donationSummaryCard.onclick = () => {
+                    window.location.href = `/donations?filterParticipantID=${encodeURIComponent(participantId)}`;
+                };
+            }
+
+            const eventCards = (data.events || []).map((event) => {
+                const card = document.createElement('div');
+                card.className = 'border rounded p-2';
+                const header = document.createElement('div');
+                header.className = 'd-flex justify-content-between align-items-center';
+                const title = document.createElement('div');
+                title.className = 'fw-semibold';
+                title.textContent = event.eventName || 'Event';
+                const badge = createBadge(
+                    event.surveyCompleted ? 'Survey Complete' : 'Survey Pending',
+                    event.surveyCompleted ? 'success' : 'danger'
+                );
+                header.appendChild(title);
+                header.appendChild(badge);
+                const meta = document.createElement('div');
+                meta.className = 'small text-muted';
+                meta.textContent = event.eventDate || 'Date TBD';
+                card.appendChild(header);
+                card.appendChild(meta);
+                return card;
+            });
+
+            const milestoneCards = (data.milestones || []).map((milestone) => {
+                const card = document.createElement('div');
+                card.className = 'border rounded p-2';
+                const title = document.createElement('div');
+                title.className = 'fw-semibold';
+                title.textContent = milestone.title || 'Milestone';
+                const meta = document.createElement('div');
+                meta.className = 'small text-muted';
+                meta.textContent =
+                    [milestone.category, milestone.date].filter(Boolean).join(' • ') ||
+                    'No details';
+                card.appendChild(title);
+                card.appendChild(meta);
+                return card;
+            });
+            
+            const donationCards = (data.donations || []).map((donation) => {
+                const card = document.createElement('div');
+                card.className =
+                    'border rounded p-2 d-flex justify-content-between align-items-center';
+                const date = document.createElement('div');
+                date.className = 'small text-muted';
+                date.textContent = donation.date || 'No date';
+                const amount = document.createElement('div');
+                amount.className = 'fw-semibold';
+                amount.textContent = formatCurrency(donation.amount || 0);
+                card.appendChild(date);
+                card.appendChild(amount);
+                return card;
+            });
+
+            renderList(eventsList, eventCards, 'No event history yet.');
+            renderList(milestoneList, milestoneCards, 'No milestones recorded.');
+            renderList(donationList, donationCards, 'No donations recorded.');
+        });
+    });
 });
 </script>
+
+<!-- Server → Client data as pure JSON -->
+<script id="userProgressData" type="application/json">
+    <%- JSON.stringify({
+        progress: typeof participantProgress !== 'undefined' ? participantProgress : {},
+        users: (typeof users !== 'undefined' ? users : []).reduce((acc, u) => {
+            acc[u.ParticipantID] = {
+                name: ((u.ParticipantFirstName || '') + ' ' + (u.ParticipantLastName || '')).trim() || `User ${u.ParticipantID}`,
+                email: u.ParticipantEmail || 'N/A',
+                phone: u.ParticipantPhone || 'N/A',
+                city: u.ParticipantCity || '',
+                state: u.ParticipantState || '',
+                zip: u.ParticipantZip || '',
+                school: u.ParticipantSchoolOrEmployer || 'N/A',
+                interest: u.ParticipantFieldOfInterest || 'N/A'
+            };
+            return acc;
+        }, {})
+    }) %>
+</script>
+
+<style>
+    /* Users Page Styling - Matching Donations Page */
+    .users-top-bar {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    @media (min-width: 768px) {
+        .users-top-bar {
+            flex-direction: row;
+            align-items: center;
+            gap: 1rem;
+        }
+    }
+
+    .users-search-form {
+        flex: 1;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .users-search-input-wrapper {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .users-search-icon {
+        position: absolute;
+        left: 1rem;
+        color: #5A5E5A;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .users-search-input {
+        flex: 1;
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem 0.6rem 2.75rem;
+        height: auto;
+        border: 2px solid #E0E0E0;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+    }
+
+    .users-search-input:focus {
+        outline: none;
+        border-color: #978EC4;
+        box-shadow: 0 0 0 3px rgba(151, 142, 196, 0.1);
+    }
+
+    .users-clear-btn {
+        white-space: nowrap;
+    }
+
+    .users-search-clear-btn {
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+        transition: all 0.2s ease;
+        background: white;
+        color: #3A3F3B;
+        border: 2px solid #E0E0E0;
+        text-decoration: none;
+    }
+
+    .users-search-clear-btn:hover {
+        background: #F0F0F0;
+        color: #3A3F3B;
+        border-color: #D0D0D0;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .users-actions {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    /* Sort and Add User Buttons */
+    .users-sort-btn,
+    .users-add-btn {
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .users-sort-btn {
+        background: #F0F0F0;
+        color: #3A3F3B;
+        border: 2px solid #E0E0E0;
+    }
+
+    .users-sort-btn:hover {
+        background: #E0E0E0;
+        color: #3A3F3B;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* Role Filter Pills Section */
+    .filter-label {
+        font-weight: 600;
+        font-family: 'Montserrat', sans-serif;
+        color: #3A3F3B;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-label i {
+        color: #978EC4;
+    }
+
+    .users-add-btn {
+        background: #978EC4;
+        color: white;
+        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+    }
+
+    .users-add-btn:hover {
+        background: #897FB8;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+    }
+
+    /* Pagination Buttons */
+    .users-pagination-btn {
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+        transition: all 0.2s ease;
+    }
+
+    .users-pagination-btn.btn-primary {
+        background: #978EC4;
+        color: white;
+        border: none;
+        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+    }
+
+    .users-pagination-btn.btn-primary:hover {
+        background: #897FB8;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+    }
+
+    /* Edit and Delete Icon Buttons */
+    .user-edit-btn,
+    .user-delete-btn {
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        font-weight: 600;
+        font-family: 'Montserrat', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        border: 2px solid;
+        min-width: 36px;
+        height: 36px;
+    }
+
+    .user-edit-btn {
+        background: white;
+        color: #978EC4;
+        border-color: #978EC4;
+    }
+
+    .user-edit-btn:hover {
+        background: #978EC4;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(151, 142, 196, 0.3);
+    }
+
+    .user-delete-btn {
+        background: white;
+        color: #CE325B;
+        border-color: #CE325B;
+    }
+
+    .user-delete-btn:hover {
+        background: #CE325B;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(206, 50, 91, 0.3);
+    }
+
+    /* Role pills in modal */
+    .add-role-pill {
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Role pill colors - consistent across all modals and filters */
+    /* Admin - Red */
+    .add-role-pill[data-role-value="a"],
+    .edit-role-pill[data-role-value="a"],
+    .users-role-pill[data-role-value="a"] {
+        background-color: #CE325B20;
+        border-color: #CE325B;
+        color: #CE325B;
+    }
+    .add-role-pill.filter-selected[data-role-value="a"],
+    .edit-role-pill.filter-selected[data-role-value="a"],
+    .users-role-pill.filter-selected[data-role-value="a"] {
+        background-color: #CE325B;
+        border-color: #CE325B;
+        color: white;
+    }
+
+    /* Participant - Blue */
+    .add-role-pill[data-role-value="p"],
+    .edit-role-pill[data-role-value="p"],
+    .users-role-pill[data-role-value="p"] {
+        background-color: #99B7C620;
+        border-color: #99B7C6;
+        color: #99B7C6;
+    }
+    .add-role-pill.filter-selected[data-role-value="p"],
+    .edit-role-pill.filter-selected[data-role-value="p"],
+    .users-role-pill.filter-selected[data-role-value="p"] {
+        background-color: #99B7C6;
+        border-color: #99B7C6;
+        color: white;
+    }
+
+    /* Volunteer - Yellow/Orange */
+    .add-role-pill[data-role-value="v"],
+    .edit-role-pill[data-role-value="v"],
+    .users-role-pill[data-role-value="v"] {
+        background-color: #F4B09220;
+        border-color: #F4B092;
+        color: #F4B092;
+    }
+    .add-role-pill.filter-selected[data-role-value="v"],
+    .edit-role-pill.filter-selected[data-role-value="v"],
+    .users-role-pill.filter-selected[data-role-value="v"] {
+        background-color: #F4B092;
+        border-color: #F4B092;
+        color: white;
+    }
+
+    /* Donor - Green */
+    .add-role-pill[data-role-value="d"],
+    .edit-role-pill[data-role-value="d"],
+    .users-role-pill[data-role-value="d"] {
+        background-color: #9AB59D20;
+        border-color: #9AB59D;
+        color: #9AB59D;
+    }
+    .add-role-pill.filter-selected[data-role-value="d"],
+    .edit-role-pill.filter-selected[data-role-value="d"],
+    .users-role-pill.filter-selected[data-role-value="d"] {
+        background-color: #9AB59D;
+        border-color: #9AB59D;
+        color: white;
+    }
+
+    /* Role dropdown positioning - show on top */
+    .role-dropdown-menu.dropdown-menu-top {
+        bottom: 100% !important;
+        top: auto !important;
+        margin-bottom: 0.5rem !important;
+        margin-top: 0 !important;
+        transform: translateY(0) !important;
+    }
+
+    /* Role dropdown items with icons */
+    .role-dropdown-item i {
+        margin-right: 0.5rem;
+    }
+
+    /* Role pill button with icon */
+    .role-pill-btn i {
+        margin-right: 0.4rem;
+    }
+
+    /* Role pill label (non-clickable) */
+    .role-pill-label {
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.9rem;
+        border: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .role-pill-label i {
+        margin-right: 0;
+    }
+
+    /* View Progress Button */
+    .user-view-progress-btn {
+        border-radius: 999px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        font-family: 'Montserrat', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        border: 2px solid #978EC4;
+        background: white;
+        color: #978EC4;
+    }
+
+    .user-view-progress-btn:hover {
+        background: #978EC4;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(151, 142, 196, 0.3);
+    }
+</style>
