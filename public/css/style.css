@@ -2648,6 +2648,367 @@ body:not(.has-hero) {
     text-align: center;
     padding: 3rem 2rem;
     color: #4B4F4B;
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* My Events Section - Profile and Admin Events Page */
+.my-events-section,
+.admin-user-events-section {
+    margin-top: 3rem;
+}
+
+.my-events-section h2,
+.admin-user-events-section h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: #3A3F3B;
+    margin-bottom: 1.5rem;
+}
+
+.my-events-section .occurrence-toggle,
+.admin-user-events-section .occurrence-toggle {
+    display: inline-flex;
+    background: #F0F0F0;
+    border-radius: 999px;
+    padding: 0.25rem;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+.my-events-section .toggle-btn,
+.admin-user-events-section .toggle-btn {
+    border: none;
+    background: transparent;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    color: #4B4F4B;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.my-events-section .toggle-btn.active,
+.admin-user-events-section .toggle-btn.active {
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    color: #3A3F3B;
+}
+
+.my-events-section .toggle-btn:hover,
+.admin-user-events-section .toggle-btn:hover {
+    background: white;
+}
+
+/* Event Cards - Consistent Layout with Standardized Sections */
+.my-event-card {
+    display: grid;
+    grid-template-columns: 150px 160px 160px 140px 180px;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.75rem 1.2rem;
+    background: #F9F5EA;
+    border-radius: 12px;
+    border: 2px solid #E0E0E0;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.my-event-card:hover {
+    border-color: #978EC4;
+    box-shadow: 0 4px 12px rgba(151, 142, 196, 0.2);
+}
+
+/* Red border/shadow for missing survey */
+.my-event-card.survey-missing {
+    border-color: #CE325B;
+    box-shadow: 0 0 0 2px rgba(206, 50, 91, 0.15), 0 4px 12px rgba(206, 50, 91, 0.1);
+}
+
+.my-event-card.survey-missing:hover {
+    border-color: #CE325B;
+    box-shadow: 0 0 0 2px rgba(206, 50, 91, 0.2), 0 4px 12px rgba(206, 50, 91, 0.15);
+}
+
+/* Image Section */
+.my-event-image {
+    flex: 0 0 150px;
+    height: 100px;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid #E0E0E0;
+}
+
+.my-event-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Main Info Section: Title, Date, Registered/Past Badge */
+.my-event-main-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.my-event-main-info .event-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    color: #3A3F3B;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0;
+    margin-bottom: 0.25rem;
+}
+
+.my-event-main-info .occurrence-date {
+    font-family: 'DM Serif Display', serif;
+    font-size: 0.95rem;
+    color: #3A3F3B;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.my-event-main-info .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    width: fit-content;
+}
+
+/* Details Section: Location, Time, Type */
+.my-event-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.my-event-details .occurrence-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    color: #4B4F4B;
+    margin-bottom: 0.15rem;
+}
+
+.my-event-details .occurrence-detail-item i {
+    color: #978EC4;
+    font-size: 0.85rem;
+    width: 16px;
+    text-align: center;
+}
+
+/* Status Pill Section */
+.my-event-status-pill {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 140px;
+}
+
+/* Survey/Action Merged Section - Only for Past Events */
+.my-event-survey-action {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 180px;
+    min-height: 36px;
+    max-width: 180px;
+    overflow: visible;
+    padding: 0 0.25rem;
+    box-sizing: border-box;
+}
+
+.my-event-survey-action .survey-badge {
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    padding: 0.6rem 0.8rem;
+}
+
+/* Legacy classes for backwards compatibility */
+.my-event-survey-pill {
+    display: none;
+}
+
+.my-event-action {
+    display: none;
+}
+
+/* Make all action buttons boxy with larger text to match status pills */
+.my-event-survey-action .btn,
+.my-event-survey-action button {
+    border-radius: 8px !important;
+    padding: 0.6rem 1.3rem;
+    font-weight: 600;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.my-event-survey-action .btn i,
+.my-event-survey-action button i {
+    font-size: 0.9rem;
+}
+
+.status-pill {
+    padding: 0.6rem 1.3rem;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-pill--good {
+    background: #9AB59D;
+    color: white;
+}
+
+.status-pill--neutral {
+    background: #D8D8D8;
+    color: #3A3F3B;
+}
+
+.status-pill--bad {
+    background: #CE325B;
+    color: white;
+}
+
+.survey-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    background: #978EC4;
+    color: white;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.survey-badge span,
+.survey-badge i {
+    flex-shrink: 0;
+}
+
+.survey-badge span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.survey-badge.missing {
+    background: #9AB59D;
+    color: white;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.survey-badge.missing:hover {
+    background: #7A9A7D;
+    transform: scale(1.05);
+}
+
+.survey-badge.missing i {
+    color: white;
+}
+
+.survey-badge.placeholder {
+    display: none;
+}
+
+.survey-badge.empty {
+    visibility: hidden;
+    min-height: 36px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.status-badge.status-available {
+    background-color: #9AB59D;
+    color: white;
+}
+
+.status-badge.status-past {
+    background-color: #D0D0D0;
+    color: #4B4F4B;
+}
+
+/* Responsive styles for My Events section */
+@media (max-width: 1200px) {
+    .my-event-card {
+        grid-template-columns: 120px 140px 140px 130px 160px;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .my-event-card {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .my-event-image {
+        width: 100%;
+        height: 200px;
+    }
+
+    .my-event-main-info,
+    .my-event-details,
+    .my-event-status-pill,
+    .my-event-survey-action {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .my-event-card {
+        padding: 1rem;
+    }
+
+    .my-event-action .btn {
+        width: 100%;
+    }
 }
 
 .registration-actions {

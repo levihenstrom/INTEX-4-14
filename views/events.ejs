@@ -357,3 +357,241 @@
     });
 </script>
 <% } %>
+
+<!-- Admin User Events Section -->
+<% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+<div class="admin-user-events-section mb-5" style="margin-top: 4rem;">
+    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-3">
+        <h2 class="mb-2 mb-md-0">User Events</h2>
+        <div class="occurrence-toggle" id="admin-events-toggle">
+            <button type="button" class="toggle-btn active" data-filter="upcoming">Upcoming</button>
+            <button type="button" class="toggle-btn" data-filter="past">Past</button>
+        </div>
+    </div>
+    
+    <!-- User Search/Select -->
+    <div class="mb-4">
+        <label for="userSearchSelect" class="form-label">Search for a user:</label>
+        <input type="text" 
+               class="form-control" 
+               id="userSearchSelect" 
+               list="usersList" 
+               placeholder="Type to search or select a user..."
+               value="<%= selectedUser ? `${selectedUser.ParticipantFirstName} ${selectedUser.ParticipantLastName} (${selectedUser.ParticipantEmail})` : '' %>"
+               autocomplete="off">
+        <datalist id="usersList">
+            <% if (typeof allParticipants !== 'undefined' && allParticipants) { %>
+                <% allParticipants.forEach(participant => { %>
+                    <option value="<%= `${participant.ParticipantFirstName} ${participant.ParticipantLastName} (${participant.ParticipantEmail})` %>" 
+                            data-participant-id="<%= participant.ParticipantID %>"></option>
+                <% }); %>
+            <% } %>
+        </datalist>
+    </div>
+    
+    <!-- User Events List -->
+    <div class="occurrences-list" id="adminUserEventsList">
+        <% if (typeof selectedUserEvents !== 'undefined' && selectedUserEvents && selectedUserEvents.length) { %>
+            <% selectedUserEvents.forEach(ev => { 
+                const startDate = ev.start ? new Date(ev.start) : null;
+                const endDate = ev.end ? new Date(ev.end) : null;
+                const isToday = startDate && startDate.toDateString() === new Date().toDateString();
+                const isThisYear = startDate && startDate.getFullYear() === new Date().getFullYear();
+                const imgSrc = `/images/events/event_${ev.eventId}.jpg`;
+                const pillLabel = ev.isPast ? (ev.attended ? 'Attended' : (ev.status && ev.status.toLowerCase() === 'cancelled' ? 'Cancelled' : 'No Show')) : (ev.attended ? 'Checked In' : 'Registered');
+                const pillCls = (pillLabel === 'Attended' || pillLabel === 'Checked In')
+                    ? 'status-pill--good'
+                    : (pillLabel === 'Cancelled')
+                        ? 'status-pill--neutral'
+                        : (pillLabel === 'No Show')
+                            ? 'status-pill--bad'
+                            : 'status-pill--neutral';
+                const statusIcon = pillLabel === 'Attended'
+                    ? 'fa-user-check'
+                    : pillLabel === 'Checked In'
+                        ? 'fa-person-walking'
+                        : pillLabel === 'Cancelled'
+                            ? 'fa-ban'
+                            : 'fa-user-clock';
+                let typeIcon = 'fa-tag';
+                let typeColor = '#6B6F6B';
+                if (ev.eventType === 'STEM') {
+                    typeIcon = 'fa-gear';
+                    typeColor = '#99B7C6';
+                } else if (ev.eventType === 'Arts') {
+                    typeIcon = 'fa-paintbrush';
+                    typeColor = '#F4B092';
+                } else if (ev.eventType === 'Leadership') {
+                    typeIcon = 'fa-users';
+                    typeColor = '#9AB59D';
+                } else if (ev.eventType === 'Annual Conference') {
+                    typeIcon = 'fa-calendar-star';
+                    typeColor = '#978EC4';
+                }
+            %>
+                <div class="occurrence-card my-event-card"
+                     data-is-past="<%= ev.isPast %>"
+                     data-registration-id="<%= ev.registrationId %>"
+                     data-occurrence-id="<%= ev.occurrenceId %>"
+                     data-start="<%= ev.start ? ev.start.toISOString() : '' %>"
+                     data-end="<%= ev.end ? ev.end.toISOString() : '' %>"
+                     data-deadline="<%= ev.deadline ? ev.deadline.toISOString() : '' %>"
+                     data-survey-id="<%= ev.surveyId || '' %>"
+                     data-status="<%= ev.status %>"
+                     data-attended="<%= ev.attended %>">
+                    <!-- Image -->
+                    <div class="my-event-image">
+                        <img src="<%- imgSrc %>" alt="<%= ev.eventName %>" onerror="this.src='/images/events/event_0_real.png'">
+                    </div>
+                    
+                    <!-- Main Info: Title, Date, Registered/Past Badge -->
+                    <div class="my-event-main-info">
+                        <h3 class="event-title"><%= ev.eventName %></h3>
+                        <div class="occurrence-date">
+                            <%= startDate
+                                ? (isToday
+                                    ? 'Today'
+                                    : startDate.toLocaleDateString('en-US', isThisYear
+                                        ? { weekday: 'short', month: 'short', day: 'numeric' }
+                                        : { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }))
+                                : 'Date TBD' %>
+                        </div>
+                        <span class="status-badge <%= ev.isPast ? 'status-past' : 'status-available' %>">
+                            <i class="fa-solid <%= ev.isPast ? 'fa-clock' : 'fa-users' %>"></i>
+                            <%= ev.isPast ? 'Past' : 'Registered' %>
+                        </span>
+                    </div>
+                    
+                    <!-- Details: Location, Time, Type -->
+                    <div class="my-event-details">
+                        <% if (ev.location) { %>
+                        <div class="occurrence-detail-item">
+                            <i class="fa-solid fa-location-dot"></i>
+                            <span><%= ev.location %></span>
+                        </div>
+                        <% } %>
+                        <div class="occurrence-detail-item">
+                            <i class="fa-solid fa-clock"></i>
+                            <span>
+                                <%= startDate
+                                    ? startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+                                    : 'Time TBD' %>
+                                <% if (endDate) { %>
+                                    - <%= endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) %>
+                                <% } %>
+                            </span>
+                        </div>
+                        <% if (ev.eventType) { %>
+                        <div class="occurrence-detail-item">
+                            <i class="fa-solid <%= typeIcon %>"></i>
+                            <span><%= ev.eventType %></span>
+                        </div>
+                        <% } %>
+                    </div>
+                    
+                    <!-- Status Pill -->
+                    <div class="my-event-status-pill">
+                        <span class="status-pill <%= pillCls %>">
+                            <i class="fa-solid <%= statusIcon %>"></i>
+                            <span><%= pillLabel %></span>
+                        </span>
+                    </div>
+                    
+                    <!-- Survey/Action Merged - Only for Past Events -->
+                    <% if (ev.isPast && ev.attended) { %>
+                        <div class="my-event-survey-action">
+                            <% if (ev.surveyId) { %>
+                                <a class="survey-badge" href="/surveys?filterSurveyID=<%= ev.surveyId %>">
+                                    <i class="fa-solid fa-check"></i>
+                                    Survey Complete
+                                </a>
+                            <% } else { %>
+                                <span class="survey-badge" style="opacity: 0.6;">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                    Survey Pending
+                                </span>
+                            <% } %>
+                        </div>
+                    <% } else { %>
+                        <!-- Action Button for Upcoming Events -->
+                        <div class="my-event-survey-action occurrence-actions"></div>
+                    <% } %>
+                </div>
+            <% }); %>
+        <% } else if (typeof selectedUser !== 'undefined' && selectedUser) { %>
+            <div class="no-occurrences">This user has not registered for any events yet.</div>
+        <% } else { %>
+            <div class="no-occurrences">Select a user above to view their events.</div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const userSearchSelect = document.getElementById('userSearchSelect');
+        const usersList = document.getElementById('usersList');
+        
+        // Handle user selection
+        if (userSearchSelect && usersList) {
+            userSearchSelect.addEventListener('change', function() {
+                const selectedOption = Array.from(usersList.options).find(option => 
+                    option.value === this.value
+                );
+                
+                if (selectedOption) {
+                    const participantId = selectedOption.getAttribute('data-participant-id');
+                    if (participantId) {
+                        // Redirect to events page with selected user
+                        window.location.href = `/events?selectedUserId=${participantId}`;
+                    }
+                } else {
+                    // User typed in a value, try to find matching participant
+                    const inputValue = this.value.toLowerCase();
+                    const matchingOption = Array.from(usersList.options).find(option => {
+                        const optionValue = option.value.toLowerCase();
+                        return optionValue.includes(inputValue) || inputValue.includes(optionValue.split('(')[0].trim().toLowerCase());
+                    });
+                    
+                    if (matchingOption) {
+                        const participantId = matchingOption.getAttribute('data-participant-id');
+                        if (participantId) {
+                            window.location.href = `/events?selectedUserId=${participantId}`;
+                        }
+                    }
+                }
+            });
+            
+            // Also handle input event for better search experience
+            userSearchSelect.addEventListener('input', function() {
+                // This allows typing and then selecting from dropdown
+            });
+        }
+        
+        // Admin events filter toggle
+        const adminToggle = document.getElementById('admin-events-toggle');
+        if (adminToggle) {
+            const adminCards = Array.from(document.querySelectorAll('#adminUserEventsList .my-event-card'));
+            const applyAdminFilter = (filter) => {
+                adminCards.forEach(card => {
+                    const isPast = card.getAttribute('data-is-past') === 'true';
+                    const show = filter === 'past' ? isPast : !isPast;
+                    card.style.display = show ? '' : 'none';
+                });
+            };
+            
+            adminToggle.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    adminToggle.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    applyAdminFilter(btn.getAttribute('data-filter'));
+                });
+            });
+            
+            // Initialize with upcoming shown
+            if (adminCards.length > 0) {
+                applyAdminFilter('upcoming');
+            }
+        }
+    });
+</script>
+<% } %>

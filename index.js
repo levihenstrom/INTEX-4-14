@@ -990,11 +990,89 @@ app.get('/events', async (req, res) => {
             };
         });
 
+        // For admin: fetch participants for user search and user events if selected
+        let allParticipants = [];
+        let selectedUserEvents = [];
+        let selectedUser = null;
+        
+        if (req.session.isAdmin) {
+            // Get all participants for the search dropdown
+            allParticipants = await knex('Participants')
+                .select('ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 'ParticipantEmail')
+                .orderBy('ParticipantLastName', 'asc')
+                .orderBy('ParticipantFirstName', 'asc');
+            
+            // If a user is selected, fetch their events
+            const selectedUserId = req.query.selectedUserId;
+            if (selectedUserId) {
+                selectedUser = await knex('Participants')
+                    .where('ParticipantID', selectedUserId)
+                    .first();
+                
+                if (selectedUser) {
+                    const userEventsRows = await knex('Registration as r')
+                        .leftJoin('Event_Occurrence as o', 'r.OccurrenceID', 'o.OccurrenceID')
+                        .leftJoin('Event_Templates as e', 'o.EventID', 'e.EventID')
+                        .leftJoin('Surveys as s', 'r.RegistrationID', 's.RegistrationID')
+                        .select(
+                            'r.RegistrationID',
+                            'r.RegistrationStatus',
+                            'r.RegistrationAttendedFlag',
+                            'r.RegistrationCheckInTime',
+                            'r.RegistrationCreatedAt',
+                            'o.OccurrenceID',
+                            'o.EventDateTimeStart',
+                            'o.EventDateTimeEnd',
+                            'o.EventRegistrationDeadline',
+                            'o.EventLocation',
+                            'o.EventCapacity',
+                            'e.EventID',
+                            'e.EventName',
+                            'e.EventType',
+                            'e.EventRecurrencePattern',
+                            's.SurveyID'
+                        )
+                        .where('r.ParticipantID', selectedUserId)
+                        .orderBy('o.EventDateTimeStart', 'asc');
+                    
+                    const profileNow = new Date();
+                    selectedUserEvents = userEventsRows.map(row => {
+                        const start = row.EventDateTimeStart ? new Date(row.EventDateTimeStart) : null;
+                        const end = row.EventDateTimeEnd ? new Date(row.EventDateTimeEnd) : null;
+                        const deadline = row.EventRegistrationDeadline ? new Date(row.EventRegistrationDeadline) : null;
+                        const isPast = end ? end < profileNow : (start ? start < profileNow : false);
+                        return {
+                            registrationId: row.RegistrationID,
+                            status: row.RegistrationStatus || 'Registered',
+                            attended: !!row.RegistrationAttendedFlag,
+                            checkInTime: row.RegistrationCheckInTime,
+                            occurrenceId: row.OccurrenceID,
+                            start,
+                            end,
+                            deadline,
+                            location: row.EventLocation,
+                            capacity: row.EventCapacity,
+                            eventId: row.EventID,
+                            eventName: row.EventName,
+                            eventType: row.EventType,
+                            recurrence: row.EventRecurrencePattern,
+                            surveyId: row.SurveyID,
+                            isPast
+                        };
+                    });
+                }
+            }
+        }
+        
         res.render('events', {
             pageTitle: 'Events',
             event_templates,
             upcomingEvents,
             isAdmin: req.session.isAdmin || false,
+            allParticipants: allParticipants,
+            selectedUserEvents: selectedUserEvents,
+            selectedUser: selectedUser,
+            selectedUserId: req.query.selectedUserId || null
         });
     } catch (err) {
         console.error('Error loading events:', err);
@@ -3266,7 +3344,9 @@ app.get('/profile', async (req, res) => {
                 profileDOBDisplay,
                 profileDOBInput,
                 memberSinceDisplay,
-                userEvents
+                userEvents,
+                error: req.query.error || null,
+                success: req.query.success || null
             });
         } catch (err) {
             console.error('Error fetching profile:', err);
@@ -3511,14 +3591,15 @@ app.post('/participants', async (req, res) => {
 
         // Determine which participant to update
         let targetParticipantId;
-        if (req.session.isAdmin) {
-            // Admin can update any participant
-            if (!participantId) {
-                return res.status(400).json({ error: 'Participant ID required' });
-            }
+        if (req.session.isAdmin && participantId) {
+            // Admin can update any participant (if participantId is provided)
             targetParticipantId = participantId;
         } else {
             // Regular user can only update their own profile
+            // Also handles admin updating their own profile (when participantId is not provided)
+            if (!req.session.user || !req.session.user.ParticipantID) {
+                return res.status(400).json({ error: 'User session not found. Please log in again.' });
+            }
             targetParticipantId = req.session.user.ParticipantID;
         }
 
@@ -3544,13 +3625,11 @@ app.post('/participants', async (req, res) => {
             .where('ParticipantID', targetParticipantId)
             .update(updateData);
 
-        // Build redirect URL
-        if (req.session.isAdmin) {
-            if (redirectTo) {
-                return res.redirect(redirectTo);
-            }
-            // Check if redirectTo is for /users or /participants
-            let redirectUrl = '/users?';
+        // Always redirect to profile with success message
+        // If admin is updating another user and redirectTo is provided, use that instead
+        if (req.session.isAdmin && participantId && redirectTo && redirectTo !== '/profile') {
+            // Admin updating another user from users/participants page - preserve filters
+            let redirectUrl = redirectTo;
             const params = [];
             if (preserveSearch) params.push('search=' + encodeURIComponent(preserveSearch));
             if (preserveSort) params.push('sort=' + encodeURIComponent(preserveSort));
@@ -3558,21 +3637,18 @@ app.post('/participants', async (req, res) => {
             if (preservePage) params.push('page=' + encodeURIComponent(preservePage));
             
             if (params.length > 0) {
-                redirectUrl += params.join('&');
-            } else {
-                redirectUrl = '/users';
+                redirectUrl += (redirectUrl.includes('?') ? '&' : '?') + params.join('&');
             }
+            redirectUrl += (redirectUrl.includes('?') ? '&' : '?') + 'success=' + encodeURIComponent('Profile updated successfully.');
             return res.redirect(redirectUrl);
         } else {
-            return res.redirect('/participants');
+            // User updating their own profile OR admin updating their own profile
+            return res.redirect('/profile?success=' + encodeURIComponent('Profile updated successfully.'));
         }
     } catch (err) {
         console.error('Error updating participant:', err);
-        if (req.session.isAdmin) {
-            return res.redirect('/participants?error=' + encodeURIComponent('Error updating participant. Please try again.'));
-        } else {
-            return res.redirect('/participants?error=' + encodeURIComponent('Error updating your profile. Please try again.'));
-        }
+        // Redirect to profile with error message
+        return res.redirect('/profile?error=' + encodeURIComponent('Error updating your profile. Please try again.'));
     }
 });
 
