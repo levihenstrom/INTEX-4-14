@@ -104,6 +104,10 @@ app.use(session({
 // Middleware to extract CSRF token from headers for AJAX requests
 app.use((req, res, next) => {
     if (req.method === 'POST' && req.headers['x-csrf-token']) {
+        // Ensure req.body exists before setting _csrf
+        if (!req.body) {
+            req.body = {};
+        }
         req.body._csrf = req.headers['x-csrf-token'];
     }
     next();
@@ -3433,7 +3437,22 @@ app.use((err, req, res, next) => {
     if (err.code === 'EBADCSRFTOKEN') {
         // Handle CSRF token errors
         console.error('CSRF token validation failed');
-        // Generate a new CSRF token for the error page
+        
+        // Check if this is an AJAX request expecting JSON
+        const isAjax = req.xhr || 
+                       req.headers.accept?.includes('application/json') ||
+                       req.headers['x-csrf-token'] ||
+                       req.headers['content-type']?.includes('application/json');
+        
+        if (isAjax) {
+            // Return JSON for AJAX requests
+            return res.status(403).json({ 
+                success: false, 
+                error: 'Session expired. Please refresh the page and try again.' 
+            });
+        }
+        
+        // Generate a new CSRF token for the error page (form submissions)
         let csrfToken = '';
         try {
             csrfToken = req.csrfToken ? req.csrfToken() : '';
