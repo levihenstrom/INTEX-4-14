@@ -677,7 +677,7 @@
                         <i class="fa-solid fa-search donations-search-icon"></i>
                         <input type="text" class="form-control donations-search-input" name="search" placeholder="Search by donor, amount, or ID..." value="<%= searchValue %>">
                     </div>
-                    <% if (searchValue) { %>
+                    <% if (searchValue || filterPairs.length > 0) { %>
                         <a href="/donations" class="btn btn-outline-secondary donations-clear-btn donations-search-clear-btn">Clear</a>
                     <% } %>
                 </form>
@@ -729,13 +729,17 @@
                                             <label class="donations-filter-group-label">Location</label>
                                             <div class="donations-range-controls">
                                                 <div class="donations-range-slider-row">
-                                                    <div class="donations-range-input-group">
+                                                    <div class="donations-range-input-group" style="position: relative;">
                                                         <label class="donations-range-label">City</label>
-                                                        <input type="text" class="form-control donations-range-input" name="filterCity" value="<%= filterValues.filterCity || '' %>">
+                                                        <input type="text" class="form-control reg-participant-search donations-range-input" id="donationsFilterCitySearch" placeholder="Search city..." value="<%= filterValues.filterCity || '' %>" autocomplete="off">
+                                                        <div class="reg-search-results" id="donationsFilterCityResults"></div>
+                                                        <input type="hidden" name="filterCity" id="donationsFilterCityInput" value="<%= filterValues.filterCity || '' %>">
                                                     </div>
-                                                    <div class="donations-range-input-group">
+                                                    <div class="donations-range-input-group" style="position: relative;">
                                                         <label class="donations-range-label">State</label>
-                                                        <input type="text" class="form-control donations-range-input" name="filterState" value="<%= filterValues.filterState || '' %>">
+                                                        <input type="text" class="form-control reg-participant-search donations-range-input" id="donationsFilterStateSearch" placeholder="Search state..." value="<%= filterValues.filterState || '' %>" autocomplete="off">
+                                                        <div class="reg-search-results" id="donationsFilterStateResults"></div>
+                                                        <input type="hidden" name="filterState" id="donationsFilterStateInput" value="<%= filterValues.filterState || '' %>">
                                                     </div>
                                                 </div>
                                             </div>
@@ -995,11 +999,7 @@
                                                     data-amount="<%= formatCurrency(donation.DonationAmountValue) %>">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
-                                            <form action="/donations/delete" method="POST" class="delete-donation-form d-inline" data-amount="<%= formatCurrency(donation.DonationAmountValue) %>">
-                                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                                <input type="hidden" name="DonationID" value="<%= donation.DonationID %>">
-                                                <button type="submit" class="btn btn-outline-danger">Delete</button>
-                                            </form>
+                            
                                         </div>
                                     <% } %>
                                 </div>
@@ -1051,32 +1051,16 @@
                     <h4>Add Donation</h4>
                     <button type="button" class="add-donation-close" id="addDonationClose">&times;</button>
                 </div>
-                <form id="addDonationForm" action="/donations/add" method="POST">
-                    <div class="add-donation-form-group">
-                        <label>Participant *</label>
-                        <div style="position: relative;">
-                            <input type="text" class="form-control reg-participant-search" id="addDonationParticipantSearch" placeholder="Search participants..." autocomplete="off">
-                            <div class="reg-search-results" id="addDonationParticipantResults"></div>
-                        </div>
-                        <input type="hidden" id="addDonationParticipantId" name="ParticipantID" required>
-                    </div>
-                    <div class="add-donation-form-group">
-                        <label for="addDonationAmount">Amount *</label>
-                        <input type="number" step="0.01" min="0.01" class="form-control" id="addDonationAmount" name="DonationAmount" required>
                     <div class="modal-body">
                         <form id="addDonationForm" action="/donations/add" method="POST">
                             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                             <div class="mb-3">
                                 <label class="form-label">Participant *</label>
-                                <input type="text" class="form-control mb-2" id="donationParticipantSearch" placeholder="Search by name or email" autocomplete="off">
-                                <select class="form-select" id="donationParticipantSelect" name="ParticipantID" size="6" required>
-                                    <option value="">Select participant</option>
-                                    <% participantChoices.forEach(function(participant) { %>
-                                        <option value="<%= participant.ParticipantID %>">
-                                            <%= participant.ParticipantFirstName %> <%= participant.ParticipantLastName %> (#<%= participant.ParticipantID %>) - <%= participant.ParticipantEmail %>
-                                        </option>
-                                    <% }); %>
-                                </select>
+                                <div style="position: relative;">
+                                    <input type="text" class="form-control reg-participant-search" id="addDonationParticipantSearch" placeholder="Search participants..." autocomplete="off">
+                                    <div class="reg-search-results" id="addDonationParticipantResults"></div>
+                                </div>
+                                <input type="hidden" id="addDonationParticipantId" name="ParticipantID" required>
                             </div>
                             <div class="mb-3">
                                 <label for="addDonationAmount" class="form-label">Amount *</label>
@@ -1088,15 +1072,10 @@
                             </div>
                         </form>
                     </div>
-                    <div class="add-donation-form-group">
-                        <label for="addDonationDate">Donation Date</label>
-                        <input type="date" class="form-control" id="addDonationDate" name="DonationDate" value="<%= new Date().toISOString().split('T')[0] %>">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary donations-modal-cancel-btn" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" form="addDonationForm" class="btn btn-primary donations-modal-save-btn">Save Donation</button>
                     </div>
-                    <div class="add-donation-actions">
-                        <button type="button" class="btn btn-outline-secondary donations-modal-cancel-btn" id="addDonationCancel">Cancel</button>
-                        <button type="submit" class="btn btn-primary donations-modal-save-btn">Save Donation</button>
-                    </div>
-                </form>
             </div>
         </div>
 
@@ -1405,6 +1384,11 @@
                 const form = document.createElement('form');
                 form.action = '/donations/delete';
                 form.method = 'POST';
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_csrf';
+                csrfInput.value = '<%= csrfToken %>';
+                form.appendChild(csrfInput);
                 const input = document.createElement('input');
                 input.type = 'hidden';
                 input.name = 'DonationID';
@@ -2388,6 +2372,79 @@
         const amountWrapper = document.querySelector('#amountMinSlider')?.closest('.donations-dual-range-wrapper');
         if (amountWrapper) {
             setupDualRangeSlider(amountWrapper, 'amountMinSlider', 'amountMaxSlider', 'filterMinAmount', 'filterMaxAmount', 0, 10000, 0.01);
+        }
+        
+        // City/State filter search selectors
+        const citySearchInput = document.getElementById('donationsFilterCitySearch');
+        const citySearchResults = document.getElementById('donationsFilterCityResults');
+        const cityInput = document.getElementById('donationsFilterCityInput');
+        const stateSearchInput = document.getElementById('donationsFilterStateSearch');
+        const stateSearchResults = document.getElementById('donationsFilterStateResults');
+        const stateInput = document.getElementById('donationsFilterStateInput');
+
+        function setupFilterSearch(searchInput, searchResults, hiddenInput, options, showAllOnFocus = false) {
+            if (!searchInput || !searchResults || !hiddenInput) return;
+
+            const hideResults = () => {
+                if (searchResults) searchResults.style.display = 'none';
+            };
+
+            const showResults = () => {
+                if (searchResults) searchResults.style.display = 'block';
+            };
+
+            const filterAndDisplay = (q = '') => {
+                const searchTerm = q.toLowerCase().trim();
+                const filtered = options.filter(opt => 
+                    opt.toLowerCase().includes(searchTerm)
+                );
+                
+                searchResults.innerHTML = '';
+                if (filtered.length === 0 && searchTerm) {
+                    hideResults();
+                    return;
+                }
+                
+                filtered.forEach(opt => {
+                    const div = document.createElement('div');
+                    div.className = 'result-item';
+                    div.textContent = opt;
+                    div.addEventListener('click', () => {
+                        searchInput.value = opt;
+                        hiddenInput.value = opt;
+                        hideResults();
+                    });
+                    searchResults.appendChild(div);
+                });
+                showResults();
+            };
+
+            searchInput.addEventListener('input', () => {
+                const q = searchInput.value.trim();
+                filterAndDisplay(q);
+            });
+
+            if (showAllOnFocus) {
+                searchInput.addEventListener('focus', () => {
+                    filterAndDisplay(searchInput.value.trim());
+                });
+            }
+
+            document.addEventListener('click', (e) => {
+                if (searchResults && !searchResults.contains(e.target) && e.target !== searchInput) {
+                    hideResults();
+                }
+            });
+        }
+
+        const uniqueCities = <%- JSON.stringify(uniqueCities || []) %>;
+        const uniqueStates = <%- JSON.stringify(uniqueStates || []) %>;
+        
+        if (citySearchInput && citySearchResults && cityInput) {
+            setupFilterSearch(citySearchInput, citySearchResults, cityInput, uniqueCities);
+        }
+        if (stateSearchInput && stateSearchResults && stateInput) {
+            setupFilterSearch(stateSearchInput, stateSearchResults, stateInput, uniqueStates);
         }
         
         // Age range
