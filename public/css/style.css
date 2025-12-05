@@ -2020,6 +2020,11 @@ body:not(.has-hero) {
     color: white;
 }
 
+.status-closed {
+    background-color: #CE325B; /* red/pink */
+    color: white;
+}
+
 .status-past {
     background-color: #D0D0D0;
     color: #4B4F4B;
@@ -3019,6 +3024,11 @@ body:not(.has-hero) {
 
 .status-badge.status-available {
     background-color: #9AB59D;
+    color: white;
+}
+
+.status-badge.status-closed {
+    background-color: #CE325B;
     color: white;
 }
 

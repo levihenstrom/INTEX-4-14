@@ -247,11 +247,18 @@ app.get('/', async (req, res) => {
             }
             const isFull = capacity ? registrationCount >= capacity : false;
             
+            // Check if registration deadline has passed but event hasn't started
+            const start = new Date(occurrence.EventDateTimeStart);
+            const isPast = start < now;
+            const registrationDeadline = occurrence.EventRegistrationDeadline ? new Date(occurrence.EventRegistrationDeadline) : null;
+            const isRegistrationClosed = registrationDeadline && registrationDeadline < now && !isPast;
+            
             return {
                 ...occurrence,
                 registrationCount,
                 isFull,
-                hasSpace: !isFull
+                hasSpace: !isFull,
+                isRegistrationClosed
             };
         });
 
@@ -982,11 +989,19 @@ app.get('/events', async (req, res) => {
             }
             const isFull = capacity ? registrationCount >= capacity : false;
             
+            // Check if registration deadline has passed but event hasn't started
+            const start = new Date(occurrence.EventDateTimeStart);
+            const end = occurrence.EventDateTimeEnd ? new Date(occurrence.EventDateTimeEnd) : null;
+            const isPast = end ? end < now : start < now;
+            const registrationDeadline = occurrence.EventRegistrationDeadline ? new Date(occurrence.EventRegistrationDeadline) : null;
+            const isRegistrationClosed = registrationDeadline && registrationDeadline < now && !isPast;
+            
             return {
                 ...occurrence,
                 registrationCount,
                 isFull,
-                hasSpace: !isFull
+                hasSpace: !isFull,
+                isRegistrationClosed
             };
         });
 
@@ -1316,6 +1331,10 @@ app.get('/registration/:id', async (req, res) => {
             const end = occurrence.EventDateTimeEnd ? new Date(occurrence.EventDateTimeEnd) : null;
             const isPast = end ? end < now : start < now;
             const attCount = attendanceCounts[occurrence.OccurrenceID] || 0;
+            
+            // Check if registration deadline has passed but event hasn't started
+            const registrationDeadline = occurrence.EventRegistrationDeadline ? new Date(occurrence.EventRegistrationDeadline) : null;
+            const isRegistrationClosed = registrationDeadline && registrationDeadline < now && !isPast;
 
             return {
                 ...occurrence,
@@ -1323,7 +1342,8 @@ app.get('/registration/:id', async (req, res) => {
                 attendanceCount: attCount,
                 isFull,
                 hasSpace: !isFull,
-                isPast
+                isPast,
+                isRegistrationClosed
             };
         });
 
@@ -1638,7 +1658,7 @@ app.post('/admin/occurrences/create', async (req, res) => {
             return res.status(403).json({ success: false, error: 'Admin access required' });
         }
 
-        const { eventId, date, startTime, endTime, location, capacity } = req.body || {};
+        const { eventId, date, startTime, endTime, location, capacity, registrationDeadline } = req.body || {};
         
         if (!eventId || !date || !startTime || !capacity || capacity < 1) {
             return res.status(400).json({ success: false, error: 'Event ID, date, start time, and capacity are required' });
@@ -1665,6 +1685,28 @@ app.post('/admin/occurrences/create', async (req, res) => {
             return res.status(400).json({ success: false, error: 'End time must be after start time' });
         }
 
+        // Check if an occurrence with the same EventID and EventDateTimeStart already exists
+        const existingOccurrence = await knex('Event_Occurrence')
+            .where('EventID', parseInt(eventId, 10))
+            .where('EventDateTimeStart', start.toISOString())
+            .first();
+
+        if (existingOccurrence) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'An occurrence for this event at this date and time already exists. Please choose a different date or time.' 
+            });
+        }
+
+        // Parse registration deadline if provided
+        let parsedRegistrationDeadline = null;
+        if (registrationDeadline) {
+            const deadlineDate = new Date(registrationDeadline);
+            if (!Number.isNaN(deadlineDate.getTime())) {
+                parsedRegistrationDeadline = deadlineDate.toISOString(); // Format as ISO datetime string
+            }
+        }
+
         // Create the occurrence
         const [occurrenceId] = await knex('Event_Occurrence')
             .insert({
@@ -1672,7 +1714,8 @@ app.post('/admin/occurrences/create', async (req, res) => {
                 EventDateTimeStart: start.toISOString(),
                 EventDateTimeEnd: end ? end.toISOString() : null,
                 EventLocation: location || null,
-                EventCapacity: parseInt(capacity, 10)
+                EventCapacity: parseInt(capacity, 10),
+                EventRegistrationDeadline: parsedRegistrationDeadline
             })
             .returning('OccurrenceID');
 
