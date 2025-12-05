@@ -191,8 +191,8 @@
                 Be part of our community. Join a workshop, attend a performance, or volunteer at one of our upcoming events.
             </p>
         </div>
+        <% if (upcomingEvents && upcomingEvents.length > 0) { %>
         <div class="upcoming-events-section">
-            <% if (typeof upcomingEvents !== 'undefined' && upcomingEvents && upcomingEvents.length > 0) { %>
             <div class="upcoming-events-carousel-container">
                 <div class="upcoming-events-carousel landing-events-carousel">
                     <% upcomingEvents.forEach(event => { %>
@@ -248,10 +248,8 @@
                     <% }); %>
                 </div>
             </div>
-            <% } else { %>
-            <p style="text-align: center; color: #5A5E5A; padding: 2rem;">No upcoming events at this time. Check back soon!</p>
-            <% } %>
         </div>
+        <% } %>
         <a href="/events" class="events-view-all">View All Events <i class="fas fa-arrow-right"></i></a>
     </div>
 </section>
