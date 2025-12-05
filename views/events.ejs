@@ -81,12 +81,9 @@
 
 <!-- Events Filters -->
 <div class="events-filters">
-    <div class="filters-title" id="filterEventsTitle" style="cursor: pointer; user-select: none;">
-        <i class="fa-solid fa-filter"></i> Filter Events
-    </div>
-    <div class="filters-row" id="filtersRow" style="display: none;">
-        <div class="filter-group">
-            <label>Event Type</label>
+    <div class="filters-container">
+        <div class="filter-section">
+            <span class="filter-label"><i class="fa-solid fa-filter"></i> Event Type:</span>
             <div class="event-labels filter-labels" id="event-type-pills">
                 <span class="event-label event-label-type-stem filter-pill" data-filter-type="eventType" data-filter-value="all">
                     <i class="fa-solid fa-sliders"></i>All Types
@@ -105,8 +102,8 @@
                 </span>
             </div>
         </div>
-        <div class="filter-group">
-            <label>Recurrence</label>
+        <div class="filter-section">
+            <span class="filter-label"><i class="fa-solid fa-calendar"></i> Recurrence:</span>
             <div class="event-labels filter-labels" id="event-recurrence-pills">
                 <span class="event-label event-label-recurrence-monthly filter-pill" data-filter-type="eventRecurrence" data-filter-value="all">
                     <i class="fa-solid fa-sliders"></i>All Patterns
@@ -206,24 +203,6 @@
                 filterEvents();
             });
         });
-
-        // Toggle filter visibility
-        const filterTitle = document.getElementById('filterEventsTitle');
-        const filtersRow = document.getElementById('filtersRow');
-        
-        if (filterTitle && filtersRow) {
-            filterTitle.addEventListener('click', () => {
-                const isHidden = filtersRow.style.display === 'none';
-                filtersRow.style.display = isHidden ? 'block' : 'none';
-                
-                // Rotate icon
-                const icon = filterTitle.querySelector('i');
-                if (icon) {
-                    icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
-                    icon.style.transition = 'transform 0.3s ease';
-                }
-            });
-        }
 
         // initialize selection
         setActive(typePills, 'all');
