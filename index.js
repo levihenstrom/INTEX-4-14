@@ -2922,11 +2922,13 @@ app.get('/users', async (req, res) => {
         }
     }
     else{
-        // Return 418 status code for non-admin access attempt
+        // Return for non-admin access attempt
         return res.status(418).render('landing', { 
             layout: 'public', 
             pageTitle: 'Welcome',
-            error: 'You do not have admin access' 
+            error: 'You do not have admin access' ,
+            hasHero: true,               // match your / route
+            upcomingEvents: []          
         });
     }
 });
@@ -3004,7 +3006,9 @@ app.post('/users/delete', async (req, res) => {
         return res.status(418).render('landing', { 
             layout: 'public', 
             pageTitle: 'Welcome',
-            error: 'You do not have admin access' 
+            error: 'You do not have admin access' ,
+            hasHero: true,
+            upcomingEvents: [] 
         });
     }
 
