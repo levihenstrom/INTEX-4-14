@@ -18,7 +18,7 @@
     pushFilter('filterCity');
     pushFilter('filterState');
     pushFilter('filterRole');
-    pushFilter('filterInterest');
+    pushFilter('filterEventType');
     pushFilter('filterSurveyID');
     pushFilter('filterNPS');
     const filterQueryString = filterPairs.length ? '&' + filterPairs.map(function(pair) {
@@ -215,24 +215,27 @@
                                         <input type="hidden" name="filterEventTitle" id="surveysFilterEventTitleInput" value="<%= filterValues.filterEventTitle || '' %>">
                                     </div>
 
-                                    <!-- Field of Interest (Icon-based) -->
+                                    <!-- Event Type (Icon-based) -->
                                     <div class="surveys-filter-group">
-                                        <label class="surveys-filter-group-label">Field of Interest</label>
-                                        <div class="event-labels filter-labels" id="survey-interest-pills">
-                                            <span class="event-label event-label-type-stem filter-pill survey-interest-pill" data-interest-value="">
-                                                <i class="fa-solid fa-sliders"></i>Any
+                                        <label class="surveys-filter-group-label">Event Type</label>
+                                        <div class="event-labels filter-labels" id="survey-event-type-pills">
+                                            <span class="event-label event-label-type-stem filter-pill survey-event-type-pill <%= filterValues.filterEventType ? '' : 'filter-selected' %>" data-event-type="">
+                                                <i class="fa-solid fa-sliders"></i>All Types
                                             </span>
-                                            <span class="event-label event-label-type-stem filter-pill survey-interest-pill <%= filterValues.filterInterest === 'STEM' ? 'filter-selected' : '' %>" data-interest-value="STEM">
+                                            <span class="event-label event-label-type-leadership filter-pill survey-event-type-pill <%= filterValues.filterEventType === 'Leadership' ? 'filter-selected' : '' %>" data-event-type="Leadership">
+                                                <i class="fa-solid fa-users"></i>Leadership
+                                            </span>
+                                            <span class="event-label event-label-type-stem filter-pill survey-event-type-pill <%= filterValues.filterEventType === 'STEM' ? 'filter-selected' : '' %>" data-event-type="STEM">
                                                 <i class="fa-solid fa-gear"></i>STEM
                                             </span>
-                                            <span class="event-label event-label-type-arts filter-pill survey-interest-pill <%= filterValues.filterInterest === 'Arts' ? 'filter-selected' : '' %>" data-interest-value="Arts">
+                                            <span class="event-label event-label-type-arts filter-pill survey-event-type-pill <%= filterValues.filterEventType === 'Arts' ? 'filter-selected' : '' %>" data-event-type="Arts">
                                                 <i class="fa-solid fa-paintbrush"></i>Arts
                                             </span>
-                                            <span class="event-label event-label-type-annual-conference filter-pill survey-interest-pill <%= filterValues.filterInterest === 'Both' ? 'filter-selected' : '' %>" data-interest-value="Both">
-                                                <i class="fa-solid fa-layer-group"></i>Both
+                                            <span class="event-label event-label-type-annual-conference filter-pill survey-event-type-pill <%= filterValues.filterEventType === 'Annual Conference' ? 'filter-selected' : '' %>" data-event-type="Annual Conference">
+                                                <i class="fa-solid fa-calendar-star"></i>Annual Conference
                                             </span>
                                         </div>
-                                        <input type="hidden" name="filterInterest" id="surveyFilterInterestInput" value="<%= filterValues.filterInterest || '' %>">
+                                        <input type="hidden" name="filterEventType" id="surveyFilterEventTypeInput" value="<%= filterValues.filterEventType || '' %>">
                                     </div>
                                 </div>
 
@@ -739,15 +742,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Filter pill handlers
-    const interestPills = document.querySelectorAll('.survey-interest-pill');
-    const interestInput = document.getElementById('surveyFilterInterestInput');
-    interestPills.forEach(pill => {
+    // Event type filter pill handlers
+    const eventTypePills = document.querySelectorAll('.survey-event-type-pill');
+    const eventTypeInput = document.getElementById('surveyFilterEventTypeInput');
+    eventTypePills.forEach(pill => {
         pill.addEventListener('click', function() {
-            interestPills.forEach(p => p.classList.remove('filter-selected'));
+            eventTypePills.forEach(p => p.classList.remove('filter-selected'));
             this.classList.add('filter-selected');
-            const value = this.getAttribute('data-interest-value');
-            if (interestInput) interestInput.value = value || '';
+            const value = this.getAttribute('data-event-type');
+            if (eventTypeInput) eventTypeInput.value = value || '';
         });
     });
 
