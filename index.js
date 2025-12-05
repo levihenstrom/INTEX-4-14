@@ -2785,7 +2785,7 @@ app.get('/users', async (req, res) => {
             const searchTerm = req.query.search || '';
             const filterRole = req.query.filterRole || '';
             const sortColumn = req.query.sort || 'ParticipantID';
-            const sortDir = req.query.sortDir || 'asc';
+            const sortDir = String(req.query.sortDir || 'asc');
 
             // Validate sort column and direction
             const validColumns = [
@@ -2977,7 +2977,8 @@ app.get('/users', async (req, res) => {
                 sortDir: safeSortDir,
                 participantProgress: participantProgress,
                 error: req.query.error || null,
-                success: req.query.success || null
+                success: req.query.success || null,
+                csrfToken: req.csrfToken ? req.csrfToken() : ''
             });
         } catch (err) {
             console.error('Error fetching users:', err);
@@ -2995,7 +2996,8 @@ app.get('/users', async (req, res) => {
                 sortDir: req.query.sortDir || 'asc',
                 participantProgress: {},
                 error: 'Error loading users. Please try again.',
-                success: null
+                success: null,
+                csrfToken: req.csrfToken ? req.csrfToken() : ''
             });
         }
     }

@@ -541,8 +541,8 @@
                 if (selectedOption) {
                     const participantId = selectedOption.getAttribute('data-participant-id');
                     if (participantId) {
-                        // Redirect to events page with selected user
-                        window.location.href = `/events?selectedUserId=${participantId}`;
+                        // Redirect to events page with selected user and scroll parameter
+                        window.location.href = `/events?selectedUserId=${participantId}&scrollToEvents=true`;
                     }
                 } else {
                     // User typed in a value, try to find matching participant
@@ -555,7 +555,7 @@
                     if (matchingOption) {
                         const participantId = matchingOption.getAttribute('data-participant-id');
                         if (participantId) {
-                            window.location.href = `/events?selectedUserId=${participantId}`;
+                            window.location.href = `/events?selectedUserId=${participantId}&scrollToEvents=true`;
                         }
                     }
                 }
@@ -587,9 +587,36 @@
                 });
             });
             
-            // Initialize with upcoming shown
+            // Check for scroll and filter parameters in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const scrollToEvents = urlParams.get('scrollToEvents') === 'true';
+            const showPast = urlParams.get('showPast') === 'true';
+            const selectedUserId = urlParams.get('selectedUserId');
+            
+            // Initialize filter
             if (adminCards.length > 0) {
-                applyAdminFilter('upcoming');
+                if (showPast) {
+                    // Activate Past toggle
+                    const pastBtn = adminToggle.querySelector('.toggle-btn[data-filter="past"]');
+                    if (pastBtn) {
+                        adminToggle.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                        pastBtn.classList.add('active');
+                        applyAdminFilter('past');
+                    }
+                } else {
+                    // Default to upcoming
+                    applyAdminFilter('upcoming');
+                }
+            }
+            
+            // Scroll to user events section if requested OR if a user is selected
+            if (scrollToEvents || selectedUserId) {
+                const userEventsSection = document.querySelector('.admin-user-events-section');
+                if (userEventsSection) {
+                    setTimeout(() => {
+                        userEventsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100); // Small delay to ensure content is rendered
+                }
             }
         }
     });
