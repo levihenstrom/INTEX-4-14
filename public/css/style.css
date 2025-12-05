@@ -80,9 +80,60 @@ h1.mb-4,
 .dashboard-page h1:first-of-type,
 .dashboard-page > div > h1:first-of-type {
     text-align: center;
-    font-size: 2.5rem;
+    font-size: 4.5rem;
     margin-top: 3rem;
+    margin-bottom: 1rem;
+    font-family: 'DM Serif Display', serif;
+    color: #3A3F3B;
+    padding: 0 2rem;
+    text-transform: uppercase;
+}
+
+/* Reduce top padding for milestones, surveys, and donations pages */
+.milestones-page h1:first-of-type,
+.milestones-page > div > h1:first-of-type {
+    margin-top: 1.5rem;
+}
+
+/* Reduce top padding for milestones and surveys pages (they use events-header) */
+.milestones-page .events-header {
+    margin-top: 1.5rem;
+}
+
+/* Profile page - centered with bottom padding */
+.participants-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem 4rem;
+    text-align: center;
+}
+
+.participants-page > h1 {
+    margin-top: 1.5rem;
+}
+
+/* Page Subtitles - Matching About Us format */
+.events-header p,
+.dashboard-page > div > p.text-muted,
+.dashboard-page > div.mb-4 > p.text-muted {
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2rem;
+    color: #4B4F4B;
+    line-height: 1.7;
     margin-bottom: 2rem;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 2rem;
+}
+
+/* Dashboard page header container */
+.dashboard-page > div.mb-4 {
+    text-align: center;
+    max-width: 1000px;
+    margin: 3rem auto 0;
+    padding: 0 2rem;
 }
 
 /* Exclude special titles that have their own styling */
@@ -978,6 +1029,7 @@ p, li, a, .nav-link {
         box-shadow: 0 0 0 0.2rem rgba(58, 63, 59, 0.15) !important;
     }
     
+    
     /* Ensure hamburger icon is properly sized */
     .navbar-brand-hamburger-wrapper .navbar-toggler-icon {
         width: 1.5em;
@@ -1691,15 +1743,16 @@ body:not(.has-hero) {
     text-align: center;
     padding: 1.5rem 2rem 2rem;
     max-width: 1000px;
-    margin: 0 auto;
+    margin: 3rem auto 0;
     position: relative;
 }
 
 .events-header h1 {
     font-family: 'DM Serif Display', serif;
-    font-size: 3.5rem;
+    font-size: 4.5rem;
     color: #3A3F3B;
     margin-bottom: 1rem;
+    text-transform: uppercase;
 }
 
 .events-header p {
@@ -4362,9 +4415,10 @@ body:not(.has-hero) {
 
 .info-video-header h1 {
     font-family: 'DM Serif Display', serif;
-    font-size: 3.5rem;
+    font-size: 4.5rem;
     color: #3A3F3B;
     margin-bottom: 1rem;
+    text-transform: uppercase;
 }
 
 .info-video-header p {
@@ -4446,9 +4500,10 @@ body:not(.has-hero) {
 
 .team-header h1 {
     font-family: 'DM Serif Display', serif;
-    font-size: 3.5rem;
+    font-size: 4.5rem;
     color: #3A3F3B;
     margin-bottom: 1rem;
+    text-transform: uppercase;
 }
 
 .team-header p {
@@ -4609,10 +4664,11 @@ body:not(.has-hero) {
 
 .press-header h1 {
     font-family: 'DM Serif Display', serif;
-    font-size: 3.5rem;
+    font-size: 4.5rem;
     color: #3A3F3B;
     margin-bottom: 1rem;
     letter-spacing: 2px;
+    text-transform: uppercase;
 }
 
 .press-header p {
@@ -5153,7 +5209,7 @@ body:not(.has-hero) {
     }
     
     .info-video-header h1 {
-        font-size: 2.5rem;
+        font-size: 3rem;
     }
     
     .info-video-header p {
@@ -5173,7 +5229,7 @@ body:not(.has-hero) {
     }
     
     .team-header h1 {
-        font-size: 2.5rem;
+        font-size: 3rem;
     }
     
     .team-header p {
@@ -5228,7 +5284,7 @@ body:not(.has-hero) {
     }
     
     .press-header h1 {
-        font-size: 2.5rem;
+        font-size: 3rem;
         letter-spacing: 1px;
     }
     
@@ -5385,11 +5441,27 @@ body:not(.has-hero) {
     }
     
     .events-header h1 {
-        font-size: 2.75rem;
+        font-size: 3rem;
     }
     
-    .events-header p {
+    /* Responsive styles for general page titles */
+    h1.mb-1,
+    h1.mb-4,
+    .users-page > h1,
+    .participants-page > h1,
+    .milestones-page h1:first-of-type,
+    .milestones-page > div > h1:first-of-type,
+    .dashboard-page h1:first-of-type,
+    .dashboard-page > div > h1:first-of-type {
+        font-size: 3rem;
+        padding: 0 1.5rem;
+    }
+    
+    .events-header p,
+    .dashboard-page > div > p.text-muted,
+    .dashboard-page > div.mb-4 > p.text-muted {
         font-size: 1.1rem;
+        padding: 0 1.5rem;
     }
     
     .events-container {

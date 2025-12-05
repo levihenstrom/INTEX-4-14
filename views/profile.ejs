@@ -1,16 +1,33 @@
     <style>
         /* Profile page styling to match registration/landing pages */
         .participants-page {
-            padding: 2rem 0;
+            padding: 2rem 2rem 4rem;
             max-width: 1400px;
             margin: 0 auto;
+            text-align: center;
+        }
+        
+        .participants-page > * {
+            text-align: left;
+        }
+        
+        .participants-page > h1 {
+            text-align: center;
         }
 
         .participants-page h1 {
             font-family: 'DM Serif Display', serif;
-            font-size: 2.5rem;
+            font-size: 4.5rem;
             color: #3A3F3B;
             margin-bottom: 2rem;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        
+        @media (max-width: 768px) {
+            .participants-page h1 {
+                font-size: 3rem;
+            }
         }
 
         .participants-page .card {
@@ -464,10 +481,11 @@
             }
         }
     </style>
+
     <!-- Regular User View: Show their own profile -->
     <div class="participants-page">
-        <div class="d-flex flex-column flex-md-row align-items-start justify-content-between mb-2">
-            <h1 class="mb-2 mb-md-0">My Profile</h1>
+        <div class="info-video-header">
+            <h1>My Profile</h1>
         </div>
         
         <% if (typeof error !== 'undefined' && error) { %>
