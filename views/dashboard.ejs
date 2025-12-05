@@ -24,6 +24,7 @@
                 <div class="dashboard-toggle" id="dashboard-toggle">
                     <button type="button" class="toggle-btn active" data-dashboard="events">Event Analytics</button>
                     <button type="button" class="toggle-btn" data-dashboard="donations">Donations & Impact</button>
+                    <button type="button" class="toggle-btn" data-dashboard="participants">Participants</button>
                 </div>
             </div>
         </div>
@@ -50,7 +51,23 @@
             </div>
         </div>
     </div>
+
+    <!-- Dashboard 3 - participants -->
+    <div class="row mb-5 dashboard-content" id="dashboard-participants" style="display: none;">
+        <div class="col-12">
+            <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="mb-3">Participant Joined Each Year</h3>
+                <canvas id="participantsByYearChart" height="100"></canvas>
+            </div>
+        </div>
+        </div>
+    </div>
 </div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/js/participants-by-year-chart.js"></script>
 
 <script>
     // Dashboard toggle functionality

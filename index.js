@@ -2767,7 +2767,7 @@ app.post('/surveys/delete', async (req, res) => {
 app.get('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
-            return res.redirect('/dashboard'); // Fallback
+            return res.redirect('/landing'); // Fallback
         }
         res.clearCookie('connect.sid'); // Clear session cookie
         res.redirect('/');
@@ -3769,7 +3769,18 @@ const apiRoutes = require('./routes/api');
 app.use('/api', apiRoutes);
 
 app.get('/dashboard', (req, res) => {
+    if(!req.session.isAdmin){
+        return res.render('landing', { 
+            layout: 'public', 
+            pageTitle: 'Welcome',
+            error: 'You do not have admin access' ,
+            hasHero: true,
+            upcomingEvents: []
+        });
+    }
+    else{
     res.render('dashboard', { layout: 'public', pageTitle: 'Dashboard' });
+    }
 });
 
 app.get('/info', (req, res) => {
