@@ -621,7 +621,13 @@
             <div class="row mb-4">
                 <div class="col-12">
                     <div style="position: relative; height: 300px; width: 100%;">
-                        <canvas id="donationsByMonthChart"></canvas>
+                        <canvas id="donationsByMonthChart"
+                            data-search="<%= searchValue || '' %>"
+                            data-filter-start-date="<%= filterValues.filterStartDate || '' %>"
+                            data-filter-end-date="<%= filterValues.filterEndDate || '' %>"
+                            data-filter-min-amount="<%= filterValues.filterMinAmount || '' %>"
+                            data-filter-max-amount="<%= filterValues.filterMaxAmount || '' %>">
+                        </canvas>
                     </div>
                 </div>
             </div>
