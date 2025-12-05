@@ -675,7 +675,11 @@
                         const isToday = startDate && startDate.toDateString() === new Date().toDateString();
                         const isThisYear = startDate && startDate.getFullYear() === new Date().getFullYear();
                         const imgSrc = `/images/events/event_${ev.eventId}.jpg`;
-                        const pillLabel = ev.isPast ? (ev.attended ? 'Attended' : (ev.status && ev.status.toLowerCase() === 'cancelled' ? 'Cancelled' : 'No Show')) : (ev.attended ? 'Checked In' : 'Registered');
+                        const statusLower = ev.status ? ev.status.toLowerCase() : '';
+                        const isCancelled = statusLower === 'cancelled';
+                        const pillLabel = ev.isPast 
+                            ? (ev.attended ? 'Attended' : (isCancelled ? 'Cancelled' : 'No Show')) 
+                            : (isCancelled ? 'Cancelled' : (ev.attended ? 'Checked In' : 'Registered'));
                         const pillCls = (pillLabel === 'Attended' || pillLabel === 'Checked In')
                             ? 'status-pill--good'
                             : (pillLabel === 'Cancelled')
@@ -1041,6 +1045,16 @@
                 return;
             }
 
+            // Don't show cancel button if already cancelled
+            if (status === 'cancelled') {
+                actions.innerHTML = '';
+                return;
+            }
+            
+            // Show cancel button if:
+            // 1. Event hasn't started yet (start && nowMs < start.getTime()), OR
+            // 2. Deadline has passed but event hasn't started (deadline && nowMs >= deadline.getTime() && start && nowMs < start.getTime())
+            // Actually, we can simplify: show cancel if event hasn't started, regardless of deadline
             if (start && nowMs < start.getTime()) {
                 const btn = document.createElement('button');
                 btn.className = 'btn btn-outline-secondary btn-sm';

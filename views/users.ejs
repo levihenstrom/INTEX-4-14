@@ -548,7 +548,7 @@
                 <!-- KPIs Section -->
                 <div class="row g-3">
                     <div class="col-12 col-lg-4">
-                        <div class="card h-100">
+                        <div class="card h-100" id="eventsSummaryCard" role="button" style="cursor: pointer;">
                             <div class="card-body">
                                 <h6 class="text-uppercase text-muted mb-2">Events</h6>
                                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -893,6 +893,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressModal = document.getElementById('progressModal');
     const eventsList = document.getElementById('eventsList');
     const milestoneList = document.getElementById('milestoneList');
+    const eventsSummaryCard = document.getElementById('eventsSummaryCard');
     const milestoneSummaryCard = document.getElementById('milestoneSummaryCard');
     const donationSummaryCard = document.getElementById('donationSummaryCard');
     const donationList = document.getElementById('donationList');
@@ -1003,6 +1004,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 kpiDonationsCount.textContent = `${data.summary.donationsCount || 0} gifts`;
             }
 
+            if (eventsSummaryCard) {
+                eventsSummaryCard.onclick = () => {
+                    window.location.href = `/events?selectedUserId=${encodeURIComponent(participantId)}&scrollToEvents=true&showPast=true`;
+                };
+            }
             if (milestoneSummaryCard) {
                 milestoneSummaryCard.onclick = () => {
                     window.location.href = `/milestones?filterParticipantID=${encodeURIComponent(participantId)}`;
