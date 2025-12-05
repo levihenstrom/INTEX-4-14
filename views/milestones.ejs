@@ -27,9 +27,10 @@
 %>
 
 <div class="milestones-page">
-    <div class="mb-4">
-        <h1 class="mb-1">Milestones</h1>
-        <p class="text-muted mb-0">Celebrate progress and key achievements.</p>
+    <!-- Milestones Header -->
+    <div class="events-header">
+        <h1>MILESTONES</h1>
+        <p>Celebrate progress and key achievements. Track the meaningful milestones that mark each participant's journey toward higher education and personal growth.</p>
     </div>
 
     <!-- Milestone Category Chart -->
@@ -50,54 +51,235 @@
 
     <div class="row g-3 mb-4">
         <div class="col-md-4">
-            <div class="card text-center shadow-sm h-100">
+            <div class="card text-center shadow-sm h-100 milestone-kpi-card">
                 <div class="card-body">
-                    <p class="text-muted mb-1">Total Milestones Achieved</p>
-                    <h3 class="mb-0"><%= totalKpi %></h3>
+                    <p class="text-muted text-uppercase small mb-1" style="font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 1px;">Total Milestones Achieved</p>
+                    <h3 class="mb-0" style="font-family: 'DM Serif Display', serif; color: #3A3F3B; font-size: 2rem;"><%= totalKpi %></h3>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card text-center shadow-sm h-100">
+            <div class="card text-center shadow-sm h-100 milestone-kpi-card">
                 <div class="card-body">
-                    <p class="text-muted mb-1">Milestones Achieved This Month</p>
-                    <h3 class="mb-0"><%= monthKpi %></h3>
+                    <p class="text-muted text-uppercase small mb-1" style="font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 1px;">Milestones Achieved This Month</p>
+                    <h3 class="mb-0" style="font-family: 'DM Serif Display', serif; color: #3A3F3B; font-size: 2rem;"><%= monthKpi %></h3>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card text-center shadow-sm h-100">
+            <div class="card text-center shadow-sm h-100 milestone-kpi-card">
                 <div class="card-body">
-                    <p class="text-muted mb-1">Future Milestones</p>
-                    <h3 class="mb-0"><%= futureKpi %></h3>
+                    <p class="text-muted text-uppercase small mb-1" style="font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 1px;">Future Milestones</p>
+                    <h3 class="mb-0" style="font-family: 'DM Serif Display', serif; color: #3A3F3B; font-size: 2rem;"><%= futureKpi %></h3>
                 </div>
             </div>
         </div>
     </div>
 
     <% if (isAdmin) { %>
-        <div class="d-flex flex-column flex-md-row gap-3 mb-4 align-items-md-center">
-            <form method="GET" action="/milestones" class="flex-grow-1">
+        <div class="milestones-top-bar mb-4">
+            <form method="GET" action="/milestones" class="milestones-search-form">
                 <% filterPairs.forEach(function(pair) { %>
                     <input type="hidden" name="<%= pair.key %>" value="<%= pair.value %>">
                 <% }); %>
                 <input type="hidden" name="sort" value="<%= typeof sortColumn !== 'undefined' ? sortColumn : 'MilestoneDate' %>">
                 <input type="hidden" name="sortDir" value="<%= typeof sortDir !== 'undefined' ? sortDir : 'desc' %>">
                 <input type="hidden" name="page" value="1">
-                <div class="input-group">
-                    <input type="text" class="form-control" name="search" placeholder="Search milestones by title, participant, ID, or date..." value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
-                    <button type="submit" class="btn btn-primary">Search</button>
-                    <% if (typeof searchTerm !== 'undefined' && searchTerm) { %>
-                        <a href="/milestones" class="btn btn-outline-secondary">Clear</a>
-                    <% } %>
+                <div class="milestones-search-input-wrapper">
+                    <i class="fa-solid fa-search milestones-search-icon"></i>
+                    <input type="text" class="form-control milestones-search-input" name="search" placeholder="Search milestones by title, participant, ID, or date..." value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
                 </div>
+                <% if (typeof searchTerm !== 'undefined' && searchTerm) { %>
+                    <a href="/milestones" class="btn btn-outline-secondary milestones-clear-btn milestones-search-clear-btn">Clear</a>
+                <% } %>
             </form>
-            <div class="d-flex gap-2">
-                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#milestoneFilterModal">Filters</button>
-                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#milestoneSortModal">Sort</button>
-                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addMilestoneModal">
-                    + Add Milestone
+            <div class="milestones-actions">
+                <button type="button" class="btn btn-outline-secondary milestones-filter-btn" data-bs-toggle="collapse" data-bs-target="#milestonesFilterSection" aria-expanded="false" aria-controls="milestonesFilterSection">
+                    <i class="fa-solid fa-filter"></i> Filter
                 </button>
+                <button type="button" class="btn btn-primary milestones-add-btn" data-bs-toggle="modal" data-bs-target="#addMilestoneModal">
+                    <i class="fa-solid fa-plus"></i> Add Milestone
+                </button>
+            </div>
+        </div>
+
+        <!-- Collapsible Filters + Sorting Section -->
+        <div class="collapse mb-4" id="milestonesFilterSection">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">Filters & Sorting</h5>
+                        </div>
+                        <div class="card-body milestones-filter-section">
+                            <form method="GET" action="/milestones" id="milestonesFilterForm">
+                                <% if (typeof searchTerm !== 'undefined' && searchTerm) { %>
+                                    <input type="hidden" name="search" value="<%= searchTerm %>">
+                                <% } %>
+                                <input type="hidden" name="page" value="1">
+                                
+                                <div class="milestones-filter-grid">
+                                    <!-- Milestone Date Range -->
+                                    <div class="milestones-filter-group">
+                                        <label class="milestones-filter-group-label">Milestone Date Range</label>
+                                        <div class="milestones-range-controls">
+                                            <div class="milestones-range-slider-row">
+                                                <div class="milestones-range-input-group">
+                                                    <label class="milestones-range-label">From</label>
+                                                    <input type="date" class="form-control milestones-range-input" name="filterStartDate" value="<%= filterValues.filterStartDate || '' %>">
+                                                </div>
+                                                <div class="milestones-range-input-group">
+                                                    <label class="milestones-range-label">To</label>
+                                                    <input type="date" class="form-control milestones-range-input" name="filterEndDate" value="<%= filterValues.filterEndDate || '' %>">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Location -->
+                                    <div class="milestones-filter-group">
+                                        <label class="milestones-filter-group-label">Location</label>
+                                        <div class="milestones-range-controls">
+                                            <div class="milestones-range-slider-row">
+                                                <div class="milestones-range-input-group">
+                                                    <label class="milestones-range-label">City</label>
+                                                    <input type="text" class="form-control milestones-range-input" name="filterCity" value="<%= filterValues.filterCity || '' %>">
+                                                </div>
+                                                <div class="milestones-range-input-group">
+                                                    <label class="milestones-range-label">State</label>
+                                                    <input type="text" class="form-control milestones-range-input" name="filterState" value="<%= filterValues.filterState || '' %>">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Age Range -->
+                                    <div class="milestones-filter-group">
+                                        <label class="milestones-filter-group-label">Age Range</label>
+                                        <div class="milestones-range-controls">
+                                            <div class="milestones-range-with-inputs">
+                                                <div class="milestones-range-input-group milestones-range-input-group-min">
+                                                    <label class="milestones-range-label">Min</label>
+                                                    <input type="text" class="form-control milestones-range-input" name="filterMinAge" value="<%= filterValues.filterMinAge || '' %>" placeholder="min">
+                                                </div>
+                                                <div class="milestones-dual-range-wrapper">
+                                                    <input type="range" class="milestones-dual-range milestones-dual-range-min" id="ageMinSlider" min="0" max="100" step="1" value="<%= filterValues.filterMinAge ? Math.min(parseInt(filterValues.filterMinAge), 100) : 0 %>">
+                                                    <input type="range" class="milestones-dual-range milestones-dual-range-max" id="ageMaxSlider" min="0" max="100" step="1" value="<%= filterValues.filterMaxAge ? Math.min(parseInt(filterValues.filterMaxAge), 100) : 100 %>">
+                                                </div>
+                                                <div class="milestones-range-input-group milestones-range-input-group-max">
+                                                    <label class="milestones-range-label">Max</label>
+                                                    <input type="text" class="form-control milestones-range-input" name="filterMaxAge" value="<%= filterValues.filterMaxAge || '' %>" placeholder="max">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Milestone Title -->
+                                    <div class="milestones-filter-group">
+                                        <label class="milestones-filter-group-label">Milestone Title</label>
+                                        <input type="text" class="form-control milestones-range-input" name="filterTitle" value="<%= filterValues.filterTitle || '' %>" placeholder="Search title...">
+                                    </div>
+
+                                    <!-- Milestone Category (Icon-based) -->
+                                    <div class="milestones-filter-group">
+                                        <label class="milestones-filter-group-label">Milestone Category</label>
+                                        <div class="event-labels filter-labels" id="milestone-category-pills">
+                                            <span class="event-label event-label-type-stem filter-pill milestone-category-pill" data-category-value="">
+                                                <i class="fa-solid fa-sliders"></i>Any
+                                            </span>
+                                            <span class="event-label event-label-type-stem filter-pill milestone-category-pill <%= filterValues.filterCategory === 'Post Secondary Education' ? 'filter-selected' : '' %>" data-category-value="Post Secondary Education">
+                                                <i class="fa-solid fa-graduation-cap"></i>Post Secondary Education
+                                            </span>
+                                            <span class="event-label event-label-type-arts filter-pill milestone-category-pill <%= filterValues.filterCategory === 'Schooling' ? 'filter-selected' : '' %>" data-category-value="Schooling">
+                                                <i class="fa-solid fa-school"></i>Schooling
+                                            </span>
+                                            <span class="event-label event-label-type-leadership filter-pill milestone-category-pill <%= filterValues.filterCategory === 'Award/Certificate' ? 'filter-selected' : '' %>" data-category-value="Award/Certificate">
+                                                <i class="fa-solid fa-trophy"></i>Award/Certificate
+                                            </span>
+                                            <span class="event-label event-label-type-stem filter-pill milestone-category-pill <%= filterValues.filterCategory === 'Internship/Mentorship' ? 'filter-selected' : '' %>" data-category-value="Internship/Mentorship">
+                                                <i class="fa-solid fa-handshake"></i>Internship/Mentorship
+                                            </span>
+                                            <span class="event-label event-label-type-arts filter-pill milestone-category-pill <%= filterValues.filterCategory === 'Project' ? 'filter-selected' : '' %>" data-category-value="Project">
+                                                <i class="fa-solid fa-project-diagram"></i>Project
+                                            </span>
+                                            <span class="event-label event-label-type-annual-conference filter-pill milestone-category-pill <%= filterValues.filterCategory === 'Non-STEAM Job' ? 'filter-selected' : '' %>" data-category-value="Non-STEAM Job">
+                                                <i class="fa-solid fa-briefcase"></i>Non-STEAM Job
+                                            </span>
+                                        </div>
+                                        <input type="hidden" name="filterCategory" id="filterCategoryInput" value="<%= filterValues.filterCategory || '' %>">
+                                    </div>
+
+                                    <!-- Participant Role (Icon-based) -->
+                                    <div class="milestones-filter-group">
+                                        <label class="milestones-filter-group-label">Participant Role</label>
+                                        <div class="event-labels filter-labels" id="milestone-role-pills">
+                                            <span class="event-label event-label-type-stem filter-pill milestone-role-pill" data-role-value="">
+                                                <i class="fa-solid fa-sliders"></i>Any
+                                            </span>
+                                            <span class="event-label event-label-type-leadership filter-pill milestone-role-pill <%= filterValues.filterRole === 'a' ? 'filter-selected' : '' %>" data-role-value="a">
+                                                <i class="fa-solid fa-user-shield"></i>Admin
+                                            </span>
+                                            <span class="event-label event-label-type-stem filter-pill milestone-role-pill <%= filterValues.filterRole === 'p' ? 'filter-selected' : '' %>" data-role-value="p">
+                                                <i class="fa-solid fa-user"></i>Participant
+                                            </span>
+                                        </div>
+                                        <input type="hidden" name="filterRole" id="filterRoleInput" value="<%= filterValues.filterRole || '' %>">
+                                    </div>
+
+                                    <!-- Field of Interest (Icon-based) -->
+                                    <div class="milestones-filter-group">
+                                        <label class="milestones-filter-group-label">Field of Interest</label>
+                                        <div class="event-labels filter-labels" id="milestone-interest-pills">
+                                            <span class="event-label event-label-type-stem filter-pill milestone-interest-pill" data-interest-value="">
+                                                <i class="fa-solid fa-sliders"></i>Any
+                                            </span>
+                                            <span class="event-label event-label-type-stem filter-pill milestone-interest-pill <%= filterValues.filterInterest === 'STEM' ? 'filter-selected' : '' %>" data-interest-value="STEM">
+                                                <i class="fa-solid fa-gear"></i>STEM
+                                            </span>
+                                            <span class="event-label event-label-type-arts filter-pill milestone-interest-pill <%= filterValues.filterInterest === 'Arts' ? 'filter-selected' : '' %>" data-interest-value="Arts">
+                                                <i class="fa-solid fa-paintbrush"></i>Arts
+                                            </span>
+                                            <span class="event-label event-label-type-annual-conference filter-pill milestone-interest-pill <%= filterValues.filterInterest === 'Both' ? 'filter-selected' : '' %>" data-interest-value="Both">
+                                                <i class="fa-solid fa-layer-group"></i>Both
+                                            </span>
+                                        </div>
+                                        <input type="hidden" name="filterInterest" id="filterInterestInput" value="<%= filterValues.filterInterest || '' %>">
+                                    </div>
+
+                                    <!-- Sorting -->
+                                    <div class="milestones-filter-group">
+                                        <label class="milestones-filter-group-label">Sorting</label>
+                                        <div class="milestones-range-controls">
+                                            <div class="milestones-range-slider-row">
+                                                <div class="milestones-range-input-group">
+                                                    <label class="milestones-range-label">Sort By</label>
+                                                    <select class="form-select milestones-range-input" name="sort">
+                                                        <option value="MilestoneDate" <%= sortColumn === 'MilestoneDate' ? 'selected' : '' %>>Milestone Date</option>
+                                                        <option value="MilestoneTitle" <%= sortColumn === 'MilestoneTitle' ? 'selected' : '' %>>Milestone Title</option>
+                                                        <option value="MilestoneCategory" <%= sortColumn === 'MilestoneCategory' ? 'selected' : '' %>>Milestone Category</option>
+                                                    </select>
+                                                </div>
+                                                <div class="milestones-range-input-group">
+                                                    <label class="milestones-range-label">Direction</label>
+                                                    <select class="form-select milestones-range-input" name="sortDir">
+                                                        <option value="desc" <%= sortDir === 'desc' ? 'selected' : '' %>>Descending</option>
+                                                        <option value="asc" <%= sortDir === 'asc' ? 'selected' : '' %>>Ascending</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="milestones-filter-actions">
+                                    <a href="/milestones<%= typeof searchTerm !== 'undefined' && searchTerm ? '?search=' + encodeURIComponent(searchTerm) : '' %>" class="btn btn-outline-secondary milestones-filter-reset-btn">Reset</a>
+                                    <button type="submit" class="btn btn-primary milestones-filter-apply-btn">Apply</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     <% } else { %>
@@ -117,26 +299,29 @@
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             <% milestones.forEach(function(milestone) { %>
                 <div class="col">
-                    <div class="card h-100 shadow-sm">
+                    <div class="card h-100 shadow-sm milestone-card">
                         <div class="card-body d-flex flex-column">
-                            <div class="d-flex w-100 justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h5 class="card-title mb-1"><%= milestone.MilestoneTitle %></h5>
-                                    <small class="text-muted"><%= milestone.MilestoneCategory || 'Date not set' %></small>
+                            <div class="d-flex w-100 justify-content-between align-items-start mb-3">
+                                <div class="milestone-title-section">
+                                    <h5 class="milestone-title mb-1"><%= milestone.MilestoneTitle %></h5>
+                                    <small class="milestone-category"><%= milestone.MilestoneCategory || 'No category' %></small>
                                 </div>
                                 <% if (isAdmin) { %>
-                                    <div class="btn-group btn-group-sm ms-2">
+                                    <div class="milestone-actions-group">
                                         <button type="button"
-                                                class="btn btn-outline-primary edit-milestone-btn"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#editMilestoneModal"
+                                                class="btn btn-outline-primary milestone-edit-btn"
                                                 data-milestone-id="<%= milestone.MilestoneID %>"
                                                 data-title="<%= milestone.MilestoneTitle %>"
                                                 data-category="<%= milestone.MilestoneCategory || '' %>"
                                                 data-date="<%= milestone.MilestoneDate ? new Date(milestone.MilestoneDate).toISOString().split('T')[0] : '' %>"
                                                 data-participant-id="<%= milestone.ParticipantID %>"
                                                 data-participant-display="<%= milestone.ParticipantFirstName %> <%= milestone.ParticipantLastName %> (#<%= milestone.ParticipantID %>) - <%= milestone.ParticipantEmail %>">
-                                            Edit
+                                            <i class="fa-solid fa-pencil"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger milestone-delete-btn" 
+                                                data-milestone-id="<%= milestone.MilestoneID %>"
+                                                data-title="<%= milestone.MilestoneTitle %>">
+                                            <i class="fa-solid fa-trash"></i>
                                         </button>
                                         <form action="/milestones/delete" method="POST" class="delete-milestone-form d-inline" data-title="<%= milestone.MilestoneTitle %>">
                                             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -146,13 +331,17 @@
                                     </div>
                                 <% } %>
                             </div>
-                            <p class="mb-1">
-                                <strong>Participant:</strong>
-                                <span class="participant-tooltip" data-bs-toggle="tooltip" data-bs-html="true" title="<%= milestone.ParticipantFirstName %> <%= milestone.ParticipantLastName %><br>Age: <%= typeof milestone.ParticipantAge === 'number' ? milestone.ParticipantAge : 'N/A' %><br>City: <%= milestone.ParticipantCity || 'N/A' %><br>State: <%= milestone.ParticipantState || 'N/A' %><br>Interest: <%= milestone.ParticipantFieldOfInterest || 'N/A' %><br>Email: <%= milestone.ParticipantEmail %>">
-                                    <%= milestone.ParticipantFirstName %> <%= milestone.ParticipantLastName %>
-                                </span>
-                            </p>
-                            <p class="text-muted mb-0"><%= milestone.MilestoneDateDisplay || 'Date not set' %></p>
+                            <div class="milestone-participant-info mb-2">
+                                <p class="mb-1 milestone-participant-label">
+                                    <strong>Participant:</strong>
+                                </p>
+                                <p class="mb-0 milestone-participant-name">
+                                    <span class="participant-tooltip" data-bs-toggle="tooltip" data-bs-html="true" title="<%= milestone.ParticipantFirstName %> <%= milestone.ParticipantLastName %><br>Age: <%= typeof milestone.ParticipantAge === 'number' ? milestone.ParticipantAge : 'N/A' %><br>City: <%= milestone.ParticipantCity || 'N/A' %><br>State: <%= milestone.ParticipantState || 'N/A' %><br>Interest: <%= milestone.ParticipantFieldOfInterest || 'N/A' %><br>Email: <%= milestone.ParticipantEmail %>">
+                                        <%= milestone.ParticipantFirstName %> <%= milestone.ParticipantLastName %>
+                                    </span>
+                                </p>
+                            </div>
+                            <p class="text-muted mb-0 milestone-date"><%= milestone.MilestoneDateDisplay || 'Date not set' %></p>
                         </div>
                     </div>
                 </div>
@@ -164,7 +353,7 @@
             <div class="mt-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                 <div>
                     <% if (currentPage > 1) { %>
-                        <a href="/milestones?page=<%= currentPage - 1 %><%= searchTerm ? '&search=' + encodeURIComponent(searchTerm) : '' %><%= filterQueryString %><%= sortQueryString %>" class="btn btn-secondary">← Previous Page</a>
+                        <a href="/milestones?page=<%= currentPage - 1 %><%= searchTerm ? '&search=' + encodeURIComponent(searchTerm) : '' %><%= filterQueryString %><%= sortQueryString %>" class="btn btn-secondary milestones-pagination-btn">← Previous Page</a>
                     <% } %>
                 </div>
                 <div class="text-muted text-center">
@@ -173,7 +362,7 @@
                 </div>
                 <div class="text-end">
                     <% if (hasNextPage) { %>
-                        <a href="/milestones?page=<%= currentPage + 1 %><%= searchTerm ? '&search=' + encodeURIComponent(searchTerm) : '' %><%= filterQueryString %><%= sortQueryString %>" class="btn btn-primary">Next Page →</a>
+                        <a href="/milestones?page=<%= currentPage + 1 %><%= searchTerm ? '&search=' + encodeURIComponent(searchTerm) : '' %><%= filterQueryString %><%= sortQueryString %>" class="btn btn-primary milestones-pagination-btn">Next Page →</a>
                     <% } %>
                 </div>
             </div>
@@ -213,21 +402,17 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Participant *</label>
-                            <input type="text" class="form-control mb-2" id="addParticipantSearch" placeholder="Search by name or email" autocomplete="off">
-                            <select class="form-select" id="addParticipantSelect" name="ParticipantID" size="6" required>
-                                <option value="">Select participant</option>
-                                <% participantChoices.forEach(function(participant) { %>
-                                    <option value="<%= participant.ParticipantID %>">
-                                        <%= participant.ParticipantFirstName %> <%= participant.ParticipantLastName %> (#<%= participant.ParticipantID %>) - <%= participant.ParticipantEmail %>
-                                    </option>
-                                <% }); %>
-                            </select>
+                            <div style="position: relative;">
+                                <input type="text" class="form-control reg-participant-search" id="addMilestoneParticipantSearch" placeholder="Search participants..." autocomplete="off">
+                                <div class="reg-search-results" id="addMilestoneParticipantResults"></div>
+                            </div>
+                            <input type="hidden" id="addMilestoneParticipantId" name="ParticipantID" required>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="addMilestoneForm" class="btn btn-success">Save Milestone</button>
+                    <button type="button" class="btn btn-secondary milestones-modal-cancel-btn" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="addMilestoneForm" class="btn btn-primary milestones-modal-save-btn">Save Milestone</button>
                 </div>
             </div>
         </div>
@@ -263,243 +448,317 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Participant *</label>
-                            <input type="text" class="form-control mb-2" id="editParticipantSearch" placeholder="Search by name or email" autocomplete="off">
-                            <select class="form-select" id="editParticipantSelect" name="ParticipantID" size="6" required>
-                                <option value="">Select participant</option>
-                                <% participantChoices.forEach(function(participant) { %>
-                                    <option value="<%= participant.ParticipantID %>">
-                                        <%= participant.ParticipantFirstName %> <%= participant.ParticipantLastName %> (#<%= participant.ParticipantID %>) - <%= participant.ParticipantEmail %>
-                                    </option>
-                                <% }); %>
-                            </select>
+                            <div style="position: relative;">
+                                <input type="text" class="form-control reg-participant-search" id="editMilestoneParticipantSearch" placeholder="Search participants..." autocomplete="off">
+                                <div class="reg-search-results" id="editMilestoneParticipantResults"></div>
+                            </div>
+                            <input type="hidden" id="editMilestoneParticipantId" name="ParticipantID" required>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="editMilestoneForm" class="btn btn-primary">Update Milestone</button>
+                    <button type="button" class="btn btn-secondary milestones-modal-cancel-btn" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="editMilestoneForm" class="btn btn-primary milestones-modal-save-btn">Update Milestone</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="milestoneFilterModal" tabindex="-1" aria-labelledby="milestoneFilterModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="milestoneFilterModalLabel">Filter Milestones</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <!-- Delete Milestone Confirmation Modal -->
+        <div class="reg-confirm-backdrop" id="deleteMilestoneConfirmBackdrop" aria-modal="true" role="dialog">
+            <div class="reg-confirm-modal">
+                <h4 style="margin: 0;">Confirm Delete</h4>
+                <p id="deleteMilestoneConfirmMessage" style="margin: 0;">Are you sure?</p>
+                <div class="reg-confirm-actions">
+                    <button type="button" class="btn btn-outline-secondary" id="deleteMilestoneConfirmNo">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="deleteMilestoneConfirmYes">Delete</button>
                 </div>
-                <form method="GET" action="/milestones">
-                    <div class="modal-body">
-                        <% if (searchTerm) { %>
-                            <input type="hidden" name="search" value="<%= searchTerm %>">
-                        <% } %>
-                        <input type="hidden" name="sort" value="<%= typeof sortColumn !== 'undefined' ? sortColumn : 'MilestoneDate' %>">
-                        <input type="hidden" name="sortDir" value="<%= typeof sortDir !== 'undefined' ? sortDir : 'desc' %>">
-                        <% if (filterValues.filterParticipantID) { %>
-                            <input type="hidden" name="filterParticipantID" value="<%= filterValues.filterParticipantID %>">
-                        <% } %>
-                        <% if (filterValues.filterMilestoneID) { %>
-                            <input type="hidden" name="filterMilestoneID" value="<%= filterValues.filterMilestoneID %>">
-                        <% } %>
-                        <input type="hidden" name="page" value="1">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Milestone Date From</label>
-                                <input type="date" class="form-control" name="filterStartDate" value="<%= filterValues.filterStartDate || '' %>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Milestone Date To</label>
-                                <input type="date" class="form-control" name="filterEndDate" value="<%= filterValues.filterEndDate || '' %>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Milestone Title</label>
-                                <input type="text" class="form-control" name="filterTitle" value="<%= filterValues.filterTitle || '' %>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Milestone Category</label>
-                                <select class="form-select" name="filterCategory">
-                                    <option value="">Any</option>
-                                    <option value="Post Secondary Education" <%= filterValues.filterCategory === 'Post Secondary Education' ? 'selected' : '' %>>Post Secondary Education</option>
-                                    <option value="Schooling" <%= filterValues.filterCategory === 'Schooling' ? 'selected' : '' %>>Other Schooling</option>
-                                    <option value="Award/Certificate" <%= filterValues.filterCategory === 'Award/Certificate' ? 'selected' : '' %>>Award or Certificate</option>
-                                    <option value="Internship/Mentorship" <%= filterValues.filterCategory === 'Internship/Mentorship' ? 'selected' : '' %>>Internship or Mentorship</option>
-                                    <option value="Project" <%= filterValues.filterCategory === 'Project' ? 'selected' : '' %>>Project</option>
-                                    <option value="Non-STEAM Job" <%= filterValues.filterCategory === 'Non-STEAM Job' ? 'selected' : '' %>>Non-STEAM Job</option>   
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Minimum Participant Age</label>
-                                <input type="number" min="0" class="form-control" name="filterMinAge" value="<%= filterValues.filterMinAge || '' %>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Maximum Participant Age</label>
-                                <input type="number" min="0" class="form-control" name="filterMaxAge" value="<%= filterValues.filterMaxAge || '' %>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">City</label>
-                                <input type="text" class="form-control" name="filterCity" value="<%= filterValues.filterCity || '' %>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">State</label>
-                                <input type="text" class="form-control" name="filterState" value="<%= filterValues.filterState || '' %>">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Participant Role</label>
-                                <select class="form-select" name="filterRole">
-                                    <option value="">Any role</option>
-                                    <option value="a" <%= filterValues.filterRole === 'a' ? 'selected' : '' %>>Admin</option>
-                                    <option value="p" <%= filterValues.filterRole === 'p' ? 'selected' : '' %>>Participant</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Field of Interest</label>
-                                <select class="form-select" name="filterInterest">
-                                    <option value="">Any</option>
-                                    <option value="STEM" <%= filterValues.filterInterest === 'STEM' ? 'selected' : '' %>>STEM</option>
-                                    <option value="Arts" <%= filterValues.filterInterest === 'Arts' ? 'selected' : '' %>>Arts</option>
-                                    <option value="Both" <%= filterValues.filterInterest === 'Both' ? 'selected' : '' %>>Both</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                            <% if (!searchTerm) { %>
-                            <a href="/milestones" class="btn btn-outline-secondary">Clear Filters</a>
-                                <% } %>
-                            <% if (searchTerm) { %>
-                        <a href="/milestones<%= searchTerm ? '?search=' + encodeURIComponent(searchTerm) : '' %><%= sortQueryString %>" class="btn btn-outline-secondary">Clear Filters</a>
-                                <% } %>
-                        <button type="submit" class="btn btn-primary">Apply Filters</button>
-                    </div>
-                </form>
             </div>
         </div>
-    </div>
-    <div class="modal fade" id="milestoneSortModal" tabindex="-1" aria-labelledby="milestoneSortModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="milestoneSortModalLabel">Sort Milestones</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form method="GET" action="/milestones">
-                    <div class="modal-body">
-                        <% if (searchTerm) { %>
-                            <input type="hidden" name="search" value="<%= searchTerm %>">
-                        <% } %>
-                        <% filterPairs.forEach(function(pair) { %>
-                            <input type="hidden" name="<%= pair.key %>" value="<%= pair.value %>">
-                        <% }); %>
-                        <input type="hidden" name="page" value="1">
-                        <div class="mb-3">
-                            <label class="form-label">Sort field</label>
-                            <select class="form-select" name="sort">
-                                <option value="MilestoneDate" <%= sortColumn === 'MilestoneDate' ? 'selected' : '' %>>Milestone Date</option>
-                                <option value="MilestoneTitle" <%= sortColumn === 'MilestoneTitle' ? 'selected' : '' %>>Milestone Title</option>
-                                <option value="MilestoneCategory" <%= sortColumn === 'MilestoneCategory' ? 'selected' : '' %>>Milestone Category</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Direction</label>
-                            <select class="form-select" name="sortDir">
-                                <option value="desc" <%= sortDir === 'desc' ? 'selected' : '' %>>Descending</option>
-                                <option value="asc" <%= sortDir === 'asc' ? 'selected' : '' %>>Ascending</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Apply Sort</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-<% } %>
+    <% } %>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Add Milestone Modal - Participant Search
+    const addSearchInput = document.getElementById('addMilestoneParticipantSearch');
+    const addSearchResults = document.getElementById('addMilestoneParticipantResults');
+    const addParticipantIdInput = document.getElementById('addMilestoneParticipantId');
+    let addActiveSearchId = null;
+
+    // Edit Milestone Modal - Participant Search
+    const editSearchInput = document.getElementById('editMilestoneParticipantSearch');
+    const editSearchResults = document.getElementById('editMilestoneParticipantResults');
+    const editParticipantIdInput = document.getElementById('editMilestoneParticipantId');
     const editIdInput = document.getElementById('editMilestoneId');
     const editTitleInput = document.getElementById('editMilestoneTitle');
     const editCategorySelect = document.getElementById('editMilestoneCategory');
-    const addCategorySelect = document.getElementById('addMilestoneCategory');
     const editDateInput = document.getElementById('editMilestoneDate');
-    const addParticipantSearch = document.getElementById('addParticipantSearch');
-    const addParticipantSelect = document.getElementById('addParticipantSelect');
-    const editParticipantSearch = document.getElementById('editParticipantSearch');
-    const editParticipantSelect = document.getElementById('editParticipantSelect');
+    let editActiveSearchId = null;
 
-    function resetSelectOptions(selectElement) {
-        if (!selectElement) return;
-        Array.from(selectElement.options).forEach(function(option, index) {
-            option.hidden = false;
-            if (index === 0) {
-                option.selected = true;
+    // Participant search functionality (same as donations)
+    function setupParticipantSearch(searchInput, searchResults, participantIdInput, activeSearchIdObj) {
+        if (!searchInput || !searchResults || !participantIdInput) return;
+
+        const hideResults = () => {
+            if (searchResults) searchResults.style.display = 'none';
+        };
+
+        const showResults = () => {
+            if (searchResults) searchResults.style.display = 'block';
+        };
+
+        searchInput.addEventListener('input', async () => {
+            const q = searchInput.value.trim();
+            if (activeSearchIdObj) activeSearchIdObj.value = null;
+            if (!q || !searchResults) {
+                hideResults();
+                participantIdInput.value = '';
+                return;
+            }
+            try {
+                const res = await fetch(`/admin/participants/search?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
+                if (!data.success) {
+                    hideResults();
+                    return;
+                }
+                searchResults.innerHTML = '';
+                data.results.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'result-item';
+                    div.textContent = `${item.name} (#${item.participantId}) - ${item.email}`;
+                    div.addEventListener('click', () => {
+                        searchInput.value = `${item.name} (#${item.participantId})`;
+                        if (activeSearchIdObj) activeSearchIdObj.value = item.participantId;
+                        participantIdInput.value = item.participantId;
+                        hideResults();
+                    });
+                    searchResults.appendChild(div);
+                });
+                showResults();
+            } catch (err) {
+                console.error(err);
+                hideResults();
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (searchResults && !searchResults.contains(e.target) && e.target !== searchInput) {
+                hideResults();
             }
         });
     }
 
-    function bindParticipantFilter(filterInput, selectElement) {
-        if (!filterInput || !selectElement) return;
-        filterInput.addEventListener('input', function() {
-            const term = (filterInput.value || '').toLowerCase();
-            Array.from(selectElement.options).forEach(function(option, index) {
-                if (index === 0) {
-                    option.hidden = false;
-                    return;
-                }
-                const text = option.textContent.toLowerCase();
-                option.hidden = term && !text.includes(term);
-            });
-        });
-    }
+    // Setup search for add milestone modal
+    const addActiveSearchIdObj = { value: null };
+    setupParticipantSearch(addSearchInput, addSearchResults, addParticipantIdInput, addActiveSearchIdObj);
 
-    bindParticipantFilter(addParticipantSearch, addParticipantSelect);
-    bindParticipantFilter(editParticipantSearch, editParticipantSelect);
+    // Setup search for edit milestone modal
+    const editActiveSearchIdObj = { value: null };
+    setupParticipantSearch(editSearchInput, editSearchResults, editParticipantIdInput, editActiveSearchIdObj);
 
+    // Reset add milestone modal when opened
     const addMilestoneModal = document.getElementById('addMilestoneModal');
     if (addMilestoneModal) {
         addMilestoneModal.addEventListener('show.bs.modal', function() {
-            if (addParticipantSearch) addParticipantSearch.value = '';
-            if (addCategorySelect) addCategorySelect.value = '';
-            resetSelectOptions(addParticipantSelect);
+            if (addSearchInput) addSearchInput.value = '';
+            if (addParticipantIdInput) addParticipantIdInput.value = '';
+            if (addActiveSearchIdObj) addActiveSearchIdObj.value = null;
+            if (addSearchResults) addSearchResults.style.display = 'none';
         });
     }
 
-    document.querySelectorAll('.edit-milestone-btn').forEach(function(button) {
-        button.addEventListener('click', function() {
-            if (!editIdInput || !editTitleInput || !editDateInput || !editParticipantSelect) return;
-            const participantDisplay = this.getAttribute('data-participant-display') || '';
-            if (editParticipantSearch) {
-                editParticipantSearch.value = participantDisplay;
-                // Trigger filter to narrow list to the selected participant
-                editParticipantSearch.dispatchEvent(new Event('input', { bubbles: true }));
-            } else {
-                resetSelectOptions(editParticipantSelect);
-            }
-            editIdInput.value = this.getAttribute('data-milestone-id') || '';
-            editTitleInput.value = this.getAttribute('data-title') || '';
-            if (editCategorySelect) {
-                editCategorySelect.value = this.getAttribute('data-category') || '';
-            }
-            editDateInput.value = this.getAttribute('data-date') || '';
+    // Edit milestone button click handler
+    const editMilestoneModal = document.getElementById('editMilestoneModal');
+    let editModalInstance = null;
+    if (editMilestoneModal && typeof bootstrap !== 'undefined') {
+        editModalInstance = new bootstrap.Modal(editMilestoneModal);
+    }
+
+    document.querySelectorAll('.milestone-edit-btn').forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const milestoneId = this.getAttribute('data-milestone-id') || '';
             const participantId = this.getAttribute('data-participant-id') || '';
-            // Explicitly select matching participant option
-            Array.from(editParticipantSelect.options).forEach(function(opt, idx) {
-                opt.selected = idx === 0 ? false : opt.value === String(participantId);
-            });
+            const participantDisplay = this.getAttribute('data-participant-display') || '';
+            const title = this.getAttribute('data-title') || '';
+            const category = this.getAttribute('data-category') || '';
+            const date = this.getAttribute('data-date') || '';
+
+            // Set milestone ID
+            if (editIdInput) editIdInput.value = milestoneId;
+
+            // Set title
+            if (editTitleInput) editTitleInput.value = title;
+
+            // Set category
+            if (editCategorySelect) editCategorySelect.value = category;
+
+            // Set date
+            if (editDateInput) editDateInput.value = date;
+
+            // Set participant search value and ID
+            if (editSearchInput && participantDisplay) {
+                editSearchInput.value = participantDisplay;
+            }
+            if (editParticipantIdInput && participantId) {
+                editParticipantIdInput.value = participantId;
+                if (editActiveSearchIdObj) editActiveSearchIdObj.value = participantId;
+            }
+
+            // Open modal after values are set
+            if (editModalInstance) {
+                editModalInstance.show();
+            } else if (editMilestoneModal) {
+                editMilestoneModal.classList.add('show');
+                editMilestoneModal.style.display = 'block';
+            }
         });
     });
 
-    document.querySelectorAll('.delete-milestone-form').forEach(function(form) {
-        form.addEventListener('submit', function(e) {
-            const title = form.getAttribute('data-title') || 'this milestone';
-            if (!confirm(`Are you sure you want to delete milestone "${title}"?`)) {
-                e.preventDefault();
+    // Delete milestone confirmation modal
+    const deleteConfirmBackdrop = document.getElementById('deleteMilestoneConfirmBackdrop');
+    const deleteConfirmMessage = document.getElementById('deleteMilestoneConfirmMessage');
+    const deleteConfirmYes = document.getElementById('deleteMilestoneConfirmYes');
+    const deleteConfirmNo = document.getElementById('deleteMilestoneConfirmNo');
+    let pendingDeleteForm = null;
+
+    const openDeleteConfirm = (form, title) => {
+        if (!deleteConfirmBackdrop || !deleteConfirmMessage) {
+            if (confirm(`Are you sure you want to delete milestone "${title}"?`)) {
+                form.submit();
+            }
+            return;
+        }
+        pendingDeleteForm = form;
+        deleteConfirmMessage.textContent = `Delete milestone "${title}"?`;
+        deleteConfirmBackdrop.classList.add('active');
+    };
+
+    if (deleteConfirmYes) {
+        deleteConfirmYes.addEventListener('click', function() {
+            if (pendingDeleteForm) {
+                pendingDeleteForm.submit();
+            }
+            if (deleteConfirmBackdrop) {
+                deleteConfirmBackdrop.classList.remove('active');
+            }
+            pendingDeleteForm = null;
+        });
+    }
+
+    if (deleteConfirmNo) {
+        deleteConfirmNo.addEventListener('click', function() {
+            if (deleteConfirmBackdrop) {
+                deleteConfirmBackdrop.classList.remove('active');
+            }
+            pendingDeleteForm = null;
+        });
+    }
+
+    if (deleteConfirmBackdrop) {
+        deleteConfirmBackdrop.addEventListener('click', (e) => {
+            if (e.target === deleteConfirmBackdrop) {
+                deleteConfirmBackdrop.classList.remove('active');
+                pendingDeleteForm = null;
             }
         });
+    }
+
+    // Delete milestone button click handler
+    document.querySelectorAll('.milestone-delete-btn').forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const milestoneId = this.getAttribute('data-milestone-id');
+            const title = this.getAttribute('data-title') || 'this milestone';
+            
+            const form = document.createElement('form');
+            form.action = '/milestones/delete';
+            form.method = 'POST';
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'MilestoneID';
+            input.value = milestoneId;
+            form.appendChild(input);
+            document.body.appendChild(form);
+            
+            openDeleteConfirm(form, title);
+        });
     });
+
+    // Filter pill handlers
+    const categoryPills = document.querySelectorAll('.milestone-category-pill');
+    const categoryInput = document.getElementById('filterCategoryInput');
+    categoryPills.forEach(pill => {
+        pill.addEventListener('click', function() {
+            categoryPills.forEach(p => p.classList.remove('filter-selected'));
+            this.classList.add('filter-selected');
+            const value = this.getAttribute('data-category-value');
+            if (categoryInput) categoryInput.value = value || '';
+        });
+    });
+
+    const rolePills = document.querySelectorAll('.milestone-role-pill');
+    const roleInput = document.getElementById('filterRoleInput');
+    rolePills.forEach(pill => {
+        pill.addEventListener('click', function() {
+            rolePills.forEach(p => p.classList.remove('filter-selected'));
+            this.classList.add('filter-selected');
+            const value = this.getAttribute('data-role-value');
+            if (roleInput) roleInput.value = value || '';
+        });
+    });
+
+    const interestPills = document.querySelectorAll('.milestone-interest-pill');
+    const interestInput = document.getElementById('filterInterestInput');
+    interestPills.forEach(pill => {
+        pill.addEventListener('click', function() {
+            interestPills.forEach(p => p.classList.remove('filter-selected'));
+            this.classList.add('filter-selected');
+            const value = this.getAttribute('data-interest-value');
+            if (interestInput) interestInput.value = value || '';
+        });
+    });
+
+    // Age range slider (same as donations)
+    const ageWrapper = document.querySelector('#ageMinSlider')?.closest('.milestones-dual-range-wrapper');
+    if (ageWrapper) {
+        const minSlider = document.getElementById('ageMinSlider');
+        const maxSlider = document.getElementById('ageMaxSlider');
+        const minInput = document.querySelector('input[name="filterMinAge"]');
+        const maxInput = document.querySelector('input[name="filterMaxAge"]');
+        
+        if (minSlider && maxSlider && minInput && maxInput) {
+            function updateAgeRange() {
+                const min = parseFloat(minSlider.value);
+                const max = parseFloat(maxSlider.value);
+                if (min > max) {
+                    minSlider.value = max;
+                    minInput.value = max.toString();
+                } else {
+                    minInput.value = min.toString();
+                }
+                if (max < min) {
+                    maxSlider.value = min;
+                    maxInput.value = min.toString();
+                } else {
+                    maxInput.value = max.toString();
+                }
+            }
+            minSlider.addEventListener('input', updateAgeRange);
+            maxSlider.addEventListener('input', updateAgeRange);
+            minInput.addEventListener('input', () => {
+                const val = parseFloat(minInput.value) || 0;
+                minSlider.value = Math.max(0, Math.min(100, val));
+                updateAgeRange();
+            });
+            maxInput.addEventListener('input', () => {
+                const val = parseFloat(maxInput.value) || 100;
+                maxSlider.value = Math.max(0, Math.min(100, val));
+                updateAgeRange();
+            });
+        }
+    }
 
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.forEach(function(triggerEl) {
@@ -513,3 +772,611 @@ document.addEventListener('DOMContentLoaded', function() {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/js/milestones-by-category-chart.js"></script>
 <% } %>
+
+<style>
+    /* Milestones KPI Cards */
+    .milestone-kpi-card {
+        border-radius: 16px;
+        border: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        background: white;
+    }
+
+    .milestone-kpi-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .milestone-kpi-card .card-body {
+        padding: 2rem;
+    }
+
+    /* Milestones Top Bar */
+    .milestones-top-bar {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    @media (min-width: 768px) {
+        .milestones-top-bar {
+            flex-direction: row;
+            align-items: center;
+            gap: 1rem;
+        }
+    }
+
+    .milestones-search-form {
+        flex: 1;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .milestones-search-input-wrapper {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .milestones-search-icon {
+        position: absolute;
+        left: 1rem;
+        color: #5A5E5A;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .milestones-search-input {
+        flex: 1;
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem 0.6rem 2.75rem;
+        height: auto;
+        border: 2px solid #E0E0E0;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+    }
+
+    .milestones-search-input:focus {
+        outline: none;
+        border-color: #978EC4;
+        box-shadow: 0 0 0 3px rgba(151, 142, 196, 0.1);
+    }
+
+    .milestones-clear-btn {
+        white-space: nowrap;
+    }
+
+    .milestones-search-clear-btn {
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+        transition: all 0.2s ease;
+        background: white;
+        color: #3A3F3B;
+        border: 2px solid #E0E0E0;
+        text-decoration: none;
+    }
+
+    .milestones-search-clear-btn:hover {
+        background: #F0F0F0;
+        color: #3A3F3B;
+        border-color: #D0D0D0;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .milestones-actions {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    /* Filter and Add Milestone Buttons */
+    .milestones-filter-btn,
+    .milestones-add-btn {
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .milestones-filter-btn {
+        background: #F0F0F0;
+        color: #3A3F3B;
+        border: 2px solid #E0E0E0;
+    }
+
+    .milestones-filter-btn:hover {
+        background: #E0E0E0;
+        color: #3A3F3B;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .milestones-add-btn {
+        background: #978EC4;
+        color: white;
+        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+    }
+
+    .milestones-add-btn:hover {
+        background: #897FB8;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+    }
+
+    /* Milestone Cards */
+    .milestone-card {
+        border-radius: 16px;
+        border: none;
+        background: white;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        overflow: hidden;
+    }
+
+    .milestone-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .milestone-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .milestone-title-section {
+        flex: 1;
+    }
+
+    .milestone-title {
+        font-family: 'DM Serif Display', serif;
+        font-size: 1.5rem;
+        color: #3A3F3B;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .milestone-category {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.85rem;
+        color: #5A5E5A;
+        display: block;
+        margin-top: 0.25rem;
+    }
+
+    .milestone-actions-group {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .milestone-edit-btn,
+    .milestone-delete-btn {
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        font-weight: 600;
+        font-family: 'Montserrat', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        border: 2px solid;
+        min-width: 36px;
+        height: 36px;
+    }
+
+    .milestone-edit-btn {
+        background: white;
+        color: #978EC4;
+        border-color: #978EC4;
+    }
+
+    .milestone-edit-btn:hover {
+        background: #978EC4;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(151, 142, 196, 0.3);
+    }
+
+    .milestone-delete-btn {
+        background: white;
+        color: #CE325B;
+        border-color: #CE325B;
+    }
+
+    .milestone-delete-btn:hover {
+        background: #CE325B;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(206, 50, 91, 0.3);
+    }
+
+    .milestone-participant-info {
+        flex: 1;
+    }
+
+    .milestone-participant-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.85rem;
+        color: #5A5E5A;
+        margin: 0;
+    }
+
+    .milestone-participant-name {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1rem;
+        color: #3A3F3B;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .milestone-date {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.85rem;
+        color: #7A7E7A;
+        margin: 0;
+    }
+
+    /* Milestones Filter Section (same as donations) */
+    .milestones-filter-section {
+        padding: 1.5rem;
+    }
+
+    .milestones-filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (min-width: 992px) {
+        .milestones-filter-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .milestones-filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .milestones-filter-group-label {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #3A3F3B;
+        margin: 0;
+    }
+
+    .milestones-range-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .milestones-range-slider-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .milestones-range-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        flex: 1;
+    }
+
+    .milestones-range-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #4B4F4B;
+    }
+
+    .milestones-range-input {
+        padding: 0.5rem 0.75rem;
+        border: 2px solid #E0E0E0;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: border-color 0.2s;
+    }
+
+    .milestones-range-input:focus {
+        outline: none;
+        border-color: #978EC4;
+    }
+
+    .milestones-range-with-inputs {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        column-gap: 0.75rem;
+        align-items: center;
+    }
+
+    .milestones-range-input-group-min,
+    .milestones-range-input-group-max {
+        min-width: 60px;
+        max-width: 70px;
+    }
+
+    .milestones-range-input-group-min .milestones-range-input,
+    .milestones-range-input-group-max .milestones-range-input {
+        padding-inline: 0.4rem;
+        padding-block: 0.4rem;
+        text-align: center;
+        font-size: 0.9rem;
+    }
+
+    .milestones-dual-range-wrapper {
+        position: relative;
+        width: 100%;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .milestones-dual-range {
+        position: absolute;
+        width: 100%;
+        height: 8px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+        outline: none;
+        pointer-events: none;
+    }
+
+    .milestones-dual-range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #978EC4;
+        cursor: pointer;
+        pointer-events: all;
+        position: relative;
+        z-index: 2;
+        transition: background 0.2s, transform 0.2s;
+    }
+
+    .milestones-dual-range::-webkit-slider-thumb:hover {
+        background: #7A6FA3;
+        transform: scale(1.1);
+    }
+
+    .milestones-dual-range::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #978EC4;
+        cursor: pointer;
+        border: none;
+        pointer-events: all;
+        position: relative;
+        z-index: 2;
+        transition: background 0.2s, transform 0.2s;
+    }
+
+    .milestones-dual-range-wrapper::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 8px;
+        background: #E0E0E0;
+        border-radius: 4px;
+        z-index: 0;
+    }
+
+    .milestones-filter-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #E0E0E0;
+    }
+
+    .milestones-filter-reset-btn,
+    .milestones-filter-apply-btn {
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+        transition: all 0.2s ease;
+    }
+
+    .milestones-filter-reset-btn {
+        background: white;
+        color: #3A3F3B;
+        border: 2px solid #E0E0E0;
+    }
+
+    .milestones-filter-reset-btn:hover {
+        background: #F0F0F0;
+        color: #3A3F3B;
+        border-color: #D0D0D0;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .milestones-filter-apply-btn {
+        background: #978EC4;
+        color: white;
+        border: 2px solid #978EC4;
+        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+    }
+
+    .milestones-filter-apply-btn:hover {
+        background: #897FB8;
+        border-color: #897FB8;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+    }
+
+    /* Pagination Buttons */
+    .milestones-pagination-btn {
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .milestones-pagination-btn.btn-secondary {
+        background: #F0F0F0;
+        color: #3A3F3B;
+        border: 2px solid #E0E0E0;
+    }
+
+    .milestones-pagination-btn.btn-secondary:hover {
+        background: #E0E0E0;
+        color: #3A3F3B;
+        border-color: #D0D0D0;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .milestones-pagination-btn.btn-primary {
+        background: #978EC4;
+        color: white;
+        border: 2px solid #978EC4;
+        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+    }
+
+    .milestones-pagination-btn.btn-primary:hover {
+        background: #897FB8;
+        border-color: #897FB8;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+    }
+
+    /* Modal Buttons */
+    .milestones-modal-cancel-btn,
+    .milestones-modal-save-btn {
+        border-radius: 999px;
+        padding: 0.6rem 1.3rem;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+        transition: all 0.2s ease;
+    }
+
+    .milestones-modal-cancel-btn {
+        background: white;
+        color: #3A3F3B;
+        border: 2px solid #E0E0E0;
+    }
+
+    .milestones-modal-cancel-btn:hover {
+        background: #F0F0F0;
+        color: #3A3F3B;
+        border-color: #D0D0D0;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .milestones-modal-save-btn {
+        background: #978EC4;
+        color: white;
+        border: 2px solid #978EC4;
+        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+    }
+
+    .milestones-modal-save-btn:hover {
+        background: #897FB8;
+        border-color: #897FB8;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+    }
+
+    /* Delete Confirmation Modal (same as donations) */
+    .reg-confirm-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.3);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+    }
+
+    .reg-confirm-backdrop.active {
+        display: flex;
+    }
+
+    .reg-confirm-modal {
+        background: white;
+        border-radius: 12px;
+        padding: 1.2rem 1.4rem;
+        box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+        max-width: 420px;
+        width: 90%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+    }
+
+    .reg-confirm-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.6rem;
+    }
+
+    /* Participant Search (same as donations) */
+    .reg-participant-search {
+        min-width: 220px;
+    }
+
+    .reg-search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #E6E0D4;
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        z-index: 10;
+        display: none;
+        max-height: 220px;
+        overflow-y: auto;
+    }
+
+    .reg-search-results .result-item {
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+    }
+
+    .reg-search-results .result-item:hover {
+        background: #F0F0F0;
+    }
+
+    @media (max-width: 767px) {
+        .milestones-filter-section {
+            padding: 1rem;
+        }
+
+        .milestones-filter-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+    }
+</style>
