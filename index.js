@@ -574,17 +574,35 @@ app.get('/donations', async (req, res) => {
             .first();
 
         let participantOptions = [];
+        let uniqueCities = [];
+        let uniqueStates = [];
         if (req.session.isAdmin) {
             participantOptions = await knex('Participants')
                 .select('ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 'ParticipantEmail')
                 .orderBy('ParticipantLastName', 'asc')
                 .orderBy('ParticipantFirstName', 'asc');
+            
+            uniqueCities = await knex('Participants')
+                .distinct('ParticipantCity')
+                .whereNotNull('ParticipantCity')
+                .where('ParticipantCity', '!=', '')
+                .orderBy('ParticipantCity', 'asc')
+                .pluck('ParticipantCity');
+            
+            uniqueStates = await knex('Participants')
+                .distinct('ParticipantState')
+                .whereNotNull('ParticipantState')
+                .where('ParticipantState', '!=', '')
+                .orderBy('ParticipantState', 'asc')
+                .pluck('ParticipantState');
         }
 
         res.render('donations', {
             pageTitle: 'Donations',
             donations,
             participantOptions,
+            uniqueCities: uniqueCities || [],
+            uniqueStates: uniqueStates || [],
             searchTerm,
             filters: {
                 filterParticipantID,
@@ -1755,6 +1773,9 @@ app.get('/milestones', async (req, res) => {
 
         let participantOptions = [];
         let milestoneCategories = [];
+        let uniqueCities = [];
+        let uniqueStates = [];
+        let milestoneTitles = [];
         if (req.session.isAdmin) {
             participantOptions = await knex('Participants')
                 .select('ParticipantID', 'ParticipantFirstName', 'ParticipantLastName', 'ParticipantEmail')
@@ -1766,6 +1787,27 @@ app.get('/milestones', async (req, res) => {
                 .whereNotNull('MilestoneCategory')
                 .orderBy('MilestoneCategory', 'asc')
                 .pluck('MilestoneCategory');
+            
+            uniqueCities = await knex('Participants')
+                .distinct('ParticipantCity')
+                .whereNotNull('ParticipantCity')
+                .where('ParticipantCity', '!=', '')
+                .orderBy('ParticipantCity', 'asc')
+                .pluck('ParticipantCity');
+            
+            uniqueStates = await knex('Participants')
+                .distinct('ParticipantState')
+                .whereNotNull('ParticipantState')
+                .where('ParticipantState', '!=', '')
+                .orderBy('ParticipantState', 'asc')
+                .pluck('ParticipantState');
+            
+            milestoneTitles = await knex('Participant_Milestone')
+                .distinct('MilestoneTitle')
+                .whereNotNull('MilestoneTitle')
+                .where('MilestoneTitle', '!=', '')
+                .orderBy('MilestoneTitle', 'asc')
+                .pluck('MilestoneTitle');
         }
 
         res.render('milestones', {
@@ -1773,6 +1815,9 @@ app.get('/milestones', async (req, res) => {
             milestones,
             participantOptions,
             milestoneCategories,
+            uniqueCities: uniqueCities || [],
+            uniqueStates: uniqueStates || [],
+            milestoneTitles: milestoneTitles || [],
             searchTerm,
             filters: {
                 filterParticipantID,
@@ -2147,6 +2192,8 @@ app.get('/surveys', async (req, res) => {
 
         let registrationOptions = [];
         let eventTitles = [];
+        let uniqueCities = [];
+        let uniqueStates = [];
         if (req.session.isAdmin) {
             registrationOptions = await knex('Registration as r')
                 .leftJoin('Surveys as s', 'r.RegistrationID', 's.RegistrationID')
@@ -2170,6 +2217,20 @@ app.get('/surveys', async (req, res) => {
                 .orderBy('EventName', 'asc')
                 .limit(100)
                 .pluck('EventName');
+            
+            uniqueCities = await knex('Participants')
+                .distinct('ParticipantCity')
+                .whereNotNull('ParticipantCity')
+                .where('ParticipantCity', '!=', '')
+                .orderBy('ParticipantCity', 'asc')
+                .pluck('ParticipantCity');
+            
+            uniqueStates = await knex('Participants')
+                .distinct('ParticipantState')
+                .whereNotNull('ParticipantState')
+                .where('ParticipantState', '!=', '')
+                .orderBy('ParticipantState', 'asc')
+                .pluck('ParticipantState');
         }
 
         res.render('surveys', {
@@ -2177,6 +2238,8 @@ app.get('/surveys', async (req, res) => {
             surveys,
             registrationOptions,
             eventTitles,
+            uniqueCities: uniqueCities || [],
+            uniqueStates: uniqueStates || [],
             searchTerm,
             filters: {
                 filterStartDate,

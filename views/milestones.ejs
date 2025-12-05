@@ -89,7 +89,7 @@
                     <i class="fa-solid fa-search milestones-search-icon"></i>
                     <input type="text" class="form-control milestones-search-input" name="search" placeholder="Search milestones by title, participant, ID, or date..." value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>">
                 </div>
-                <% if (typeof searchTerm !== 'undefined' && searchTerm) { %>
+                <% if ((typeof searchTerm !== 'undefined' && searchTerm) || filterPairs.length > 0) { %>
                     <a href="/milestones" class="btn btn-outline-secondary milestones-clear-btn milestones-search-clear-btn">Clear</a>
                 <% } %>
             </form>
@@ -141,13 +141,17 @@
                                         <label class="milestones-filter-group-label">Location</label>
                                         <div class="milestones-range-controls">
                                             <div class="milestones-range-slider-row">
-                                                <div class="milestones-range-input-group">
+                                                <div class="milestones-range-input-group" style="position: relative;">
                                                     <label class="milestones-range-label">City</label>
-                                                    <input type="text" class="form-control milestones-range-input" name="filterCity" value="<%= filterValues.filterCity || '' %>">
+                                                    <input type="text" class="form-control reg-participant-search milestones-range-input" id="milestonesFilterCitySearch" placeholder="Search city..." value="<%= filterValues.filterCity || '' %>" autocomplete="off">
+                                                    <div class="reg-search-results" id="milestonesFilterCityResults"></div>
+                                                    <input type="hidden" name="filterCity" id="milestonesFilterCityInput" value="<%= filterValues.filterCity || '' %>">
                                                 </div>
-                                                <div class="milestones-range-input-group">
+                                                <div class="milestones-range-input-group" style="position: relative;">
                                                     <label class="milestones-range-label">State</label>
-                                                    <input type="text" class="form-control milestones-range-input" name="filterState" value="<%= filterValues.filterState || '' %>">
+                                                    <input type="text" class="form-control reg-participant-search milestones-range-input" id="milestonesFilterStateSearch" placeholder="Search state..." value="<%= filterValues.filterState || '' %>" autocomplete="off">
+                                                    <div class="reg-search-results" id="milestonesFilterStateResults"></div>
+                                                    <input type="hidden" name="filterState" id="milestonesFilterStateInput" value="<%= filterValues.filterState || '' %>">
                                                 </div>
                                             </div>
                                         </div>
@@ -175,9 +179,11 @@
                                     </div>
 
                                     <!-- Milestone Title -->
-                                    <div class="milestones-filter-group">
+                                    <div class="milestones-filter-group" style="position: relative;">
                                         <label class="milestones-filter-group-label">Milestone Title</label>
-                                        <input type="text" class="form-control milestones-range-input" name="filterTitle" value="<%= filterValues.filterTitle || '' %>" placeholder="Search title...">
+                                        <input type="text" class="form-control reg-participant-search milestones-range-input" id="milestonesFilterTitleSearch" placeholder="Search title..." value="<%= filterValues.filterTitle || '' %>" autocomplete="off">
+                                        <div class="reg-search-results" id="milestonesFilterTitleResults"></div>
+                                        <input type="hidden" name="filterTitle" id="milestonesFilterTitleInput" value="<%= filterValues.filterTitle || '' %>">
                                     </div>
 
                                     <!-- Milestone Category (Icon-based) -->
@@ -323,11 +329,7 @@
                                                 data-title="<%= milestone.MilestoneTitle %>">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
-                                        <form action="/milestones/delete" method="POST" class="delete-milestone-form d-inline" data-title="<%= milestone.MilestoneTitle %>">
-                                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                            <input type="hidden" name="MilestoneID" value="<%= milestone.MilestoneID %>">
-                                            <button type="submit" class="btn btn-outline-danger">Delete</button>
-                                        </form>
+                                    
                                     </div>
                                 <% } %>
                             </div>
@@ -675,6 +677,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const form = document.createElement('form');
             form.action = '/milestones/delete';
             form.method = 'POST';
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_csrf';
+            csrfInput.value = '<%= csrfToken %>';
+            form.appendChild(csrfInput);
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = 'MilestoneID';
@@ -719,6 +726,86 @@ document.addEventListener('DOMContentLoaded', function() {
             if (interestInput) interestInput.value = value || '';
         });
     });
+
+    // City/State/Title filter search selectors
+    const citySearchInput = document.getElementById('milestonesFilterCitySearch');
+    const citySearchResults = document.getElementById('milestonesFilterCityResults');
+    const cityInput = document.getElementById('milestonesFilterCityInput');
+    const stateSearchInput = document.getElementById('milestonesFilterStateSearch');
+    const stateSearchResults = document.getElementById('milestonesFilterStateResults');
+    const stateInput = document.getElementById('milestonesFilterStateInput');
+    const titleSearchInput = document.getElementById('milestonesFilterTitleSearch');
+    const titleSearchResults = document.getElementById('milestonesFilterTitleResults');
+    const titleInput = document.getElementById('milestonesFilterTitleInput');
+
+    function setupFilterSearch(searchInput, searchResults, hiddenInput, options, showAllOnFocus = false) {
+        if (!searchInput || !searchResults || !hiddenInput) return;
+
+        const hideResults = () => {
+            if (searchResults) searchResults.style.display = 'none';
+        };
+
+        const showResults = () => {
+            if (searchResults) searchResults.style.display = 'block';
+        };
+
+        const filterAndDisplay = (q = '') => {
+            const searchTerm = q.toLowerCase().trim();
+            const filtered = options.filter(opt => 
+                opt.toLowerCase().includes(searchTerm)
+            );
+            
+            searchResults.innerHTML = '';
+            if (filtered.length === 0 && searchTerm) {
+                hideResults();
+                return;
+            }
+            
+            filtered.forEach(opt => {
+                const div = document.createElement('div');
+                div.className = 'result-item';
+                div.textContent = opt;
+                div.addEventListener('click', () => {
+                    searchInput.value = opt;
+                    hiddenInput.value = opt;
+                    hideResults();
+                });
+                searchResults.appendChild(div);
+            });
+            showResults();
+        };
+
+        searchInput.addEventListener('input', () => {
+            const q = searchInput.value.trim();
+            filterAndDisplay(q);
+        });
+
+        if (showAllOnFocus) {
+            searchInput.addEventListener('focus', () => {
+                filterAndDisplay(searchInput.value.trim());
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (searchResults && !searchResults.contains(e.target) && e.target !== searchInput) {
+                hideResults();
+            }
+        });
+    }
+
+    const uniqueCities = <%- JSON.stringify(uniqueCities || []) %>;
+    const uniqueStates = <%- JSON.stringify(uniqueStates || []) %>;
+    const milestoneTitles = <%- JSON.stringify(milestoneTitles || []) %>;
+    
+    if (citySearchInput && citySearchResults && cityInput) {
+        setupFilterSearch(citySearchInput, citySearchResults, cityInput, uniqueCities);
+    }
+    if (stateSearchInput && stateSearchResults && stateInput) {
+        setupFilterSearch(stateSearchInput, stateSearchResults, stateInput, uniqueStates);
+    }
+    if (titleSearchInput && titleSearchResults && titleInput) {
+        setupFilterSearch(titleSearchInput, titleSearchResults, titleInput, milestoneTitles, true); // Show all on focus
+    }
 
     // Age range slider (same as donations)
     const ageWrapper = document.querySelector('#ageMinSlider')?.closest('.milestones-dual-range-wrapper');
