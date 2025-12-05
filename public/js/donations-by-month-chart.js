@@ -55,17 +55,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Get filter parameters from canvas data attributes
+    // NOTE: We DON'T pass date filters to the chart API - the chart always shows ALL data
+    // Date filters only affect the donation cards below, not the chart itself
     const search = canvas.dataset.search || '';
-    const filterStartDate = canvas.dataset.filterStartDate || '';
-    const filterEndDate = canvas.dataset.filterEndDate || '';
     const filterMinAmount = canvas.dataset.filterMinAmount || '';
     const filterMaxAmount = canvas.dataset.filterMaxAmount || '';
 
-    // Build query string with filters
+    // Build query string with filters (excluding date filters for the chart)
     const params = new URLSearchParams();
     if (search) params.append('search', search);
-    if (filterStartDate) params.append('filterStartDate', filterStartDate);
-    if (filterEndDate) params.append('filterEndDate', filterEndDate);
     if (filterMinAmount) params.append('filterMinAmount', filterMinAmount);
     if (filterMaxAmount) params.append('filterMaxAmount', filterMaxAmount);
 
