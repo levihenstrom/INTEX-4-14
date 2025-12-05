@@ -985,11 +985,113 @@ app.get('/events', async (req, res) => {
             pageTitle: 'Events',
             event_templates,
             upcomingEvents,
+            isAdmin: req.session.isAdmin || false,
         });
     } catch (err) {
         console.error('Error loading events:', err);
         console.error('Error stack:', err.stack);
         res.status(500).send(`Error loading events: ${err.message}`);
+    }
+});
+
+// POST /events/add: Admin create a new event template
+app.post('/events/add', async (req, res) => {
+    try {
+        if (!req.session.isAdmin) {
+            return res.status(403).redirect('/events?error=' + encodeURIComponent('Admin access required'));
+        }
+
+        const { EventName, EventType, EventDescription, EventRecurrencePattern, EventDefaultCapacity } = req.body || {};
+        
+        if (!EventName || !EventType || !EventRecurrencePattern) {
+            return res.status(400).redirect('/events?error=' + encodeURIComponent('Event Name, Event Type, and Recurrence Pattern are required'));
+        }
+
+        // Validate EventName is unique
+        const existingEvent = await knex('Event_Templates')
+            .where('EventName', EventName.trim())
+            .first();
+
+        if (existingEvent) {
+            return res.status(400).redirect('/events?error=' + encodeURIComponent('An event with this name already exists'));
+        }
+
+        // Parse EventDefaultCapacity if provided
+        let defaultCapacity = null;
+        if (EventDefaultCapacity) {
+            const parsed = parseInt(EventDefaultCapacity, 10);
+            if (!isNaN(parsed) && parsed > 0) {
+                defaultCapacity = parsed;
+            }
+        }
+
+        // Insert the new event template
+        await knex('Event_Templates')
+            .insert({
+                EventName: EventName.trim(),
+                EventType: EventType.trim(),
+                EventDescription: EventDescription ? EventDescription.trim() : null,
+                EventRecurrencePattern: EventRecurrencePattern.trim(),
+                EventDefaultCapacity: defaultCapacity
+            });
+
+        return res.redirect('/events?success=' + encodeURIComponent('Event created successfully'));
+    } catch (err) {
+        console.error('Error creating event:', err);
+        return res.status(500).redirect('/events?error=' + encodeURIComponent('Error creating event. Please try again.'));
+    }
+});
+
+// POST /events/delete: Admin delete an event template
+app.post('/events/delete', async (req, res) => {
+    try {
+        if (!req.session.isAdmin) {
+            return res.status(403).redirect('/events?error=' + encodeURIComponent('Admin access required'));
+        }
+
+        const { eventId } = req.body || {};
+        
+        if (!eventId) {
+            return res.status(400).redirect('/events?error=' + encodeURIComponent('Event ID is required'));
+        }
+
+        const eventIdNum = parseInt(eventId, 10);
+        if (isNaN(eventIdNum)) {
+            return res.status(400).redirect('/events?error=' + encodeURIComponent('Invalid event ID'));
+        }
+
+        // Check if event exists
+        const eventTemplate = await knex('Event_Templates')
+            .where('EventID', eventIdNum)
+            .first();
+
+        if (!eventTemplate) {
+            return res.status(404).redirect('/events?error=' + encodeURIComponent('Event not found'));
+        }
+
+        // Delete all registrations for occurrences of this event
+        await knex('Registration')
+            .whereIn('OccurrenceID', function() {
+                this.select('OccurrenceID')
+                    .from('Event_Occurrence')
+                    .where('EventID', eventIdNum);
+            })
+            .delete();
+
+        // Delete all occurrences of this event
+        await knex('Event_Occurrence')
+            .where('EventID', eventIdNum)
+            .delete();
+
+        // Delete the event template
+        await knex('Event_Templates')
+            .where('EventID', eventIdNum)
+            .delete();
+
+        return res.redirect('/events?success=' + encodeURIComponent('Event deleted successfully'));
+    } catch (err) {
+        console.error('Error deleting event:', err);
+        return res.status(500).redirect('/events?error=' + encodeURIComponent('Error deleting event. Please try again.'));
     }
 });
 
