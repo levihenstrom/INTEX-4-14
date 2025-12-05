@@ -195,7 +195,10 @@
         <div class="upcoming-events-section">
             <div class="upcoming-events-carousel-container">
                 <div class="upcoming-events-carousel landing-events-carousel">
-                    <% upcomingEvents.forEach(event => { %>
+                    <% upcomingEvents.forEach(event => { 
+                        const startIso = event.EventDateTimeStart ? new Date(event.EventDateTimeStart).toISOString() : '';
+                        const endIso = event.EventDateTimeEnd ? new Date(event.EventDateTimeEnd).toISOString() : '';
+                    %>
                         <div class="upcoming-event-card">
                             <a href="/registration/<%= event.EventID %>?occurrence=<%= event.OccurrenceID %>" class="upcoming-event-link">
                                 <div class="upcoming-event-image">
@@ -215,31 +218,16 @@
                                     <div class="upcoming-event-details">
                                         <div class="upcoming-event-detail">
                                             <i class="fa-solid fa-calendar"></i>
-                                            <span>
-                                                <%= new Date(event.EventDateTimeStart).toLocaleDateString('en-US', { 
-                                                    weekday: 'short', 
-                                                    month: 'short', 
-                                                    day: 'numeric',
-                                                    year: 'numeric'
-                                                }) %>
-                                            </span>
+                                            <span class="js-local-date"
+                                                  data-local-date="<%= startIso %>"
+                                                  data-date-format="weekday-short"></span>
                                         </div>
                                         <div class="upcoming-event-detail">
                                             <i class="fa-solid fa-clock"></i>
-                                            <span>
-                                                <%= new Date(event.EventDateTimeStart).toLocaleTimeString('en-US', { 
-                                                    hour: 'numeric', 
-                                                    minute: '2-digit',
-                                                    hour12: true 
-                                                }) %>
-                                                <% if (event.EventDateTimeEnd) { %>
-                                                    - <%= new Date(event.EventDateTimeEnd).toLocaleTimeString('en-US', { 
-                                                        hour: 'numeric', 
-                                                        minute: '2-digit',
-                                                        hour12: true 
-                                                    }) %>
-                                                <% } %>
-                                            </span>
+                                            <span class="js-local-time-range"
+                                                  data-local-range-start="<%= startIso %>"
+                                                  data-local-range-end="<%= endIso %>"
+                                                  data-time-format="hour-minute"></span>
                                         </div>
                                     </div>
                                 </div>

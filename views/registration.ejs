@@ -96,7 +96,10 @@
                                 <% if (occurrences && occurrences.length > 0) { %>
                                     <div class="occurrences-list-container">
                                         <div class="occurrences-list">
-                                        <% occurrences.forEach(occurrence => { %>
+                                        <% occurrences.forEach(occurrence => { 
+                                            const startIso = occurrence.EventDateTimeStart ? new Date(occurrence.EventDateTimeStart).toISOString() : '';
+                                            const endIso = occurrence.EventDateTimeEnd ? new Date(occurrence.EventDateTimeEnd).toISOString() : '';
+                                        %>
                                             <% const isRegistered = typeof registeredOccurrenceIds !== 'undefined' && registeredOccurrenceIds.includes(occurrence.OccurrenceID); %>
                                             <% const isPast = typeof occurrence.isPast !== 'undefined' && occurrence.isPast; %>
                                             <% const isFull = typeof occurrence.isFull !== 'undefined' && occurrence.isFull; %>
@@ -112,36 +115,19 @@
                                                        <!-- LEFT: date, time, status -->
                                                        <div class="occurrence-date-time">
                                                            <div class="occurrence-date">
-                                                               <% 
-                                                                   const d = new Date(occurrence.EventDateTimeStart);
-                                                                   const isToday = d.toDateString() === new Date().toDateString();
-                                                                    const isThisYear = d.getFullYear() === new Date().getFullYear();
-                                                                %>
-                                                               <%= isToday
-                                                                   ? 'Today'
-                                                                   : d.toLocaleDateString(
-                                                                       'en-US',
-                                                                       isThisYear
-                                                                           ? { weekday: 'short', month: 'short', day: 'numeric' }
-                                                                           : { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }
-                                                                   )
-                                                               %>
+                                                               <span class="js-local-date"
+                                                                     data-local-date="<%= startIso %>"
+                                                                     data-today-label="Today"
+                                                                     data-date-format="weekday-short"
+                                                                     data-date-format-same-year="weekday-short-no-year"></span>
                                                            </div>
                                            
                                                            <div class="occurrence-time">
                                                                <i class="fa-solid fa-clock"></i>
-                                                               <%= new Date(occurrence.EventDateTimeStart).toLocaleTimeString('en-US', { 
-                                                                   hour: 'numeric', 
-                                                                   minute: '2-digit',
-                                                                   hour12: true 
-                                                               }) %>
-                                                               <% if (occurrence.EventDateTimeEnd) { %>
-                                                                   - <%= new Date(occurrence.EventDateTimeEnd).toLocaleTimeString('en-US', { 
-                                                                       hour: 'numeric', 
-                                                                       minute: '2-digit',
-                                                                       hour12: true 
-                                                                   }) %>
-                                                               <% } %>
+                                                               <span class="js-local-time-range"
+                                                                     data-local-range-start="<%= startIso %>"
+                                                                     data-local-range-end="<%= endIso %>"
+                                                                     data-time-format="hour-minute"></span>
                                                            </div>
                                            
                                                            <% if (!isPast) { %>

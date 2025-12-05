@@ -105,9 +105,84 @@
     </main>
 
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
-            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
-            crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
+        crossorigin="anonymous"></script>
+
+<script>
+    // Format any element annotated with data-local-* using the browser's timezone.
+    (function() {
+        const DATE_FORMATS = {
+            'weekday-short': { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' },
+            'weekday-short-no-year': { weekday: 'short', month: 'short', day: 'numeric' },
+            'month-day-year': { month: 'short', day: 'numeric', year: 'numeric' },
+            'month-day': { month: 'short', day: 'numeric' }
+        };
+        const TIME_FORMATS = {
+            'hour-minute': { hour: 'numeric', minute: '2-digit', hour12: true }
+        };
+
+        const parseDate = (value) => {
+            const d = value ? new Date(value) : null;
+            return d && !Number.isNaN(d.getTime()) ? d : null;
+        };
+
+        const formatDate = (iso, opts) => {
+            const date = parseDate(iso);
+            if (!date) return null;
+            const now = new Date();
+            if (opts.todayLabel && date.toDateString() === now.toDateString()) {
+                return opts.todayLabel;
+            }
+            const sameYear = date.getFullYear() === now.getFullYear();
+            const formatKey = sameYear && opts.sameYearFormat ? opts.sameYearFormat : (opts.format || 'weekday-short');
+            const format = DATE_FORMATS[formatKey] || DATE_FORMATS['weekday-short'];
+            return date.toLocaleDateString(undefined, format);
+        };
+
+        const formatTime = (iso, formatKey = 'hour-minute') => {
+            const date = parseDate(iso);
+            if (!date) return null;
+            const format = TIME_FORMATS[formatKey] || TIME_FORMATS['hour-minute'];
+            return date.toLocaleTimeString(undefined, format);
+        };
+
+        const formatTimeRange = (startIso, endIso, formatKey) => {
+            const startStr = formatTime(startIso, formatKey);
+            if (!startStr) return null;
+            const endStr = formatTime(endIso, formatKey);
+            return endStr ? `${startStr} - ${endStr}` : startStr;
+        };
+
+        const applyLocalTimes = () => {
+            document.querySelectorAll('[data-local-date]').forEach(el => {
+                const iso = el.getAttribute('data-local-date');
+                const todayLabel = el.getAttribute('data-today-label') || '';
+                const format = el.getAttribute('data-date-format') || 'weekday-short';
+                const sameYearFormat = el.getAttribute('data-date-format-same-year');
+                const text = formatDate(iso, { todayLabel, format, sameYearFormat });
+                el.textContent = text || 'Date TBD';
+            });
+
+            document.querySelectorAll('[data-local-time]').forEach(el => {
+                const iso = el.getAttribute('data-local-time');
+                const format = el.getAttribute('data-time-format') || 'hour-minute';
+                const text = formatTime(iso, format);
+                el.textContent = text || 'Time TBD';
+            });
+
+            document.querySelectorAll('[data-local-range-start]').forEach(el => {
+                const startIso = el.getAttribute('data-local-range-start');
+                const endIso = el.getAttribute('data-local-range-end');
+                const format = el.getAttribute('data-time-format') || 'hour-minute';
+                const text = formatTimeRange(startIso, endIso, format);
+                el.textContent = text || 'Time TBD';
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', applyLocalTimes);
+    })();
+</script>
 
             <footer class="site-footer">
                 <div class="footer-main">

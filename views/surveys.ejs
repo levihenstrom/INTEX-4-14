@@ -262,14 +262,17 @@
 
     <% if (Array.isArray(surveys) && surveys.length) { %>
         <div class="row row-cols-1 row-cols-md-2 g-4">
-            <% surveys.forEach(function(survey) { %>
+            <% surveys.forEach(function(survey) { 
+                const submissionIso = survey.SurveySubmissionDate ? new Date(survey.SurveySubmissionDate).toISOString() : '';
+                const eventDateIso = survey.EventDateTimeStart ? new Date(survey.EventDateTimeStart).toISOString() : '';
+            %>
                 <div class="col">
                     <div class="card h-100 shadow-sm survey-card">
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex w-100 justify-content-between align-items-start mb-3">
                                 <div class="survey-title-section">
                                     <h5 class="survey-title mb-1"><%= survey.EventName || 'Event' %></h5>
-                                    <small class="survey-date">Submitted <%= survey.SurveySubmissionDisplay || 'Date not set' %></small>
+                                    <small class="survey-date">Submitted <span class="js-local-date" data-local-date="<%= submissionIso %>" data-date-format="month-day-year"></span></small>
                                 </div>
                                 <% if (isAdmin) { %>
                                     <div class="survey-actions-group">
@@ -282,7 +285,9 @@
                                                 data-recommendation="<%= survey.SurveyRecommendationScore %>"
                                                 data-comments="<%= survey.SurveyComments || '' %>"
                                                 data-submission="<%= survey.SurveySubmissionDate ? new Date(survey.SurveySubmissionDate).toISOString().split('T')[0] : '' %>"
-                                                data-registration-label="<%= survey.ParticipantFirstName %> <%= survey.ParticipantLastName %> - <%= survey.EventName || 'Event' %> (<%= survey.EventDateDisplay %>)">
+                                                data-registration-name="<%= survey.EventName || 'Event' %>"
+                                                data-registration-date="<%= eventDateIso %>"
+                                                data-registration-participant="<%= survey.ParticipantFirstName %> <%= survey.ParticipantLastName %>">
                                             <i class="fa-solid fa-pencil"></i>
                                         </button>
                                         <button type="button" class="btn btn-outline-danger survey-delete-btn" 
@@ -312,7 +317,7 @@
                                     </span>
                                 </p>
                             </div>
-                            <p class="mb-2 survey-event-date"><strong>Event Date:</strong> <%= survey.EventDateDisplay %></p>
+                            <p class="mb-2 survey-event-date"><strong>Event Date:</strong> <span class="js-local-date" data-local-date="<%= eventDateIso %>" data-date-format="month-day-year"></span></p>
                             <% if (survey.SurveyComments) { %>
                                 <p class="text-muted mb-2 survey-comments">"<%= survey.SurveyComments %>"</p>
                             <% } %>
@@ -632,7 +637,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const recommendation = this.getAttribute('data-recommendation') || '';
             const comments = this.getAttribute('data-comments') || '';
             const submission = this.getAttribute('data-submission') || '';
-            const registrationLabel = this.getAttribute('data-registration-label') || 'Registration details unavailable';
+            const registrationName = this.getAttribute('data-registration-name') || 'Event';
+            const registrationParticipant = this.getAttribute('data-registration-participant') || 'Participant';
+            const registrationDateIso = this.getAttribute('data-registration-date') || '';
+            let registrationDate = 'Date TBD';
+            if (registrationDateIso) {
+                const parsed = new Date(registrationDateIso);
+                if (!Number.isNaN(parsed.getTime())) {
+                    registrationDate = parsed.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+                }
+            }
+            const registrationLabel = `${registrationParticipant} - ${registrationName} (${registrationDate})`;
 
             // Set survey ID
             if (editSurveyIdInput) editSurveyIdInput.value = surveyId;

@@ -654,7 +654,11 @@
                             <p class="text-muted text-uppercase small" style="font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 1px; margin-bottom: 0.75rem;">Most Recent Milestone</p>
                             <% if (latestMilestone) { %>
                                 <h5 class="mb-1" style="font-family: 'DM Serif Display', serif; color: #3A3F3B;"><%= latestMilestone.MilestoneTitle %></h5>
-                                <p class="text-muted mb-0" style="font-family: 'Montserrat', sans-serif;"><%= latestMilestone.MilestoneDate ? new Date(latestMilestone.MilestoneDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date TBD' %></p>
+                                <p class="text-muted mb-0" style="font-family: 'Montserrat', sans-serif;">
+                                    <span class="js-local-date"
+                                          data-local-date="<%= latestMilestone.MilestoneDate ? new Date(latestMilestone.MilestoneDate).toISOString() : '' %>"
+                                          data-date-format="month-day-year"></span>
+                                </p>
                             <% } else { %>
                                 <h5 class="mb-1" style="font-family: 'DM Serif Display', serif; color: #3A3F3B;">No milestones yet</h5>
                                 <p class="text-muted mb-0" style="font-family: 'Montserrat', sans-serif;">Keep going!</p>
@@ -688,10 +692,8 @@
             <div class="occurrences-list" id="profileEventsList">
                 <% if (userEvents && userEvents.length) { %>
                     <% userEvents.forEach(ev => { 
-                        const startDate = ev.start ? new Date(ev.start) : null;
-                        const endDate = ev.end ? new Date(ev.end) : null;
-                        const isToday = startDate && startDate.toDateString() === new Date().toDateString();
-                        const isThisYear = startDate && startDate.getFullYear() === new Date().getFullYear();
+                        const startIso = ev.start ? ev.start.toISOString() : '';
+                        const endIso = ev.end ? ev.end.toISOString() : '';
                         const imgSrc = `/images/events/event_${ev.eventId}.jpg`;
                         const statusLower = ev.status ? ev.status.toLowerCase() : '';
                         const isCancelled = statusLower === 'cancelled';
@@ -732,8 +734,8 @@
                              data-is-past="<%= ev.isPast %>"
                              data-registration-id="<%= ev.registrationId %>"
                              data-occurrence-id="<%= ev.occurrenceId %>"
-                             data-start="<%= ev.start ? ev.start.toISOString() : '' %>"
-                             data-end="<%= ev.end ? ev.end.toISOString() : '' %>"
+                             data-start="<%= startIso %>"
+                             data-end="<%= endIso %>"
                              data-deadline="<%= ev.deadline ? ev.deadline.toISOString() : '' %>"
                              data-survey-id="<%= ev.surveyId || '' %>"
                              data-status="<%= ev.status %>"
@@ -747,13 +749,11 @@
                             <div class="my-event-main-info">
                                 <h3 class="event-title"><%= ev.eventName %></h3>
                                 <div class="occurrence-date">
-                                    <%= startDate
-                                        ? (isToday
-                                            ? 'Today'
-                                            : startDate.toLocaleDateString('en-US', isThisYear
-                                                ? { weekday: 'short', month: 'short', day: 'numeric' }
-                                                : { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }))
-                                        : 'Date TBD' %>
+                                    <span class="js-local-date"
+                                          data-local-date="<%= startIso %>"
+                                          data-today-label="Today"
+                                          data-date-format="weekday-short"
+                                          data-date-format-same-year="weekday-short-no-year"></span>
                                 </div>
                                 <span class="status-badge <%= ev.isPast ? 'status-past' : 'status-available' %>">
                                     <i class="fa-solid <%= ev.isPast ? 'fa-clock' : 'fa-users' %>"></i>
@@ -771,14 +771,10 @@
                                 <% } %>
                                 <div class="occurrence-detail-item">
                                     <i class="fa-solid fa-clock"></i>
-                                    <span>
-                                        <%= startDate
-                                            ? startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
-                                            : 'Time TBD' %>
-                                        <% if (endDate) { %>
-                                            - <%= endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) %>
-                                        <% } %>
-                                    </span>
+                                    <span class="js-local-time-range"
+                                          data-local-range-start="<%= startIso %>"
+                                          data-local-range-end="<%= endIso %>"
+                                          data-time-format="hour-minute"></span>
                                 </div>
                                 <% if (ev.eventType) { %>
                                 <div class="occurrence-detail-item">
