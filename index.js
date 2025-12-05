@@ -808,7 +808,7 @@ app.post('/donations/add/visitor', async (req, res) => {
             DonationAmount: parsedAmount
         });
 
-        return res.redirect('/donations?success=' + encodeURIComponent('Donation recorded successfully.'));
+        return res.redirect('/');
     } catch (err) {
         console.error('Error adding donation:', err);
         return res.redirect('/donations?error=' + encodeURIComponent('Error adding donation. Please try again.'));
