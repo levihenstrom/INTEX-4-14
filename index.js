@@ -2686,15 +2686,37 @@ app.post('/users', async (req, res) => {
     try {
         const { participantId, newRole, preserveSearch, preserveSort, preserveSortDir, preservePage } = req.body;
         
-        // Validate role
-        if (newRole !== 'a' && newRole !== 'p') {
-            return res.status(400).json({ error: 'Invalid role' });
+        // Validate participantId
+        if (!participantId) {
+            return res.status(400).json({ error: 'Participant ID is required' });
+        }
+        
+        // Validate role - accept all four roles: Admin (a), Volunteer (v), Donor (d), Participant (p)
+        const validRoles = ['a', 'v', 'd', 'p'];
+        if (!newRole) {
+            return res.status(400).json({ error: 'Role is required' });
+        }
+        if (!validRoles.includes(newRole)) {
+            return res.status(400).json({ error: `Invalid role: ${newRole}. Must be one of: a (Admin), v (Volunteer), d (Donor), p (Participant)` });
+        }
+
+        // Check if participant exists
+        const participant = await knex('Participants')
+            .where('ParticipantID', participantId)
+            .first();
+        
+        if (!participant) {
+            return res.status(404).json({ error: 'Participant not found' });
         }
 
         // Update participant role
-        await knex('Participants')
+        const updateResult = await knex('Participants')
             .where('ParticipantID', participantId)
             .update({ ParticipantRole: newRole });
+        
+        if (updateResult === 0) {
+            return res.status(404).json({ error: 'Participant not found or update failed' });
+        }
 
         // Build redirect URL with preserved parameters
         let redirectUrl = '/users?';

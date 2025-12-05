@@ -307,8 +307,8 @@ p, li, a, .nav-link {
 /* Mobile navbar padding */
 @media (max-width: 991.98px) {
     .navbar {
-        padding: 0.75rem 0;
-        background-color: rgba(249, 245, 234, 0.98);
+        padding: 0.5rem 0;
+        background-color: transparent;
     }
 }
 
@@ -342,28 +342,138 @@ p, li, a, .nav-link {
     justify-content: flex-start;
 }
 
-.navbar-brand img {
-    height: 60px;
-    width: auto;
-    transition: all 0.2s ease;
-    opacity: 0.7;
+/* Old logo styles removed - now using logo-pill */
+
+/* Logo pill container - starts as just logo, expands on hover */
+.navbar-brand {
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
-.navbar-brand:hover img {
-    transform: scale(1.05);
+.navbar-brand .logo-pill {
+    display: inline-flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 0;
+    padding: 0.25rem !important;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 50px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: #3A3F3B;
+    font-weight: 500;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+}
+
+/* Expanded state on hover */
+.navbar-brand .logo-pill:hover {
+    gap: 0.75rem;
+    padding: 0.5rem 1rem !important;
+    background: rgba(255, 255, 255, 0.7);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+}
+
+/* Logo text link (About Us) */
+.navbar-brand .logo-pill .logo-text-link {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    max-width: 0;
+    opacity: 0;
+    transition: max-width 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+    overflow: hidden;
+    margin: 0;
+    text-decoration: none;
+    color: #3A3F3B;
+    font-weight: 500;
+    display: inline-block;
+}
+
+/* Show text on hover */
+.navbar-brand .logo-pill:hover .logo-text-link {
+    max-width: 200px;
     opacity: 1;
+    margin-right: 0;
+    color: #CE325B;
+}
+
+.navbar-brand .logo-pill:hover .logo-text-link:hover {
+    color: #CE325B;
+    text-decoration: underline;
+}
+
+/* Logo icon link */
+.navbar-brand .logo-pill .logo-icon-link {
+    display: inline-block;
+    text-decoration: none;
+    flex-shrink: 0;
+    line-height: 0;
+}
+
+.navbar-brand .logo-pill .logo-icon {
+    height: 40px;
+    width: 40px;
+    object-fit: cover;
+    transition: all 0.3s ease;
+    opacity: 0.8;
+    border-radius: 50%;
+    display: block;
+}
+
+.navbar-brand .logo-pill:hover .logo-icon {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.navbar-brand .logo-pill .logo-icon-link:hover .logo-icon {
+    opacity: 1;
+    transform: scale(1.1);
 }
 
 /* Mobile logo sizing */
 @media (max-width: 991.98px) {
-    .navbar-brand img {
-        height: 50px;
+    .navbar-brand .logo-pill .logo-icon {
+        height: 35px;
+        width: 35px;
+    }
+    
+    .navbar-brand .logo-pill {
+        padding: 0.2rem !important;
+    }
+    
+    .navbar-brand .logo-pill:hover {
+        padding: 0.4rem 0.8rem !important;
+        gap: 0.6rem;
+    }
+    
+    .navbar-brand .logo-pill span {
+        font-size: 0.85rem;
     }
 }
 
 @media (max-width: 575.98px) {
-    .navbar-brand img {
-        height: 45px;
+    .navbar-brand .logo-pill .logo-icon {
+        height: 32px;
+        width: 32px;
+    }
+    
+    .navbar-brand .logo-pill {
+        padding: 0.15rem !important;
+    }
+    
+    .navbar-brand .logo-pill:hover {
+        padding: 0.35rem 0.7rem !important;
+        gap: 0.5rem;
+    }
+    
+    .navbar-brand .logo-pill span {
+        font-size: 0.8rem;
     }
 }
 
@@ -383,6 +493,13 @@ p, li, a, .nav-link {
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
+/* Hide mobile "About Us" link on desktop */
+@media (min-width: 992px) {
+    .nav-item.mobile-about-us {
+        display: none !important;
+    }
+}
+
 /* Collapse container neutral (optional) */
 .navbar-collapse {
     flex-grow: 0 !important;
@@ -394,10 +511,18 @@ p, li, a, .nav-link {
     border: 1px solid rgba(58, 63, 59, 0.2);
     padding: 0.5rem 0.75rem;
     border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .navbar-toggler:focus {
     box-shadow: 0 0 0 0.2rem rgba(58, 63, 59, 0.25);
+}
+
+.navbar-toggler:hover {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-color: rgba(58, 63, 59, 0.3);
 }
 
 .navbar-toggler-icon {
@@ -592,25 +717,101 @@ p, li, a, .nav-link {
 
 /* Mobile: Show dropdown arrow and use Bootstrap's click functionality */
 @media (max-width: 991.98px) {
-    /* Mobile navbar adjustments */
+    /* Mobile navbar adjustments - single pill with logo and hamburger */
+    .navbar {
+        padding: 0.5rem 0;
+        background-color: transparent;
+    }
+    
+    .navbar .container-fluid {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 50px;
+        padding: 0.5rem 1rem !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: nowrap;
+        margin: 0 auto;
+        max-width: calc(100% - 2rem);
+        gap: 0.75rem;
+    }
+    
+    /* Hide "About Us" text in logo pill on mobile - only show icon */
+    .navbar-brand .logo-pill .logo-text-link {
+        display: none !important;
+    }
+    
+    /* Remove pill styling from logo on mobile - it's inside the container-fluid pill */
+    .navbar-brand .logo-pill {
+        padding: 0 !important;
+        gap: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+    
+    .navbar-brand .logo-pill:hover {
+        padding: 0 !important;
+        gap: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+    
+    .navbar-brand .logo-pill .logo-icon-link {
+        display: flex;
+        align-items: center;
+    }
+    
+    .navbar-collapse {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-top: 0.5rem;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 0.75rem 0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        width: calc(100% - 2rem);
+        max-width: 400px;
+        min-width: 250px;
+    }
+    
     .navbar-nav {
         flex-direction: column !important;
-        gap: 0 !important;
+        gap: 0.25rem !important;
         width: 100%;
-        padding: 0.5rem 0 !important;
+        padding: 0.5rem !important;
+        margin: 0 !important;
         background: transparent !important;
         border-radius: 0 !important;
         box-shadow: none !important;
         backdrop-filter: none !important;
     }
     
-    .nav-item {
-        width: 100%;
-        border-bottom: 1px solid rgba(58, 63, 59, 0.1);
+    /* Remove vertical separators on mobile */
+    .navbar-nav > .nav-item::after {
+        display: none !important;
     }
     
-    .nav-item:last-child {
-        border-bottom: none;
+    .nav-item {
+        width: 100%;
+        margin: 0 !important;
+        border-bottom: none !important;
+    }
+    
+    .nav-item.mobile-about-us {
+        border-bottom: none !important;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
     }
     
     .nav-link-wrapper {
@@ -618,27 +819,31 @@ p, li, a, .nav-link {
     }
     
     .nav-link {
-        padding: 0.75rem 1rem !important;
+        padding: 0.75rem 1.25rem !important;
         display: flex;
         justify-content: space-between;
         align-items: center;
         width: 100%;
-        font-weight: 600;
-        border-radius: 0;
+        font-weight: 500;
+        border-radius: 12px !important;
+        background: transparent !important;
+        transition: all 0.2s ease;
+        color: #3A3F3B;
     }
     
     .nav-link:hover {
-        background-color: rgba(206, 50, 91, 0.1);
+        background-color: rgba(206, 50, 91, 0.1) !important;
         color: #CE325B;
         transform: none;
     }
     
     .nav-link:active {
-        background-color: rgba(206, 50, 91, 0.15);
+        background-color: rgba(206, 50, 91, 0.15) !important;
     }
     
     .dropdown-arrow {
         font-size: 0.8rem;
+        transition: transform 0.2s ease;
     }
     
     /* Mobile dropdown toggle - click to expand */
@@ -651,20 +856,17 @@ p, li, a, .nav-link {
         position: relative;
     }
     
-    .nav-item.dropdown .nav-link::before {
-        content: "";
-        position: absolute;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        width: 50px;
-        z-index: 1;
-        pointer-events: none;
-    }
-    
     /* Show dropdown menu when active class is applied (via JavaScript) */
     .nav-item.dropdown.active .dropdown-menu {
-        display: block;
+        display: block !important;
+        position: static !important;
+        transform: none !important;
+        left: auto !important;
+        margin-top: 0.5rem !important;
+        padding: 0.5rem !important;
+        background: rgba(249, 245, 234, 0.5) !important;
+        border-radius: 12px !important;
+        box-shadow: none !important;
     }
     
     .nav-item.dropdown.active .dropdown-arrow {
@@ -673,33 +875,96 @@ p, li, a, .nav-link {
     
     .dropdown-menu {
         position: static !important;
-        float: none;
-        width: 100%;
-        margin-top: 0;
-        background-color: rgba(58, 63, 59, 0.03);
-        border: none;
-        border-top: 1px solid rgba(58, 63, 59, 0.1);
-        box-shadow: none;
-        padding: 0;
-        display: none;
+        display: none !important;
+        margin-top: 0.5rem !important;
+        padding: 0.5rem !important;
+        background: rgba(249, 245, 234, 0.5) !important;
+        border-radius: 12px !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        transform: none !important;
+        left: auto !important;
+        width: 100% !important;
+        min-width: auto !important;
+        float: none !important;
+        border: none !important;
     }
     
     .dropdown-item {
-        padding: 0.75rem 2rem;
-        border-bottom: 1px solid rgba(58, 63, 59, 0.05);
+        padding: 0.75rem 1.5rem !important;
+        border-bottom: none !important;
+        border-radius: 12px !important;
+        margin: 0.25rem 0 !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        text-align: left !important;
+        transition: all 0.2s ease;
+        color: #3A3F3B;
     }
     
     .dropdown-item:last-child {
-        border-bottom: none;
+        border-bottom: none !important;
     }
     
     .dropdown-item:hover {
-        padding-left: 2rem;
+        background-color: rgba(206, 50, 91, 0.1) !important;
+        color: #CE325B;
+        transform: none !important;
+        box-shadow: none !important;
     }
     
-.navbar-collapse {
-        margin-top: 1rem;
-        border-top: 1px solid rgba(58, 63, 59, 0.1);
+    /* Hide hover bridge on mobile */
+    .nav-item.dropdown::before {
+        display: none !important;
+    }
+    
+    /* Ensure navbar toggler is visible and styled - inside the pill */
+    .navbar-toggler {
+        display: block !important;
+        order: 2;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0.25rem 0.5rem !important;
+        flex-shrink: 0;
+    }
+    
+    .navbar-toggler:hover {
+        background: rgba(255, 255, 255, 0.3) !important;
+        border-radius: 8px;
+    }
+    
+    .navbar-toggler:focus {
+        box-shadow: 0 0 0 0.2rem rgba(58, 63, 59, 0.15) !important;
+    }
+    
+    /* Ensure hamburger icon is properly sized */
+    .navbar-toggler-icon {
+        width: 1.5em;
+        height: 1.5em;
+    }
+    
+    /* Logo pill adjustments for mobile */
+    .navbar-brand {
+        order: 1;
+    }
+    
+    /* Ensure collapse works properly */
+    .navbar-collapse {
+        order: 3;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    
+    .navbar-collapse.collapse:not(.show) {
+        display: none !important;
+    }
+    
+    .navbar-collapse.collapse.show {
+        display: block !important;
     }
 }
 
@@ -4812,4 +5077,265 @@ body:not(.has-hero) {
 
 #surveyModalBackdrop input[type="range"]:focus::-moz-range-thumb {
     box-shadow: 0 0 0 3px rgba(151, 142, 196, 0.3);
+}
+
+/* User Profile Rows */
+.users-profile-rows {
+    margin-top: 1.5rem;
+}
+
+.user-profile-card {
+    border-radius: 8px;
+    border: 1px solid #E0E0E0;
+    transition: all 0.2s ease;
+}
+
+.user-profile-card:hover {
+    border-color: #978EC4;
+    box-shadow: 0 2px 8px rgba(151, 142, 196, 0.15);
+    transform: translateY(-1px);
+}
+
+.user-profile-card .card-body {
+    padding: 0.75rem 1rem;
+}
+
+.user-avatar {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+}
+
+.avatar-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #978EC4 0%, #CE325B 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.user-info h6 {
+    font-family: 'DM Serif Display', serif;
+    color: #3A3F3B;
+    font-size: 1.1rem;
+    margin-bottom: 0.1rem;
+    line-height: 1.2;
+}
+
+.user-info .badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    margin-top: 0.1rem;
+}
+
+.user-details {
+    font-size: 0.95rem;
+    line-height: 1.3;
+}
+
+.user-info-details {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #6c757d;
+}
+
+/* Role pill button styling */
+.role-pill-btn {
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.9rem;
+    border: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    position: relative;
+}
+
+/* Remove dropdown arrow */
+.role-pill-btn::after {
+    display: none !important;
+}
+
+.role-pill-admin {
+    background-color: #CE325B;
+    color: white;
+}
+
+.role-pill-volunteer {
+    background-color: #978EC4;
+    color: white;
+}
+
+.role-pill-donor {
+    background-color: #9AB59D;
+    color: white;
+}
+
+.role-pill-participant {
+    background-color: #3A3F3B;
+    color: white;
+}
+
+.role-pill-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    opacity: 0.9;
+}
+
+.role-pill-btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0,0,0,0.15);
+}
+
+/* Role dropdown menu styling */
+.role-dropdown {
+    position: relative;
+    z-index: 99999;
+}
+
+.role-dropdown-menu {
+    min-width: 120px;
+    padding: 0.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid rgba(0,0,0,0.1);
+    z-index: 100000 !important;
+    position: absolute !important;
+    background: white !important;
+    margin-top: 0.25rem;
+    overflow: visible !important;
+}
+
+/* Ensure dropdown appears above all cards */
+.user-profile-card {
+    overflow: visible !important;
+}
+
+.users-profile-rows {
+    overflow: visible !important;
+}
+
+.role-dropdown-item {
+    padding: 0.4rem 0.9rem;
+    border-radius: 50px;
+    margin: 0.25rem 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    text-align: center;
+    width: 100%;
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: block;
+    white-space: nowrap;
+}
+
+/* Color-coded role pills in dropdown */
+.role-item-admin {
+    background-color: #CE325B !important;
+}
+
+.role-item-volunteer {
+    background-color: #978EC4 !important;
+}
+
+.role-item-donor {
+    background-color: #9AB59D !important;
+}
+
+.role-item-participant {
+    background-color: #3A3F3B !important;
+}
+
+.role-dropdown-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    opacity: 0.9;
+}
+
+.role-dropdown-item:active {
+    transform: scale(0.98);
+}
+
+/* Ensure forms in dropdown are clickable */
+.role-dropdown-menu form {
+    margin: 0;
+    padding: 0;
+}
+
+.role-dropdown-menu li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Icon button hover effects */
+.user-profile-card .btn-link:hover {
+    opacity: 0.8;
+    transform: scale(1.1);
+}
+
+.user-profile-card .btn-link {
+    transition: all 0.2s ease;
+}
+
+.user-details strong {
+    color: #3A3F3B;
+    font-weight: 600;
+}
+
+.user-details p {
+    margin-bottom: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+@media (max-width: 991.98px) {
+    .user-profile-card .card-body {
+        padding: 0.75rem;
+    }
+    
+    .avatar-circle {
+        width: 45px;
+        height: 45px;
+        font-size: 1rem;
+    }
+    
+    .user-info h6 {
+        font-size: 1.05rem;
+    }
+    
+    .user-details {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .user-profile-card .card-body {
+        padding: 0.6rem;
+    }
+    
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        font-size: 0.95rem;
+    }
+    
+    .user-info h6 {
+        font-size: 1rem;
+    }
+    
+    .user-details {
+        font-size: 0.85rem;
+    }
 }
