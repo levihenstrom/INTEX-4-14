@@ -14,10 +14,7 @@
             <i class="fa-solid fa-chevron-left"></i>
         </button>
         <div class="upcoming-events-carousel" id="upcomingEventsCarousel">
-            <% upcomingEvents.forEach(event => { 
-                const startIso = event.EventDateTimeStart ? new Date(event.EventDateTimeStart).toISOString() : '';
-                const endIso = event.EventDateTimeEnd ? new Date(event.EventDateTimeEnd).toISOString() : '';
-            %>
+            <% upcomingEvents.forEach(event => { %>
                 <div class="upcoming-event-card">
                     <a href="/registration/<%= event.EventID %>?occurrence=<%= event.OccurrenceID %>" class="upcoming-event-link">
                         <div class="upcoming-event-image">
@@ -43,16 +40,31 @@
                                 <% } %>
                                 <div class="upcoming-event-detail">
                                     <i class="fa-solid fa-calendar"></i>
-                                    <span class="js-local-date"
-                                          data-local-date="<%= startIso %>"
-                                          data-date-format="weekday-short"></span>
+                                    <span>
+                                        <%= new Date(event.EventDateTimeStart).toLocaleDateString('en-US', { 
+                                            weekday: 'short', 
+                                            month: 'short', 
+                                            day: 'numeric',
+                                            year: 'numeric'
+                                        }) %>
+                                    </span>
                                 </div>
                                 <div class="upcoming-event-detail">
                                     <i class="fa-solid fa-clock"></i>
-                                    <span class="js-local-time-range"
-                                          data-local-range-start="<%= startIso %>"
-                                          data-local-range-end="<%= endIso %>"
-                                          data-time-format="hour-minute"></span>
+                                    <span>
+                                        <%= new Date(event.EventDateTimeStart).toLocaleTimeString('en-US', { 
+                                            hour: 'numeric', 
+                                            minute: '2-digit',
+                                            hour12: true 
+                                        }) %>
+                                        <% if (event.EventDateTimeEnd) { %>
+                                            - <%= new Date(event.EventDateTimeEnd).toLocaleTimeString('en-US', { 
+                                                hour: 'numeric', 
+                                                minute: '2-digit',
+                                                hour12: true 
+                                            }) %>
+                                        <% } %>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -381,8 +393,10 @@
     <div class="occurrences-list" id="adminUserEventsList">
         <% if (typeof selectedUserEvents !== 'undefined' && selectedUserEvents && selectedUserEvents.length) { %>
             <% selectedUserEvents.forEach(ev => { 
-                const startIso = ev.start ? ev.start.toISOString() : '';
-                const endIso = ev.end ? ev.end.toISOString() : '';
+                const startDate = ev.start ? new Date(ev.start) : null;
+                const endDate = ev.end ? new Date(ev.end) : null;
+                const isToday = startDate && startDate.toDateString() === new Date().toDateString();
+                const isThisYear = startDate && startDate.getFullYear() === new Date().getFullYear();
                 const imgSrc = `/images/events/event_${ev.eventId}.jpg`;
                 const pillLabel = ev.isPast ? (ev.attended ? 'Attended' : (ev.status && ev.status.toLowerCase() === 'cancelled' ? 'Cancelled' : 'No Show')) : (ev.attended ? 'Checked In' : 'Registered');
                 const pillCls = (pillLabel === 'Attended' || pillLabel === 'Checked In')
@@ -419,8 +433,8 @@
                      data-is-past="<%= ev.isPast %>"
                      data-registration-id="<%= ev.registrationId %>"
                      data-occurrence-id="<%= ev.occurrenceId %>"
-                    data-start="<%= startIso %>"
-                    data-end="<%= endIso %>"
+                    data-start="<%= ev.start ? ev.start.toISOString() : '' %>"
+                    data-end="<%= ev.end ? ev.end.toISOString() : '' %>"
                     data-deadline="<%= ev.deadline ? ev.deadline.toISOString() : '' %>"
                      data-survey-id="<%= ev.surveyId || '' %>"
                      data-status="<%= ev.status %>"
@@ -434,11 +448,13 @@
                     <div class="my-event-main-info">
                         <h3 class="event-title"><%= ev.eventName %></h3>
                         <div class="occurrence-date">
-                            <span class="js-local-date"
-                                  data-local-date="<%= startIso %>"
-                                  data-today-label="Today"
-                                  data-date-format="weekday-short"
-                                  data-date-format-same-year="weekday-short-no-year"></span>
+                            <%= startDate
+                                ? (isToday
+                                    ? 'Today'
+                                    : startDate.toLocaleDateString('en-US', isThisYear
+                                        ? { weekday: 'short', month: 'short', day: 'numeric' }
+                                        : { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }))
+                                : 'Date TBD' %>
                         </div>
                         <span class="status-badge <%= ev.isPast ? 'status-past' : 'status-available' %>">
                             <i class="fa-solid <%= ev.isPast ? 'fa-clock' : 'fa-users' %>"></i>
@@ -456,10 +472,14 @@
                         <% } %>
                         <div class="occurrence-detail-item">
                             <i class="fa-solid fa-clock"></i>
-                            <span class="js-local-time-range"
-                                  data-local-range-start="<%= startIso %>"
-                                  data-local-range-end="<%= endIso %>"
-                                  data-time-format="hour-minute"></span>
+                            <span>
+                                <%= startDate
+                                    ? startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+                                    : 'Time TBD' %>
+                                <% if (endDate) { %>
+                                    - <%= endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) %>
+                                <% } %>
+                            </span>
                         </div>
                         <% if (ev.eventType) { %>
                         <div class="occurrence-detail-item">
