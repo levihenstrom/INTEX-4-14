@@ -27,8 +27,25 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedBucket = currentFilterNPS;
     }
 
+    // Get filter parameters from canvas data attributes
+    const search = canvas.dataset.search || '';
+    const filterEventId = canvas.dataset.filterEventId || '';
+    const filterNPS = canvas.dataset.filterNps || '';
+    const filterStartDate = canvas.dataset.filterStartDate || '';
+    const filterEndDate = canvas.dataset.filterEndDate || '';
+
+    // Build query string with filters
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (filterEventId) params.append('filterEventID', filterEventId);
+    // Don't include filterNPS in API call - we want to show all NPS buckets but highlight the selected one
+    if (filterStartDate) params.append('filterStartDate', filterStartDate);
+    if (filterEndDate) params.append('filterEndDate', filterEndDate);
+
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+
     // Fetch NPS distribution and create chart
-    fetch('/api/surveys-nps-distribution')
+    fetch('/api/surveys-nps-distribution' + queryString)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -50,10 +67,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const total = data.reduce((sum, item) => sum + parseInt(item.count), 0);
 
             // Create one dataset per NPS bucket (for stacking)
-            const datasets = data.map((item) => {
+            const datasets = data.map((item, index) => {
                 const percentage = (parseInt(item.count) / total) * 100;
                 const isSelected = !selectedBucket || item.bucket === selectedBucket;
                 const baseColor = npsColors[item.bucket] || '#999';
+
+                // Only round outer edges: left side of first segment, right side of last segment
+                let borderRadius = 0;
+                if (index === 0) {
+                    // First segment - round left corners only
+                    borderRadius = { topLeft: 12, bottomLeft: 12, topRight: 0, bottomRight: 0 };
+                } else if (index === data.length - 1) {
+                    // Last segment - round right corners only
+                    borderRadius = { topLeft: 0, bottomLeft: 0, topRight: 12, bottomRight: 12 };
+                }
 
                 return {
                     label: item.bucket,
@@ -62,6 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderColor: isSelected ? baseColor : '#D0D0D0',
                     borderWidth: 0,
                     borderSkipped: false,
+                    borderRadius: borderRadius,
                     rawCount: parseInt(item.count),
                     percentage: percentage
                 };

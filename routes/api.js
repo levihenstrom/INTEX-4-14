@@ -25,19 +25,43 @@ router.get('/participants-by-status', async (req, res) => {
     }
 });
 
-// Milestones data endpoints
+// Milestones data endpoints - with optional search/filter support
 router.get('/milestones-by-category', async (req, res) => {
     try {
-        const results = await knex.raw(`
-            SELECT
-                "MilestoneCategory" as category,
-                COUNT(*) as count
-            FROM "Participant_Milestone"
-            WHERE "MilestoneCategory" IS NOT NULL AND "MilestoneCategory" != ''
-            GROUP BY "MilestoneCategory"
-            ORDER BY count DESC
-        `);
-        res.json(results.rows);
+        const { search, filterTitle, filterCategory, filterParticipantID } = req.query;
+
+        let query = knex('Participant_Milestone as m')
+            .leftJoin('Participants as p', 'm.ParticipantID', 'p.ParticipantID')
+            .whereNotNull('m.MilestoneCategory')
+            .whereNot('m.MilestoneCategory', '');
+
+        // Apply search filter
+        if (search) {
+            query = query.where(function() {
+                this.whereRaw('LOWER(m."MilestoneTitle") LIKE ?', [`%${search.toLowerCase()}%`])
+                    .orWhereRaw('LOWER(m."MilestoneCategory") LIKE ?', [`%${search.toLowerCase()}%`])
+                    .orWhereRaw('LOWER(p."ParticipantFirstName") LIKE ?', [`%${search.toLowerCase()}%`])
+                    .orWhereRaw('LOWER(p."ParticipantLastName") LIKE ?', [`%${search.toLowerCase()}%`]);
+            });
+        }
+
+        // Apply title filter
+        if (filterTitle) {
+            query = query.whereRaw('LOWER(m."MilestoneTitle") LIKE ?', [`%${filterTitle.toLowerCase()}%`]);
+        }
+
+        // Apply participant filter
+        if (filterParticipantID) {
+            query = query.where('m.ParticipantID', filterParticipantID);
+        }
+
+        const results = await query
+            .select('m.MilestoneCategory as category')
+            .count('* as count')
+            .groupBy('m.MilestoneCategory')
+            .orderByRaw('count DESC');
+
+        res.json(results);
     } catch (err) {
         console.error('Milestones by category error:', err);
         res.status(500).json({ error: err.message });
@@ -87,25 +111,56 @@ router.get('/surveys-nps', async (req, res) => {
     }
 });
 
-// Survey NPS distribution for stacked bar chart
+// Survey NPS distribution for stacked bar chart - with optional search/filter support
 router.get('/surveys-nps-distribution', async (req, res) => {
     try {
-        const results = await knex.raw(`
-            SELECT
-                "SurveyNPSBucket" as bucket,
-                COUNT(*) as count
-            FROM "Surveys"
-            WHERE "SurveyNPSBucket" IS NOT NULL AND "SurveyNPSBucket" != ''
-            GROUP BY "SurveyNPSBucket"
-            ORDER BY 
-                CASE "SurveyNPSBucket"
+        const { search, filterEventID, filterNPS, filterStartDate, filterEndDate } = req.query;
+
+        let query = knex('Surveys as s')
+            .leftJoin('Registration as r', 's.RegistrationID', 'r.RegistrationID')
+            .leftJoin('Event_Occurrence as eo', 'r.OccurrenceID', 'eo.OccurrenceID')
+            .leftJoin('Event_Templates as et', 'eo.EventID', 'et.EventID')
+            .leftJoin('Participants as p', 'r.ParticipantID', 'p.ParticipantID')
+            .whereNotNull('s.SurveyNPSBucket')
+            .whereNot('s.SurveyNPSBucket', '');
+
+        // Apply search filter
+        if (search) {
+            query = query.where(function() {
+                this.whereRaw('LOWER(et."EventName") LIKE ?', [`%${search.toLowerCase()}%`])
+                    .orWhereRaw('LOWER(p."ParticipantFirstName") LIKE ?', [`%${search.toLowerCase()}%`])
+                    .orWhereRaw('LOWER(p."ParticipantLastName") LIKE ?', [`%${search.toLowerCase()}%`])
+                    .orWhereRaw('CAST(s."SurveyID" AS TEXT) LIKE ?', [`%${search}%`]);
+            });
+        }
+
+        // Apply event filter
+        if (filterEventID) {
+            query = query.where('et.EventID', filterEventID);
+        }
+
+        // Apply date filters on event occurrence date
+        if (filterStartDate) {
+            query = query.where('eo.OccurrenceDate', '>=', filterStartDate);
+        }
+        if (filterEndDate) {
+            query = query.where('eo.OccurrenceDate', '<=', filterEndDate);
+        }
+
+        const results = await query
+            .select('s.SurveyNPSBucket as bucket')
+            .count('* as count')
+            .groupBy('s.SurveyNPSBucket')
+            .orderByRaw(`
+                CASE s."SurveyNPSBucket"
                     WHEN 'Promoter' THEN 1
                     WHEN 'Passive' THEN 2
                     WHEN 'Detractor' THEN 3
                     ELSE 4
                 END
-        `);
-        res.json(results.rows);
+            `);
+
+        res.json(results);
     } catch (err) {
         console.error('Survey NPS distribution error:', err);
         res.status(500).json({ error: err.message });
@@ -155,30 +210,53 @@ router.get('/participants-by-year', async (req, res) => {
     }
 });
 
-// Donations by month
+// Donations by month - with optional search/filter support
 router.get('/donations-by-month', async (req, res) => {
     try {
-        // First, let's check what columns exist
-        const testQuery = await knex('Participant_Donation').limit(1);
-        console.log('Sample donation record:', testQuery[0]);
+        const { search, filterStartDate, filterEndDate, filterMinAmount, filterMaxAmount } = req.query;
+        
+        let query = knex('Participant_Donation as d')
+            .leftJoin('Participants as p', 'd.ParticipantID', 'p.ParticipantID')
+            .whereNotNull('d.DonationDate');
 
-        const results = await knex.raw(`
-            SELECT
-                EXTRACT(YEAR FROM "DonationDate")::integer as year,
-                EXTRACT(MONTH FROM "DonationDate")::integer as month,
-                SUM("DonationAmount") as total
-            FROM "Participant_Donation"
-            WHERE "DonationDate" IS NOT NULL
-            GROUP BY EXTRACT(YEAR FROM "DonationDate"), EXTRACT(MONTH FROM "DonationDate")
-            ORDER BY year ASC, month ASC
-        `);
+        // Apply search filter
+        if (search) {
+            query = query.where(function() {
+                this.whereRaw('LOWER(p."ParticipantFirstName") LIKE ?', [`%${search.toLowerCase()}%`])
+                    .orWhereRaw('LOWER(p."ParticipantLastName") LIKE ?', [`%${search.toLowerCase()}%`])
+                    .orWhereRaw('LOWER(p."ParticipantEmail") LIKE ?', [`%${search.toLowerCase()}%`])
+                    .orWhereRaw('CAST(d."DonationID" AS TEXT) LIKE ?', [`%${search}%`])
+                    .orWhereRaw('CAST(d."DonationAmount" AS TEXT) LIKE ?', [`%${search}%`]);
+            });
+        }
 
-        console.log('Query results:', results.rows);
-        res.json(results.rows);
+        // Apply date filters
+        if (filterStartDate) {
+            query = query.where('d.DonationDate', '>=', filterStartDate);
+        }
+        if (filterEndDate) {
+            query = query.where('d.DonationDate', '<=', filterEndDate);
+        }
+
+        // Apply amount filters
+        if (filterMinAmount) {
+            query = query.where('d.DonationAmount', '>=', parseFloat(filterMinAmount));
+        }
+        if (filterMaxAmount) {
+            query = query.where('d.DonationAmount', '<=', parseFloat(filterMaxAmount));
+        }
+
+        const results = await query
+            .select(knex.raw('EXTRACT(YEAR FROM d."DonationDate")::integer as year'))
+            .select(knex.raw('EXTRACT(MONTH FROM d."DonationDate")::integer as month'))
+            .sum('d.DonationAmount as total')
+            .groupByRaw('EXTRACT(YEAR FROM d."DonationDate"), EXTRACT(MONTH FROM d."DonationDate")')
+            .orderByRaw('year ASC, month ASC');
+
+        res.json(results);
     } catch (err) {
         console.error('Donations by month error:', err);
-        console.error('Error stack:', err.stack);
-        res.status(500).json({ error: err.message, stack: err.stack });
+        res.status(500).json({ error: err.message });
     }
 });
 
