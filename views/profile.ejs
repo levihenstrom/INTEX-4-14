@@ -1,487 +1,3 @@
-    <style>
-        /* Profile page styling to match registration/landing pages */
-        .participants-page {
-            padding: 2rem 2rem 4rem;
-            max-width: 1400px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        
-        .participants-page > * {
-            text-align: left;
-        }
-        
-        .participants-page > h1 {
-            text-align: center;
-        }
-
-        .participants-page h1 {
-            font-family: 'DM Serif Display', serif;
-            font-size: 4.5rem;
-            color: #3A3F3B;
-            margin-bottom: 2rem;
-            text-align: center;
-            text-transform: uppercase;
-        }
-        
-        @media (max-width: 768px) {
-            .participants-page h1 {
-                font-size: 3rem;
-            }
-        }
-
-        .participants-page .card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-            border: none;
-        }
-
-        .profile-card-body {
-            padding: 2rem;
-        }
-
-        .profile-card-body h2 {
-            font-family: 'DM Serif Display', serif;
-            font-size: 2rem;
-            color: #3A3F3B;
-        }
-
-        .profile-card-body p {
-            font-family: 'Montserrat', sans-serif;
-            color: #4B4F4B;
-        }
-
-        .profile-edit-trigger {
-            position: absolute;
-            right: 1rem;
-            bottom: 1rem;
-            background: transparent;
-            border: 2px solid #6B6F6B;
-            color: #6B6F6B;
-            padding: 0.6rem 1.2rem;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .profile-edit-trigger:hover {
-            background: #6B6F6B;
-            color: white;
-            border-color: #6B6F6B;
-        }
-
-        /* My Events Section */
-        .my-events-section {
-            margin-top: 3rem;
-        }
-
-        .my-events-section h2 {
-            font-family: 'DM Serif Display', serif;
-            font-size: 2rem;
-            color: #3A3F3B;
-            margin-bottom: 1.5rem;
-        }
-
-        .my-events-section .occurrence-toggle {
-            display: inline-flex;
-            background: #F0F0F0;
-            border-radius: 999px;
-            padding: 0.25rem;
-            gap: 0.25rem;
-            margin-bottom: 1rem;
-        }
-
-        .my-events-section .toggle-btn {
-            border: none;
-            background: transparent;
-            padding: 0.5rem 1rem;
-            border-radius: 999px;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            color: #4B4F4B;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .my-events-section .toggle-btn.active {
-            background: white;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            color: #3A3F3B;
-        }
-
-        .my-events-section .toggle-btn:hover {
-            background: white;
-        }
-
-        /* Event Cards - Consistent Layout with Standardized Sections */
-        .occurrences-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .my-event-card {
-            display: grid;
-            grid-template-columns: 150px 160px 160px 140px 180px;
-            align-items: center;
-            gap: 1.5rem;
-            padding: 0.75rem 1.2rem;
-            background: #F9F5EA;
-            border-radius: 12px;
-            border: 2px solid #E0E0E0;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .my-event-card:hover {
-            border-color: #978EC4;
-            box-shadow: 0 4px 12px rgba(151, 142, 196, 0.2);
-        }
-
-        /* Red border/shadow for missing survey */
-        .my-event-card.survey-missing {
-            border-color: #CE325B;
-            box-shadow: 0 0 0 2px rgba(206, 50, 91, 0.15), 0 4px 12px rgba(206, 50, 91, 0.1);
-        }
-
-        .my-event-card.survey-missing:hover {
-            border-color: #CE325B;
-            box-shadow: 0 0 0 2px rgba(206, 50, 91, 0.2), 0 4px 12px rgba(206, 50, 91, 0.15);
-        }
-
-        /* Image Section */
-        .my-event-image {
-            flex: 0 0 150px;
-            height: 100px;
-            overflow: hidden;
-            border-radius: 10px;
-            border: 1px solid #E0E0E0;
-        }
-
-        .my-event-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Main Info Section: Title, Date, Registered/Past Badge */
-        .my-event-main-info {
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-            min-width: 0;
-        }
-
-        .my-event-main-info .event-title {
-            font-family: 'DM Serif Display', serif;
-            font-size: 1.15rem;
-            color: #3A3F3B;
-            font-weight: 600;
-            line-height: 1.3;
-            margin: 0;
-            margin-bottom: 0.25rem;
-        }
-
-        .my-event-main-info .occurrence-date {
-            font-family: 'DM Serif Display', serif;
-            font-size: 0.95rem;
-            color: #3A3F3B;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .my-event-main-info .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.45rem 1rem;
-            border-radius: 999px;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-            width: fit-content;
-        }
-
-        /* Details Section: Location, Time, Type */
-        .my-event-details {
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-            min-width: 0;
-        }
-
-        .my-event-details .occurrence-detail-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 0.85rem;
-            color: #4B4F4B;
-            margin-bottom: 0.15rem;
-        }
-
-        .my-event-details .occurrence-detail-item i {
-            color: #978EC4;
-            font-size: 0.85rem;
-            width: 16px;
-            text-align: center;
-        }
-
-        /* Status Pill Section - Bigger */
-        .my-event-status-pill {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-width: 140px;
-        }
-
-        /* Survey/Action Merged Section - Only for Past Events */
-        .my-event-survey-action {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-width: 180px;
-            min-height: 36px;
-            max-width: 180px;
-            overflow: visible;
-            padding: 0 0.25rem;
-            box-sizing: border-box;
-        }
-
-        .my-event-survey-action .survey-badge {
-            width: 100%;
-            max-width: 100%;
-            justify-content: center;
-            padding: 0.6rem 0.8rem;
-        }
-
-        /* Legacy classes for backwards compatibility */
-        .my-event-survey-pill {
-            display: none;
-        }
-
-        .my-event-action {
-            display: none;
-        }
-
-        /* Make all action buttons boxy with larger text to match status pills */
-        .my-event-survey-action .btn,
-        .my-event-survey-action button {
-            border-radius: 8px !important;
-            padding: 0.6rem 1.3rem;
-            font-weight: 600;
-            font-size: 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .my-event-survey-action .btn i,
-        .my-event-survey-action button i {
-            font-size: 0.9rem;
-        }
-
-        .status-pill {
-            padding: 0.6rem 1.3rem;
-            border-radius: 999px;
-            font-size: 1rem;
-            font-weight: 700;
-            font-family: 'Montserrat', sans-serif;
-            white-space: nowrap;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .status-pill--good {
-            background: #9AB59D;
-            color: white;
-        }
-
-        .status-pill--neutral {
-            background: #D8D8D8;
-            color: #3A3F3B;
-        }
-
-        .status-pill--bad {
-            background: #CE325B;
-            color: white;
-        }
-
-        .survey-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.6rem 0.9rem;
-            border-radius: 999px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            background: #978EC4;
-            color: white;
-            cursor: pointer;
-            text-decoration: none;
-            white-space: nowrap;
-            max-width: 100%;
-            box-sizing: border-box;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            flex-shrink: 1;
-            min-width: 0;
-        }
-
-        .survey-badge span,
-        .survey-badge i {
-            flex-shrink: 0;
-        }
-
-        .survey-badge span {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
-        }
-
-        .survey-badge.missing {
-            background: #9AB59D;
-            color: white;
-            cursor: pointer;
-            border: none;
-            transition: background 0.2s, transform 0.2s;
-        }
-
-        .survey-badge.missing:hover {
-            background: #7A9A7D;
-            transform: scale(1.05);
-        }
-
-        .survey-badge.missing i {
-            color: white;
-        }
-
-        .survey-badge.placeholder {
-            display: none;
-        }
-
-        .survey-badge.empty {
-            visibility: hidden;
-            min-height: 36px;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1.1rem;
-            border-radius: 999px;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-
-        .status-badge.status-available {
-            background-color: #9AB59D;
-            color: white;
-        }
-
-        .status-badge.status-past {
-            background-color: #D0D0D0;
-            color: #4B4F4B;
-        }
-
-        .no-occurrences {
-            text-align: center;
-            padding: 3rem 2rem;
-            color: #4B4F4B;
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        /* Confirmation Modal */
-        .reg-confirm-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.3);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-        }
-
-        .reg-confirm-backdrop.active {
-            display: flex;
-        }
-
-        .reg-confirm-modal {
-            background: white;
-            border-radius: 12px;
-            padding: 1.2rem 1.4rem;
-            box-shadow: 0 16px 40px rgba(0,0,0,0.18);
-            max-width: 420px;
-            width: 90%;
-            display: flex;
-            flex-direction: column;
-            gap: 0.9rem;
-        }
-
-        .reg-confirm-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.6rem;
-        }
-
-        /* KPI Cards */
-        .participants-page .card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .participants-page .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-        }
-
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .my-event-card {
-                grid-template-columns: 120px 140px 140px 130px 160px;
-                gap: 1rem;
-            }
-        }
-
-        @media (max-width: 992px) {
-            .my-event-card {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .my-event-image {
-                width: 100%;
-                height: 200px;
-            }
-
-            .my-event-main-info,
-            .my-event-details,
-            .my-event-status-pill,
-            .my-event-survey-action {
-                width: 100%;
-                justify-content: flex-start;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .my-event-card {
-                padding: 1rem;
-            }
-
-            .my-event-action .btn {
-                width: 100%;
-            }
-        }
-    </style>
-
     <!-- Regular User View: Show their own profile -->
     <div class="participants-page">
         <div class="info-video-header">
@@ -639,25 +155,25 @@
         <div class="row g-3 mb-4">
             <div class="<%= showDonationsCard ? 'col-md-4' : 'col-md-6' %>">
                 <a href="/events" class="text-decoration-none text-reset d-block h-100">
-                    <div class="card h-100 text-center shadow-sm" style="border-radius: 16px; border: none; transition: transform 0.2s, box-shadow 0.2s;">
-                        <div class="card-body" style="padding: 2rem;">
-                            <p class="text-muted text-uppercase small" style="font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 1px; margin-bottom: 0.75rem;">Total Events Attended</p>
-                            <h3 class="display-6" style="font-family: 'DM Serif Display', serif; color: #3A3F3B; margin: 0;"><%= kpiMetrics.totalEventsAttended || 0 %></h3>
+                    <div class="card h-100 text-center shadow-sm profile-kpi-card">
+                        <div class="card-body profile-kpi-card-body">
+                            <p class="text-muted text-uppercase small profile-kpi-label">Total Events Attended</p>
+                            <h3 class="display-6 kpi-value-display"><%= kpiMetrics.totalEventsAttended || 0 %></h3>
                         </div>
                     </div>
                 </a>
             </div>
             <div class="<%= showDonationsCard ? 'col-md-4' : 'col-md-6' %>">
                 <a href="/milestones" class="text-decoration-none text-reset d-block h-100">
-                    <div class="card h-100 text-center shadow-sm" style="border-radius: 16px; border: none; transition: transform 0.2s, box-shadow 0.2s;">
-                        <div class="card-body" style="padding: 2rem;">
-                            <p class="text-muted text-uppercase small" style="font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 1px; margin-bottom: 0.75rem;">Most Recent Milestone</p>
+                    <div class="card h-100 text-center shadow-sm profile-kpi-card">
+                        <div class="card-body profile-kpi-card-body">
+                            <p class="text-muted text-uppercase small profile-kpi-label">Most Recent Milestone</p>
                             <% if (latestMilestone) { %>
-                                <h5 class="mb-1" style="font-family: 'DM Serif Display', serif; color: #3A3F3B;"><%= latestMilestone.MilestoneTitle %></h5>
-                                <p class="text-muted mb-0" style="font-family: 'Montserrat', sans-serif;"><%= latestMilestone.MilestoneDate ? new Date(latestMilestone.MilestoneDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date TBD' %></p>
+                                <h5 class="mb-1 profile-milestone-title"><%= latestMilestone.MilestoneTitle %></h5>
+                                <p class="text-muted mb-0 profile-milestone-date"><%= latestMilestone.MilestoneDate ? new Date(latestMilestone.MilestoneDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date TBD' %></p>
                             <% } else { %>
-                                <h5 class="mb-1" style="font-family: 'DM Serif Display', serif; color: #3A3F3B;">No milestones yet</h5>
-                                <p class="text-muted mb-0" style="font-family: 'Montserrat', sans-serif;">Keep going!</p>
+                                <h5 class="mb-1 profile-milestone-title">No milestones yet</h5>
+                                <p class="text-muted mb-0 profile-milestone-date">Keep going!</p>
                             <% } %>
                         </div>
                     </div>
@@ -666,10 +182,10 @@
             <% if (showDonationsCard) { %>
             <div class="col-md-4">
                 <a href="/donations" class="text-decoration-none text-reset d-block h-100">
-                    <div class="card h-100 text-center shadow-sm" style="border-radius: 16px; border: none; transition: transform 0.2s, box-shadow 0.2s;">
-                        <div class="card-body" style="padding: 2rem;">
-                            <p class="text-muted text-uppercase small" style="font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 1px; margin-bottom: 0.75rem;">Total Donations</p>
-                            <h3 class="display-6" style="font-family: 'DM Serif Display', serif; color: #3A3F3B; margin: 0;">$<%= kpiMetrics.totalDonationsDisplay || '0.00' %></h3>
+                    <div class="card h-100 text-center shadow-sm profile-kpi-card">
+                        <div class="card-body profile-kpi-card-body">
+                            <p class="text-muted text-uppercase small profile-kpi-label">Total Donations</p>
+                            <h3 class="display-6 kpi-value-display">$<%= kpiMetrics.totalDonationsDisplay || '0.00' %></h3>
                         </div>
                     </div>
                 </a>
@@ -877,8 +393,8 @@
         confirmModal.style.display = 'none';
         confirmModal.innerHTML = `
             <div class="reg-confirm-modal">
-                <h4 style="margin: 0;">Confirm</h4>
-                <p id="profileConfirmMessage" style="margin: 0;">Are you sure?</p>
+                <h4 class="modal-confirm-title">Confirm</h4>
+                <p id="profileConfirmMessage" class="modal-confirm-message">Are you sure?</p>
                 <div class="reg-confirm-actions">
                     <button type="button" class="btn btn-outline-secondary" id="profileConfirmNo">Cancel</button>
                     <button type="button" class="btn btn-danger" id="profileConfirmYes">Confirm</button>
@@ -1114,51 +630,51 @@
         surveyBackdrop.className = 'reg-confirm-backdrop';
         surveyBackdrop.id = 'surveyModalBackdrop';
         surveyBackdrop.innerHTML = `
-            <div class="reg-confirm-modal" style="max-width: 600px; width: 90%;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h4 style="margin: 0; font-family: 'DM Serif Display', serif;">Fill Out Survey</h4>
-                    <button type="button" class="reg-modal-close" id="surveyModalClose" style="background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: #4B4F4B;">&times;</button>
+            <div class="reg-confirm-modal survey-modal-container">
+                <div class="survey-modal-header">
+                    <h4 class="survey-modal-title">Fill Out Survey</h4>
+                    <button type="button" class="reg-modal-close survey-modal-close-btn" id="surveyModalClose">&times;</button>
                 </div>
-                <div id="surveyModalEventInfo" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid #F0F0F0;">
+                <div id="surveyModalEventInfo" class="survey-modal-event-info">
                     <!-- Event info will be populated here -->
                 </div>
                 <form id="surveyForm">
                     <input type="hidden" id="surveyRegistrationId" name="registrationId">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div class="survey-rating-grid">
                         <div>
-                            <label class="form-label" style="font-weight: 600; color: #3A3F3B; margin-bottom: 0.5rem; display: block;">Satisfaction *</label>
-                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                <input type="range" id="surveySatisfaction" name="satisfaction" min="0" max="5" value="3" step="1" style="flex: 1;" required>
-                                <span id="surveySatisfactionValue" style="min-width: 30px; text-align: center; font-weight: 700; color: #978EC4;">3</span>
+                            <label class="form-label survey-form-label">Satisfaction *</label>
+                            <div class="survey-rating-container">
+                                <input type="range" id="surveySatisfaction" name="satisfaction" min="0" max="5" value="3" step="1" class="survey-range-input" required>
+                                <span id="surveySatisfactionValue" class="survey-rating-value">3</span>
                             </div>
                         </div>
                         <div>
-                            <label class="form-label" style="font-weight: 600; color: #3A3F3B; margin-bottom: 0.5rem; display: block;">Usefulness *</label>
-                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                <input type="range" id="surveyUsefulness" name="usefulness" min="0" max="5" value="3" step="1" style="flex: 1;" required>
-                                <span id="surveyUsefulnessValue" style="min-width: 30px; text-align: center; font-weight: 700; color: #978EC4;">3</span>
+                            <label class="form-label survey-form-label">Usefulness *</label>
+                            <div class="survey-rating-container">
+                                <input type="range" id="surveyUsefulness" name="usefulness" min="0" max="5" value="3" step="1" class="survey-range-input" required>
+                                <span id="surveyUsefulnessValue" class="survey-rating-value">3</span>
                             </div>
                         </div>
                         <div>
-                            <label class="form-label" style="font-weight: 600; color: #3A3F3B; margin-bottom: 0.5rem; display: block;">Instructor *</label>
-                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                <input type="range" id="surveyInstructor" name="instructor" min="0" max="5" value="3" step="1" style="flex: 1;" required>
-                                <span id="surveyInstructorValue" style="min-width: 30px; text-align: center; font-weight: 700; color: #978EC4;">3</span>
+                            <label class="form-label survey-form-label">Instructor *</label>
+                            <div class="survey-rating-container">
+                                <input type="range" id="surveyInstructor" name="instructor" min="0" max="5" value="3" step="1" class="survey-range-input" required>
+                                <span id="surveyInstructorValue" class="survey-rating-value">3</span>
                             </div>
                         </div>
                         <div>
-                            <label class="form-label" style="font-weight: 600; color: #3A3F3B; margin-bottom: 0.5rem; display: block;">Recommendation *</label>
-                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                <input type="range" id="surveyRecommendation" name="recommendation" min="0" max="5" value="3" step="1" style="flex: 1;" required>
-                                <span id="surveyRecommendationValue" style="min-width: 30px; text-align: center; font-weight: 700; color: #978EC4;">3</span>
+                            <label class="form-label survey-form-label">Recommendation *</label>
+                            <div class="survey-rating-container">
+                                <input type="range" id="surveyRecommendation" name="recommendation" min="0" max="5" value="3" step="1" class="survey-range-input" required>
+                                <span id="surveyRecommendationValue" class="survey-rating-value">3</span>
                             </div>
                         </div>
                     </div>
-                    <div style="margin-bottom: 1.5rem;">
-                        <label class="form-label" style="font-weight: 600; color: #3A3F3B; margin-bottom: 0.5rem; display: block;">Comments</label>
+                    <div class="survey-comments-section">
+                        <label class="form-label survey-form-label">Comments</label>
                         <textarea id="surveyComments" name="comments" rows="3" class="form-control" placeholder="Optional feedback..."></textarea>
                     </div>
-                    <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <div class="survey-modal-buttons">
                         <button type="button" class="btn btn-outline-secondary" id="surveyModalCancel">Cancel</button>
                         <button type="submit" class="btn btn-primary" id="surveyModalSubmit">Submit Survey</button>
                     </div>
@@ -1221,8 +737,8 @@
                 }) : 'Date TBD';
 
                 eventInfo.innerHTML = `
-                    <h5 style="margin: 0 0 0.5rem 0; font-family: 'DM Serif Display', serif; color: #3A3F3B;">${data.eventName || 'Event'}</h5>
-                    <p style="margin: 0; color: #4B4F4B; font-family: 'Montserrat', sans-serif;">${dateStr}</p>
+                    <h5 class="survey-event-card-title">${data.eventName || 'Event'}</h5>
+                    <p class="survey-event-card-date">${dateStr}</p>
                 `;
 
                 document.getElementById('surveyRegistrationId').value = regId;

@@ -557,14 +557,15 @@ p, li, a, .nav-link {
     justify-content: flex-end !important;
 }
 
-/* Navbar toggler button styling */
+/* Navbar toggler button styling - pill shaped */
 .navbar-toggler {
     border: 1px solid rgba(58, 63, 59, 0.2);
-    padding: 0.5rem 0.75rem;
-    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
     background-color: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
 }
 
 .navbar-toggler:focus {
@@ -1008,22 +1009,23 @@ p, li, a, .nav-link {
     }
     
     /* Ensure navbar toggler is visible and styled - inside the pill */
-    /* Hamburger in wrapper - must be more specific */
+    /* Hamburger in wrapper - must be more specific - pill shaped */
     .navbar-brand-hamburger-wrapper .navbar-toggler {
         display: block !important;
         margin-left: 0 !important;
-        margin-right: 0 !important;
-        background: transparent !important;
-        border: none !important;
-        padding: 0.25rem 0.5rem !important;
-        padding-right: 1rem !important;
+        margin-right: 0.5rem !important;
+        background: rgba(255, 255, 255, 0.4) !important;
+        border: 1px solid rgba(58, 63, 59, 0.15) !important;
+        border-radius: 999px !important;
+        padding: 0.4rem 0.75rem !important;
         flex-shrink: 0;
         order: 2;
+        transition: all 0.2s ease;
     }
     
     .navbar-brand-hamburger-wrapper .navbar-toggler:hover {
-        background: rgba(255, 255, 255, 0.3) !important;
-        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.6) !important;
+        border-color: rgba(58, 63, 59, 0.25) !important;
     }
     
     .navbar-brand-hamburger-wrapper .navbar-toggler:focus {
@@ -1033,8 +1035,8 @@ p, li, a, .nav-link {
     
     /* Ensure hamburger icon is properly sized */
     .navbar-brand-hamburger-wrapper .navbar-toggler-icon {
-        width: 1.5em;
-        height: 1.5em;
+        width: 1.25em;
+        height: 1.25em;
     }
     
     /* Logo pill adjustments for mobile */
@@ -1044,20 +1046,22 @@ p, li, a, .nav-link {
         margin: 0;
     }
     
-    /* General navbar-toggler for other cases */
+    /* General navbar-toggler for other cases - pill shaped */
     .navbar-toggler {
         display: block !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        background: transparent !important;
-        border: none !important;
-        padding: 0.25rem 0.5rem !important;
+        background: rgba(255, 255, 255, 0.4) !important;
+        border: 1px solid rgba(58, 63, 59, 0.15) !important;
+        border-radius: 999px !important;
+        padding: 0.4rem 0.75rem !important;
         flex-shrink: 0;
+        transition: all 0.2s ease;
     }
     
     .navbar-toggler:hover {
-        background: rgba(255, 255, 255, 0.3) !important;
-        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.6) !important;
+        border-color: rgba(58, 63, 59, 0.25) !important;
     }
     
     .navbar-toggler:focus {
@@ -1065,8 +1069,8 @@ p, li, a, .nav-link {
     }
     
     .navbar-toggler-icon {
-        width: 1.5em;
-        height: 1.5em;
+        width: 1.25em;
+        height: 1.25em;
     }
     
     /* Ensure collapse works properly */
@@ -5984,4 +5988,4279 @@ body:not(.has-hero) {
     .user-details {
         font-size: 0.85rem;
     }
+}
+
+/* ====================================================== */
+/*                    DONATE PAGE STYLING                */
+/*         (Extracted from views/donations.ejs)          */
+/* ====================================================== */
+
+.donate-page {
+    padding: 1.5rem 0 2rem 0;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Cover Image */
+.donate-cover-image {
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    border-radius: 12px;
+}
+
+.donate-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Header Card Section */
+.donate-header-card {
+    background: linear-gradient(135deg, #9AB59D 0%, #7fa082 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(154, 181, 157, 0.25);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    animation: fadeInScale 0.6s ease both;
+}
+
+.donate-header-card-body {
+    text-align: center;
+    padding: 1.5rem 2rem;
+}
+
+.donate-main-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.75rem;
+    color: #FFFFFF;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-transform: uppercase;
+}
+
+.donate-main-subtitle {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    color: #FFFFFF;
+    margin-bottom: 0;
+    line-height: 1.5;
+    opacity: 0.95;
+}
+
+/* Information Card */
+.donate-info-card {
+    background: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(58, 63, 59, 0.08);
+    overflow: hidden;
+    animation: fadeInScale 0.6s ease both;
+    height: 100%;
+}
+
+.donate-info-card-body {
+    padding: 1.5rem;
+}
+
+/* Form Card */
+.donate-form-card {
+    background: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(58, 63, 59, 0.08);
+    overflow: hidden;
+    animation: fadeInScale 0.6s ease 0.2s both;
+    height: fit-content;
+}
+
+.donate-form-card-body {
+    padding: 1.25rem;
+}
+
+.donate-section {
+    margin-bottom: 1.5rem;
+}
+
+.donate-section:last-child {
+    margin-bottom: 0;
+}
+
+.donate-section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    color: #3A3F3B;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+.donate-section-text {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    color: #5A5E5A;
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+}
+
+.donate-programs {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    color: #3A3F3B;
+    margin-left: 1.25rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.7;
+    list-style: disc;
+}
+
+.donate-programs li {
+    margin-bottom: 0.65rem;
+}
+
+.donate-help-list {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    color: #3A3F3B;
+    margin-left: 1.25rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+    list-style: disc;
+}
+
+.donate-help-list li {
+    margin-bottom: 0.5rem;
+}
+
+.donate-note {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    color: #7A7E7A;
+    font-style: italic;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #E5E5E5;
+    line-height: 1.6;
+}
+
+.donate-closing {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    color: #3A3F3B;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.donate-signature {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    color: #5A5E5A;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #E5E5E5;
+    line-height: 1.5;
+}
+
+.donate-alert {
+    background: #FFD8D1;
+    color: #9AB59D;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    border-left: 4px solid #9AB59D;
+}
+
+.donate-success {
+    background: #9AB59D;
+    color: #FFFFFF;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+}
+
+.donate-form {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+.donate-form-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.35rem;
+    color: #3A3F3B;
+    margin-bottom: 1rem;
+}
+
+.donate-amount-section {
+    margin-bottom: 1.25rem;
+}
+
+.donate-quick-amounts {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.donate-quick-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 0.75rem 1rem;
+    background: #FFFFFF;
+    border: 2px solid #9AB59D;
+    border-radius: 12px;
+    color: #9AB59D;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.donate-quick-btn:hover,
+.donate-quick-btn.active {
+    background: #9AB59D;
+    color: #FFFFFF;
+    transform: translateY(-2px);
+}
+
+.donate-amount-input-group {
+    display: flex;
+    align-items: center;
+    border: 2px solid #E5E5E5;
+    border-radius: 12px;
+    padding: 0.875rem 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.donate-amount-input-group:focus-within {
+    border-color: #9AB59D;
+    box-shadow: 0 0 0 3px rgba(154, 181, 157, 0.1);
+}
+
+.donate-currency {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: #3A3F3B;
+    margin-right: 0.5rem;
+}
+
+.donate-amount-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #3A3F3B;
+    background: transparent;
+}
+
+.donate-amount-input::placeholder {
+    color: #9A9A9A;
+    font-weight: 400;
+}
+
+.donate-form-group {
+    margin-bottom: 1rem;
+}
+
+.donate-label {
+    display: block;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #3A3F3B;
+    margin-bottom: 0.5rem;
+}
+
+.donate-input {
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    border: 2px solid #E5E5E5;
+    border-radius: 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    color: #3A3F3B;
+    background: #FFFFFF;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.donate-input:focus {
+    outline: none;
+    border-color: #9AB59D;
+    box-shadow: 0 0 0 3px rgba(154, 181, 157, 0.1);
+}
+
+.donate-button-group {
+    margin-top: 2rem;
+}
+
+.donate-btn-primary {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    background: #9AB59D;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(154, 181, 157, 0.3);
+}
+
+.donate-btn-primary:hover {
+    background: #7fa082;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(154, 181, 157, 0.4);
+}
+
+.donate-footer-note {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.8rem;
+    color: #7A7E7A;
+    text-align: center;
+    margin-top: 1rem;
+    line-height: 1.4;
+}
+
+/* Donate Page Responsive */
+@media (max-width: 991.98px) {
+    .donate-cover-image {
+        height: 250px;
+        margin-bottom: 1.5rem;
+    }
+
+    .donate-header-card-body {
+        padding: 1.25rem 1.5rem;
+    }
+
+    .donate-main-title {
+        font-size: 1.5rem;
+    }
+
+    .donate-main-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .donate-section-title {
+        font-size: 1.3rem;
+    }
+
+    .donate-info-card-body,
+    .donate-form-card-body {
+        padding: 1.25rem;
+    }
+
+    .donate-section-title {
+        font-size: 1.15rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .donate-cover-image {
+        height: 200px;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .donate-header-card-body {
+        padding: 1rem 1.25rem;
+    }
+
+    .donate-main-title {
+        font-size: 1.35rem;
+    }
+
+    .donate-main-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .donate-section-title {
+        font-size: 1.2rem;
+    }
+
+    .donate-section-text {
+        font-size: 0.95rem;
+    }
+
+    .donate-programs {
+        font-size: 0.9rem;
+    }
+
+    .donate-info-card-body,
+    .donate-form-card-body {
+        padding: 1rem;
+    }
+    
+    .donate-section-title {
+        font-size: 1.1rem;
+    }
+
+    .donate-section-text,
+    .donate-programs,
+    .donate-help-list {
+        font-size: 0.8rem;
+    }
+    
+    .donate-image-side {
+        min-height: 200px;
+        max-height: 250px;
+    }
+
+    .donate-quick-btn {
+        min-width: 100px;
+    }
+}
+
+/* ====================================================== */
+/*           DONATIONS PAGE STYLING (LOGGED-IN)          */
+/*         (Extracted from views/donations.ejs)          */
+/* ====================================================== */
+
+/* Donations KPI Cards */
+.donation-kpi-card {
+    border-radius: 16px;
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: white;
+}
+
+.donation-kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.donation-kpi-card .card-body {
+    padding: 2rem;
+}
+
+/* Donations Top Bar */
+.donations-top-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .donations-top-bar {
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+    }
+}
+
+.donations-search-form {
+    flex: 1;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.donations-search-input-wrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.donations-search-icon {
+    position: absolute;
+    left: 1rem;
+    color: #5A5E5A;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.donations-search-input {
+    flex: 1;
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem 0.6rem 2.75rem;
+    height: auto;
+    border: 2px solid #E0E0E0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.donations-search-input:focus {
+    outline: none;
+    border-color: #978EC4;
+    box-shadow: 0 0 0 3px rgba(151, 142, 196, 0.1);
+}
+
+.donations-clear-btn {
+    white-space: nowrap;
+}
+
+.donations-search-clear-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.2s ease;
+    background: white;
+    color: #3A3F3B;
+    border: 2px solid #E0E0E0;
+    text-decoration: none;
+}
+
+.donations-search-clear-btn:hover {
+    background: #F0F0F0;
+    color: #3A3F3B;
+    border-color: #D0D0D0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.donations-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* Filter and Add Donation Buttons */
+.donations-filter-btn,
+.donations-add-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.donations-filter-btn {
+    background: #F0F0F0;
+    color: #3A3F3B;
+    border: 2px solid #E0E0E0;
+}
+
+.donations-filter-btn:hover {
+    background: #E0E0E0;
+    color: #3A3F3B;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.donations-add-btn {
+    background: #978EC4;
+    color: white;
+    box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+}
+
+.donations-add-btn:hover {
+    background: #897FB8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+}
+
+/* Donation Cards */
+.donation-card {
+    border-radius: 16px;
+    border: none;
+    background: white;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.donation-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.donation-card .card-body {
+    padding: 1.5rem;
+}
+
+.donation-amount-section {
+    flex: 1;
+}
+
+.donation-amount {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.75rem;
+    color: #3A3F3B;
+    font-weight: 600;
+    margin: 0;
+}
+
+.donation-date {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    color: #5A5E5A;
+    display: block;
+    margin-top: 0.25rem;
+}
+
+.donation-actions-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.donation-edit-btn,
+.donation-delete-btn {
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: 2px solid;
+    min-width: 36px;
+    height: 36px;
+}
+
+.donation-edit-btn {
+    background: white;
+    color: #978EC4;
+    border-color: #978EC4;
+}
+
+.donation-edit-btn:hover {
+    background: #978EC4;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(151, 142, 196, 0.3);
+}
+
+.donation-delete-btn {
+    background: white;
+    color: #CE325B;
+    border-color: #CE325B;
+}
+
+.donation-delete-btn:hover {
+    background: #CE325B;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(206, 50, 91, 0.3);
+}
+
+.donation-participant-info {
+    flex: 1;
+}
+
+.donation-participant-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    color: #5A5E5A;
+    margin: 0;
+}
+
+.donation-participant-name {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    color: #3A3F3B;
+    font-weight: 600;
+    margin: 0;
+}
+
+.donation-id {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    color: #7A7E7A;
+    margin: 0;
+}
+
+/* Pagination Buttons */
+.donations-pagination-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.donations-pagination-btn.btn-secondary {
+    background: #F0F0F0;
+    color: #3A3F3B;
+    border: 2px solid #E0E0E0;
+}
+
+.donations-pagination-btn.btn-secondary:hover {
+    background: #E0E0E0;
+    color: #3A3F3B;
+    border-color: #D0D0D0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.donations-pagination-btn.btn-primary {
+    background: #978EC4;
+    color: white;
+    border: 2px solid #978EC4;
+    box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+}
+
+.donations-pagination-btn.btn-primary:hover {
+    background: #897FB8;
+    border-color: #897FB8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+}
+
+/* User Donate Button - Green like status-pill--good */
+.donations-user-donate-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #9AB59D;
+    color: white;
+    border: 2px solid #9AB59D;
+    box-shadow: 0 6px 16px rgba(154, 181, 157, 0.35);
+}
+
+.donations-user-donate-btn:hover {
+    background: #7fa082;
+    border-color: #7fa082;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(154, 181, 157, 0.4);
+}
+
+/* Modal Buttons */
+.donations-modal-cancel-btn,
+.donations-modal-save-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.2s ease;
+}
+
+.donations-modal-cancel-btn {
+    background: white;
+    color: #3A3F3B;
+    border: 2px solid #E0E0E0;
+}
+
+.donations-modal-cancel-btn:hover {
+    background: #F0F0F0;
+    color: #3A3F3B;
+    border-color: #D0D0D0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.donations-modal-save-btn {
+    background: #978EC4;
+    color: white;
+    border: 2px solid #978EC4;
+    box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+}
+
+.donations-modal-save-btn:hover {
+    background: #897FB8;
+    border-color: #897FB8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+}
+
+/* Participant Search (same as registration.ejs) */
+.reg-participant-search {
+    min-width: 220px;
+}
+
+.reg-search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #E6E0D4;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    z-index: 10;
+    display: none;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.reg-search-results .result-item {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+}
+
+.reg-search-results .result-item:hover {
+    background: #F0F0F0;
+}
+
+/* Delete Confirmation Modal (same as registration.ejs) */
+.reg-confirm-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.reg-confirm-backdrop.active {
+    display: flex;
+}
+
+.reg-confirm-modal {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+    max-width: 420px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.reg-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+}
+
+
+/* Modern Add Donation Modal */
+.add-donation-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.add-donation-backdrop.active {
+    display: flex;
+}
+
+.add-donation-modal {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.add-donation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #F0F0F0;
+}
+
+.add-donation-header h4 {
+    margin: 0;
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    color: #3A3F3B;
+}
+
+.add-donation-close {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #4B4F4B;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.add-donation-close:hover {
+    background: #F0F0F0;
+}
+
+.add-donation-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.add-donation-form-group label {
+    display: block;
+    font-weight: 600;
+    color: #3A3F3B;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.add-donation-form-group input,
+.add-donation-form-group select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.add-donation-form-group input:focus,
+.add-donation-form-group select:focus {
+    outline: none;
+    border-color: #978EC4;
+}
+
+
+.add-donation-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #F0F0F0;
+}
+
+/* Donations Filter Section */
+.donations-filter-section {
+    padding: 1.5rem;
+}
+
+.donations-filter-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    color: #3A3F3B;
+    margin: 0;
+}
+
+.donations-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 992px) {
+    .donations-filter-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.donations-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.donations-filter-group-label {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #3A3F3B;
+    margin: 0;
+}
+
+.donations-range-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.donations-range-with-inputs {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    column-gap: 0.75rem;
+    align-items: center;
+}
+
+.donations-range-input-group-min,
+.donations-range-input-group-max {
+    min-width: 60px;
+    max-width: 70px;
+}
+
+.donations-range-input-group-min .donations-range-input,
+.donations-range-input-group-max .donations-range-input {
+    padding-inline: 0.4rem;
+    padding-block: 0.4rem;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.donations-range-input-group-min .donations-range-label,
+.donations-range-input-group-max .donations-range-label {
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.donations-range-slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.donations-range-slider-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.donations-range-slider-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Dual-handle range slider */
+.donations-dual-range-wrapper {
+    position: relative;
+    width: 100%;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.donations-dual-range {
+    position: absolute;
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    outline: none;
+    pointer-events: none;
+}
+
+.donations-dual-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #978EC4;
+    cursor: pointer;
+    pointer-events: all;
+    position: relative;
+    z-index: 2;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.donations-dual-range::-webkit-slider-thumb:hover {
+    background: #7A6FA3;
+    transform: scale(1.1);
+}
+
+.donations-dual-range::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #978EC4;
+    cursor: pointer;
+    border: none;
+    pointer-events: all;
+    position: relative;
+    z-index: 2;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.donations-dual-range::-moz-range-thumb:hover {
+    background: #7A6FA3;
+    transform: scale(1.1);
+}
+
+.donations-dual-range-wrapper::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: #E0E0E0;
+    border-radius: 4px;
+    z-index: 0;
+}
+
+.donations-dual-range-min {
+    z-index: 1;
+}
+
+.donations-dual-range-max {
+    z-index: 1;
+}
+
+/* Active track between handles */
+.donations-dual-range-wrapper::after {
+    content: '';
+    position: absolute;
+    height: 8px;
+    background: #978EC4;
+    border-radius: 4px;
+    z-index: 1;
+    left: var(--track-left, 0%);
+    right: var(--track-right, 0%);
+    pointer-events: none;
+}
+
+.donations-range-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.donations-range-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4B4F4B;
+}
+
+.donations-range-input {
+    padding: 0.5rem 0.75rem;
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.donations-range-input:focus {
+    outline: none;
+    border-color: #978EC4;
+}
+
+.donations-filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #E0E0E0;
+}
+
+.donations-filter-reset-btn,
+.donations-filter-apply-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.2s ease;
+}
+
+.donations-filter-reset-btn {
+    background: white;
+    color: #3A3F3B;
+    border: 2px solid #E0E0E0;
+}
+
+.donations-filter-reset-btn:hover {
+    background: #F0F0F0;
+    color: #3A3F3B;
+    border-color: #D0D0D0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.donations-filter-apply-btn {
+    background: #978EC4;
+    color: white;
+    border: 2px solid #978EC4;
+    box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+}
+
+.donations-filter-apply-btn:hover {
+    background: #897FB8;
+    border-color: #897FB8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+}
+
+@media (max-width: 767px) {
+    .donations-filter-section {
+        padding: 1rem;
+    }
+
+    .donations-filter-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+/* ====================================================== */
+/*                  SURVEYS PAGE STYLING                  */
+/*          (Extracted from views/surveys.ejs)            */
+/* ====================================================== */
+
+/* Surveys KPI Cards */
+.survey-kpi-card {
+    border-radius: 16px;
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: white;
+}
+
+.survey-kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.survey-kpi-card .card-body {
+    padding: 2rem;
+}
+
+/* Surveys Top Bar */
+.surveys-top-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .surveys-top-bar {
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+    }
+}
+
+.surveys-search-form {
+    flex: 1;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.surveys-search-input-wrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.surveys-search-icon {
+    position: absolute;
+    left: 1rem;
+    color: #5A5E5A;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.surveys-search-input {
+    flex: 1;
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem 0.6rem 2.75rem;
+    height: auto;
+    border: 2px solid #E0E0E0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.surveys-search-input:focus {
+    outline: none;
+    border-color: #978EC4;
+    box-shadow: 0 0 0 3px rgba(151, 142, 196, 0.1);
+}
+
+.surveys-clear-btn {
+    white-space: nowrap;
+}
+
+.surveys-search-clear-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.2s ease;
+    background: white;
+    color: #3A3F3B;
+    border: 2px solid #E0E0E0;
+    text-decoration: none;
+}
+
+.surveys-search-clear-btn:hover {
+    background: #F0F0F0;
+    color: #3A3F3B;
+    border-color: #D0D0D0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.surveys-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* Filter and Add Survey Buttons */
+.surveys-filter-btn,
+.surveys-add-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.surveys-filter-btn {
+    background: #F0F0F0;
+    color: #3A3F3B;
+    border: 2px solid #E0E0E0;
+}
+
+.surveys-filter-btn:hover {
+    background: #E0E0E0;
+    color: #3A3F3B;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.surveys-add-btn {
+    background: #978EC4;
+    color: white;
+    box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+}
+
+.surveys-add-btn:hover {
+    background: #897FB8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+}
+
+/* Survey Cards */
+.survey-card {
+    border-radius: 16px;
+    border: none;
+    background: white;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.survey-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.survey-card .card-body {
+    padding: 1.5rem;
+}
+
+.survey-title-section {
+    flex: 1;
+}
+
+.survey-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    color: #3A3F3B;
+    font-weight: 600;
+    margin: 0;
+}
+
+.survey-date {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    color: #5A5E5A;
+    display: block;
+    margin-top: 0.25rem;
+}
+
+.survey-actions-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.survey-edit-btn,
+.survey-delete-btn {
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: 2px solid;
+    min-width: 36px;
+    height: 36px;
+}
+
+.survey-edit-btn {
+    background: white;
+    color: #978EC4;
+    border-color: #978EC4;
+}
+
+.survey-edit-btn:hover {
+    background: #978EC4;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(151, 142, 196, 0.3);
+}
+
+.survey-delete-btn {
+    background: white;
+    color: #CE325B;
+    border-color: #CE325B;
+}
+
+.survey-delete-btn:hover {
+    background: #CE325B;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(206, 50, 91, 0.3);
+}
+
+.survey-score-section {
+    margin-bottom: 0.5rem;
+}
+
+.survey-score-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    color: #5A5E5A;
+    margin: 0;
+}
+
+.survey-score-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.25rem;
+    color: #3A3F3B;
+    font-weight: 600;
+    margin: 0;
+}
+
+.survey-participant-info {
+    flex: 1;
+}
+
+.survey-participant-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    color: #5A5E5A;
+    margin: 0;
+}
+
+.survey-participant-name {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    color: #3A3F3B;
+    font-weight: 600;
+    margin: 0;
+}
+
+.survey-event-date {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    color: #4B4F4B;
+    margin: 0;
+}
+
+.survey-comments {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    color: #5A5E5A;
+    font-style: italic;
+    margin: 0;
+}
+
+.survey-id {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    color: #7A7E7A;
+    margin: 0;
+}
+
+/* Surveys Filter Section */
+.surveys-filter-section {
+    padding: 1.5rem;
+}
+
+.surveys-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 992px) {
+    .surveys-filter-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.surveys-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.surveys-filter-group-label {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #3A3F3B;
+    margin: 0;
+}
+
+.surveys-range-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.surveys-range-slider-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.surveys-range-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.surveys-range-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4B4F4B;
+}
+
+.surveys-range-input {
+    padding: 0.5rem 0.75rem;
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.surveys-range-input:focus {
+    outline: none;
+    border-color: #978EC4;
+}
+
+.surveys-range-with-inputs {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    column-gap: 0.75rem;
+    align-items: center;
+}
+
+.surveys-range-input-group-min,
+.surveys-range-input-group-max {
+    min-width: 60px;
+    max-width: 70px;
+}
+
+.surveys-range-input-group-min .surveys-range-input,
+.surveys-range-input-group-max .surveys-range-input {
+    padding-inline: 0.4rem;
+    padding-block: 0.4rem;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.surveys-dual-range-wrapper {
+    position: relative;
+    width: 100%;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.surveys-dual-range {
+    position: absolute;
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    outline: none;
+    pointer-events: none;
+}
+
+.surveys-dual-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #978EC4;
+    cursor: pointer;
+    pointer-events: all;
+    position: relative;
+    z-index: 2;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.surveys-dual-range::-webkit-slider-thumb:hover {
+    background: #7A6FA3;
+    transform: scale(1.1);
+}
+
+.surveys-dual-range::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #978EC4;
+    cursor: pointer;
+    border: none;
+    pointer-events: all;
+    position: relative;
+    z-index: 2;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.surveys-dual-range-wrapper::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: #E0E0E0;
+    border-radius: 4px;
+    z-index: 0;
+}
+
+.surveys-filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #E0E0E0;
+}
+
+.surveys-filter-reset-btn,
+.surveys-filter-apply-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.2s ease;
+}
+
+.surveys-filter-reset-btn {
+    background: white;
+    color: #3A3F3B;
+    border: 2px solid #E0E0E0;
+}
+
+.surveys-filter-reset-btn:hover {
+    background: #F0F0F0;
+    color: #3A3F3B;
+    border-color: #D0D0D0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.surveys-filter-apply-btn {
+    background: #978EC4;
+    color: white;
+    border: 2px solid #978EC4;
+    box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+}
+
+.surveys-filter-apply-btn:hover {
+    background: #897FB8;
+    border-color: #897FB8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+}
+
+/* Pagination Buttons */
+.surveys-pagination-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.surveys-pagination-btn.btn-secondary {
+    background: #F0F0F0;
+    color: #3A3F3B;
+    border: 2px solid #E0E0E0;
+}
+
+.surveys-pagination-btn.btn-secondary:hover {
+    background: #E0E0E0;
+    color: #3A3F3B;
+    border-color: #D0D0D0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.surveys-pagination-btn.btn-primary {
+    background: #978EC4;
+    color: white;
+    border: 2px solid #978EC4;
+    box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+}
+
+.surveys-pagination-btn.btn-primary:hover {
+    background: #897FB8;
+    border-color: #897FB8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+}
+
+/* Modal Buttons */
+.surveys-modal-cancel-btn,
+.surveys-modal-save-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.2s ease;
+}
+
+.surveys-modal-cancel-btn {
+    background: white;
+    color: #3A3F3B;
+    border: 2px solid #E0E0E0;
+}
+
+.surveys-modal-cancel-btn:hover {
+    background: #F0F0F0;
+    color: #3A3F3B;
+    border-color: #D0D0D0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.surveys-modal-save-btn {
+    background: #978EC4;
+    color: white;
+    border: 2px solid #978EC4;
+    box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+}
+
+.surveys-modal-save-btn:hover {
+    background: #897FB8;
+    border-color: #897FB8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+}
+
+/* Survey Slider Styling (matching profile page) */
+#addSurveyModal input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: #E0E0E0;
+    outline: none;
+    transition: background 0.2s;
+}
+
+#addSurveyModal input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #978EC4;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+#addSurveyModal input[type="range"]::-webkit-slider-thumb:hover {
+    background: #7A6FA3;
+    transform: scale(1.1);
+}
+
+#addSurveyModal input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #978EC4;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s, transform 0.2s;
+}
+
+#addSurveyModal input[type="range"]::-moz-range-thumb:hover {
+    background: #7A6FA3;
+    transform: scale(1.1);
+}
+
+#addSurveyModal input[type="range"]:focus {
+    background: #D0D0D0;
+}
+
+@media (max-width: 767px) {
+    .surveys-filter-section {
+        padding: 1rem;
+    }
+
+    .surveys-filter-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    #addSurveyModal .modal-body > form > div[style*="grid"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ====================================================== */
+/*                   USERS PAGE STYLING                   */
+/*           (Extracted from views/users.ejs)             */
+/* ====================================================== */
+
+/* Users Page Styling - Matching Donations Page */
+.users-top-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .users-top-bar {
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+    }
+}
+
+.users-search-form {
+    flex: 1;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.users-search-input-wrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.users-search-icon {
+    position: absolute;
+    left: 1rem;
+    color: #5A5E5A;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.users-search-input {
+    flex: 1;
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem 0.6rem 2.75rem;
+    height: auto;
+    border: 2px solid #E0E0E0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.users-search-input:focus {
+    outline: none;
+    border-color: #978EC4;
+    box-shadow: 0 0 0 3px rgba(151, 142, 196, 0.1);
+}
+
+.users-clear-btn {
+    white-space: nowrap;
+}
+
+.users-search-clear-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.2s ease;
+    background: white;
+    color: #3A3F3B;
+    border: 2px solid #E0E0E0;
+    text-decoration: none;
+}
+
+.users-search-clear-btn:hover {
+    background: #F0F0F0;
+    color: #3A3F3B;
+    border-color: #D0D0D0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.users-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* Add User Button */
+.users-add-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    border: none;
+    background: #978EC4;
+    color: white;
+    box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+}
+
+.users-add-btn:hover {
+    background: #897FB8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+}
+
+/* Sort pills styling */
+.users-sort-pill {
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.users-sort-pill i.fa-arrow-up,
+.users-sort-pill i.fa-arrow-down {
+    margin-left: 0.3rem;
+    font-size: 0.75rem;
+}
+
+/* Role Filter Pills Section */
+.filter-label {
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    color: #3A3F3B;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-label i {
+    color: #978EC4;
+}
+
+/* Pagination Buttons */
+.users-pagination-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.2s ease;
+}
+
+.users-pagination-btn.btn-primary {
+    background: #978EC4;
+    color: white;
+    border: none;
+    box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+}
+
+.users-pagination-btn.btn-primary:hover {
+    background: #897FB8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+}
+
+/* Edit and Delete Icon Buttons */
+.user-edit-btn,
+.user-delete-btn {
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: 2px solid;
+    min-width: 36px;
+    height: 36px;
+}
+
+.user-edit-btn {
+    background: white;
+    color: #978EC4;
+    border-color: #978EC4;
+}
+
+.user-edit-btn:hover {
+    background: #978EC4;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(151, 142, 196, 0.3);
+}
+
+.user-delete-btn {
+    background: white;
+    color: #CE325B;
+    border-color: #CE325B;
+}
+
+.user-delete-btn:hover {
+    background: #CE325B;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(206, 50, 91, 0.3);
+}
+
+/* Role pills in modal */
+.add-role-pill {
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Role pill label (non-clickable) */
+.role-pill-label {
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.9rem;
+    border: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.role-pill-label i {
+    margin-right: 0;
+}
+
+/* View Progress Button */
+.user-view-progress-btn {
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    border: 2px solid #978EC4;
+    background: white;
+    color: #978EC4;
+}
+
+.user-view-progress-btn:hover {
+    background: #978EC4;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(151, 142, 196, 0.3);
+}
+
+/* ====================================================== */
+/*                  PROFILE PAGE STYLING                  */
+/*          (Extracted from views/profile.ejs)            */
+/* ====================================================== */
+
+/* Profile page styling to match registration/landing pages */
+.participants-page {
+    padding: 2rem 2rem 4rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.participants-page > * {
+    text-align: left;
+}
+
+.participants-page > h1 {
+    text-align: center;
+}
+
+.participants-page h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 4.5rem;
+    color: #3A3F3B;
+    margin-bottom: 2rem;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+    .participants-page h1 {
+        font-size: 3rem;
+    }
+}
+
+.participants-page .card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    border: none;
+}
+
+.profile-card-body {
+    padding: 2rem;
+}
+
+.profile-card-body h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: #3A3F3B;
+}
+
+.profile-card-body p {
+    font-family: 'Montserrat', sans-serif;
+    color: #4B4F4B;
+}
+
+.profile-edit-trigger {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    background: transparent;
+    border: 2px solid #6B6F6B;
+    color: #6B6F6B;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.profile-edit-trigger:hover {
+    background: #6B6F6B;
+    color: white;
+    border-color: #6B6F6B;
+}
+
+/* My Events Section */
+.my-events-section {
+    margin-top: 3rem;
+}
+
+.my-events-section h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: #3A3F3B;
+    margin-bottom: 1.5rem;
+}
+
+.my-events-section .occurrence-toggle {
+    display: inline-flex;
+    background: #F0F0F0;
+    border-radius: 999px;
+    padding: 0.25rem;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+.my-events-section .toggle-btn {
+    border: none;
+    background: transparent;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    color: #4B4F4B;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.my-events-section .toggle-btn.active {
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    color: #3A3F3B;
+}
+
+.my-events-section .toggle-btn:hover {
+    background: white;
+}
+
+/* Event Cards - Consistent Layout with Standardized Sections */
+.occurrences-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.my-event-card {
+    display: grid;
+    grid-template-columns: 150px 160px 160px 140px 180px;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.75rem 1.2rem;
+    background: #F9F5EA;
+    border-radius: 12px;
+    border: 2px solid #E0E0E0;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.my-event-card:hover {
+    border-color: #978EC4;
+    box-shadow: 0 4px 12px rgba(151, 142, 196, 0.2);
+}
+
+/* Red border/shadow for missing survey */
+.my-event-card.survey-missing {
+    border-color: #CE325B;
+    box-shadow: 0 0 0 2px rgba(206, 50, 91, 0.15), 0 4px 12px rgba(206, 50, 91, 0.1);
+}
+
+.my-event-card.survey-missing:hover {
+    border-color: #CE325B;
+    box-shadow: 0 0 0 2px rgba(206, 50, 91, 0.2), 0 4px 12px rgba(206, 50, 91, 0.15);
+}
+
+/* Image Section */
+.my-event-image {
+    flex: 0 0 150px;
+    height: 100px;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid #E0E0E0;
+}
+
+.my-event-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Main Info Section: Title, Date, Registered/Past Badge */
+.my-event-main-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.my-event-main-info .event-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    color: #3A3F3B;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0;
+    margin-bottom: 0.25rem;
+}
+
+.my-event-main-info .occurrence-date {
+    font-family: 'DM Serif Display', serif;
+    font-size: 0.95rem;
+    color: #3A3F3B;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.my-event-main-info .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    width: fit-content;
+}
+
+/* Details Section: Location, Time, Type */
+.my-event-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.my-event-details .occurrence-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    color: #4B4F4B;
+    margin-bottom: 0.15rem;
+}
+
+.my-event-details .occurrence-detail-item i {
+    color: #978EC4;
+    font-size: 0.85rem;
+    width: 16px;
+    text-align: center;
+}
+
+/* Status Pill Section - Bigger */
+.my-event-status-pill {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 140px;
+}
+
+/* Survey/Action Merged Section - Only for Past Events */
+.my-event-survey-action {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 180px;
+    min-height: 36px;
+    max-width: 180px;
+    overflow: visible;
+    padding: 0 0.25rem;
+    box-sizing: border-box;
+}
+
+.my-event-survey-action .survey-badge {
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    padding: 0.6rem 0.8rem;
+}
+
+/* Legacy classes for backwards compatibility */
+.my-event-survey-pill {
+    display: none;
+}
+
+.my-event-action {
+    display: none;
+}
+
+/* Make all action buttons boxy with larger text to match status pills */
+.my-event-survey-action .btn,
+.my-event-survey-action button {
+    border-radius: 8px !important;
+    padding: 0.6rem 1.3rem;
+    font-weight: 600;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.my-event-survey-action .btn i,
+.my-event-survey-action button i {
+    font-size: 0.9rem;
+}
+
+.status-pill {
+    padding: 0.6rem 1.3rem;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-pill--good {
+    background: #9AB59D;
+    color: white;
+}
+
+.status-pill--neutral {
+    background: #D8D8D8;
+    color: #3A3F3B;
+}
+
+.status-pill--bad {
+    background: #CE325B;
+    color: white;
+}
+
+.survey-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    background: #978EC4;
+    color: white;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.survey-badge span,
+.survey-badge i {
+    flex-shrink: 0;
+}
+
+.survey-badge span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.survey-badge.missing {
+    background: #9AB59D;
+    color: white;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.survey-badge.missing:hover {
+    background: #7A9A7D;
+    transform: scale(1.05);
+}
+
+.survey-badge.missing i {
+    color: white;
+}
+
+.survey-badge.placeholder {
+    display: none;
+}
+
+.survey-badge.empty {
+    visibility: hidden;
+    min-height: 36px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.status-badge.status-available {
+    background-color: #9AB59D;
+    color: white;
+}
+
+.status-badge.status-past {
+    background-color: #D0D0D0;
+    color: #4B4F4B;
+}
+
+.no-occurrences {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #4B4F4B;
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* KPI Cards */
+.participants-page .card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.participants-page .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+/* Profile Page Responsive */
+@media (max-width: 1200px) {
+    .my-event-card {
+        grid-template-columns: 120px 140px 140px 130px 160px;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .my-event-card {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .my-event-image {
+        width: 100%;
+        height: 200px;
+    }
+
+    .my-event-main-info,
+    .my-event-details,
+    .my-event-status-pill,
+    .my-event-survey-action {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .my-event-card {
+        padding: 1rem;
+    }
+
+    .my-event-action .btn {
+        width: 100%;
+    }
+}
+
+/* ====================================================== */
+/*          PROFILE PAGE - MOBILE RESPONSIVE              */
+/* ====================================================== */
+
+/* Profile Card - Mobile Adjustments */
+@media (max-width: 768px) {
+    .profile-card-body {
+        padding: 1.25rem;
+    }
+    
+    .profile-card-body h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .profile-card-body p {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Fix edit button overlapping on mobile */
+    .profile-edit-trigger {
+        position: static;
+        width: 100%;
+        margin-top: 1rem;
+    }
+    
+    /* Member since section on mobile */
+    .profile-card-body .text-end {
+        text-align: left !important;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #E0E0E0;
+    }
+    
+    /* KPI cards on mobile */
+    .profile-kpi-card-body {
+        padding: 1.25rem;
+    }
+    
+    .profile-kpi-label {
+        font-size: 0.7rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .kpi-value-display {
+        font-size: 1.75rem;
+    }
+    
+    .profile-milestone-title {
+        font-size: 1rem;
+    }
+    
+    .profile-milestone-date {
+        font-size: 0.85rem;
+    }
+    
+    /* My Events section on mobile */
+    .my-events-section h2 {
+        font-size: 1.5rem;
+    }
+    
+    .my-events-section .occurrence-toggle,
+    .admin-user-events-section .occurrence-toggle {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .my-events-section .toggle-btn,
+    .admin-user-events-section .toggle-btn {
+        flex: 1;
+        text-align: center;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Extra small devices */
+    .profile-card-body h2 {
+        font-size: 1.35rem;
+    }
+    
+    .profile-card-body p {
+        font-size: 0.85rem;
+    }
+    
+    .profile-kpi-card-body {
+        padding: 1rem;
+    }
+    
+    .kpi-value-display {
+        font-size: 1.5rem;
+    }
+    
+    /* Survey modal on mobile */
+    .survey-modal-container {
+        width: 95%;
+        max-width: 100%;
+    }
+    
+    .survey-rating-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .survey-modal-buttons {
+        flex-direction: column-reverse;
+    }
+    
+    .survey-modal-buttons button {
+        width: 100%;
+    }
+}
+
+/* ====================================================== */
+/*                 MILESTONES PAGE STYLING                */
+/*         (Extracted from views/milestones.ejs)          */
+/* ====================================================== */
+
+/* Milestones KPI Cards */
+.milestone-kpi-card {
+    border-radius: 16px;
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: white;
+}
+
+.milestone-kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.milestone-kpi-card .card-body {
+    padding: 2rem;
+}
+
+/* Milestones Top Bar */
+.milestones-top-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .milestones-top-bar {
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+    }
+}
+
+.milestones-search-form {
+    flex: 1;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.milestones-search-input-wrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.milestones-search-icon {
+    position: absolute;
+    left: 1rem;
+    color: #5A5E5A;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.milestones-search-input {
+    flex: 1;
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem 0.6rem 2.75rem;
+    height: auto;
+    border: 2px solid #E0E0E0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.milestones-search-input:focus {
+    outline: none;
+    border-color: #978EC4;
+    box-shadow: 0 0 0 3px rgba(151, 142, 196, 0.1);
+}
+
+.milestones-clear-btn {
+    white-space: nowrap;
+}
+
+.milestones-search-clear-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.2s ease;
+    background: white;
+    color: #3A3F3B;
+    border: 2px solid #E0E0E0;
+    text-decoration: none;
+}
+
+.milestones-search-clear-btn:hover {
+    background: #F0F0F0;
+    color: #3A3F3B;
+    border-color: #D0D0D0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.milestones-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* Filter and Add Milestone Buttons */
+.milestones-filter-btn,
+.milestones-add-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.milestones-filter-btn {
+    background: #F0F0F0;
+    color: #3A3F3B;
+    border: 2px solid #E0E0E0;
+}
+
+.milestones-filter-btn:hover {
+    background: #E0E0E0;
+    color: #3A3F3B;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.milestones-add-btn {
+    background: #978EC4;
+    color: white;
+    box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+}
+
+.milestones-add-btn:hover {
+    background: #897FB8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+}
+
+/* Milestone Cards */
+.milestone-card {
+    border-radius: 16px;
+    border: none;
+    background: white;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.milestone-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.milestone-card .card-body {
+    padding: 1.5rem;
+}
+
+.milestone-title-section {
+    flex: 1;
+}
+
+.milestone-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    color: #3A3F3B;
+    font-weight: 600;
+    margin: 0;
+}
+
+.milestone-category {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    color: #5A5E5A;
+    display: block;
+    margin-top: 0.25rem;
+}
+
+.milestone-actions-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.milestone-edit-btn,
+.milestone-delete-btn {
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: 2px solid;
+    min-width: 36px;
+    height: 36px;
+}
+
+.milestone-edit-btn {
+    background: white;
+    color: #978EC4;
+    border-color: #978EC4;
+}
+
+.milestone-edit-btn:hover {
+    background: #978EC4;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(151, 142, 196, 0.3);
+}
+
+.milestone-delete-btn {
+    background: white;
+    color: #CE325B;
+    border-color: #CE325B;
+}
+
+.milestone-delete-btn:hover {
+    background: #CE325B;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(206, 50, 91, 0.3);
+}
+
+.milestone-participant-info {
+    flex: 1;
+}
+
+.milestone-participant-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    color: #5A5E5A;
+    margin: 0;
+}
+
+.milestone-participant-name {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    color: #3A3F3B;
+    font-weight: 600;
+    margin: 0;
+}
+
+.milestone-date {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    color: #7A7E7A;
+    margin: 0;
+}
+
+/* Milestones Filter Section */
+.milestones-filter-section {
+    padding: 1.5rem;
+}
+
+.milestones-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 992px) {
+    .milestones-filter-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.milestones-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.milestones-filter-group-label {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #3A3F3B;
+    margin: 0;
+}
+
+.milestones-range-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.milestones-range-slider-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.milestones-range-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.milestones-range-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4B4F4B;
+}
+
+.milestones-range-input {
+    padding: 0.5rem 0.75rem;
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.milestones-range-input:focus {
+    outline: none;
+    border-color: #978EC4;
+}
+
+.milestones-range-with-inputs {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    column-gap: 0.75rem;
+    align-items: center;
+}
+
+.milestones-range-input-group-min,
+.milestones-range-input-group-max {
+    min-width: 60px;
+    max-width: 70px;
+}
+
+.milestones-range-input-group-min .milestones-range-input,
+.milestones-range-input-group-max .milestones-range-input {
+    padding-inline: 0.4rem;
+    padding-block: 0.4rem;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.milestones-dual-range-wrapper {
+    position: relative;
+    width: 100%;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.milestones-dual-range {
+    position: absolute;
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    outline: none;
+    pointer-events: none;
+}
+
+.milestones-dual-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #978EC4;
+    cursor: pointer;
+    pointer-events: all;
+    position: relative;
+    z-index: 2;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.milestones-dual-range::-webkit-slider-thumb:hover {
+    background: #7A6FA3;
+    transform: scale(1.1);
+}
+
+.milestones-dual-range::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #978EC4;
+    cursor: pointer;
+    border: none;
+    pointer-events: all;
+    position: relative;
+    z-index: 2;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.milestones-dual-range-wrapper::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: #E0E0E0;
+    border-radius: 4px;
+    z-index: 0;
+}
+
+.milestones-filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #E0E0E0;
+}
+
+.milestones-filter-reset-btn,
+.milestones-filter-apply-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.2s ease;
+}
+
+.milestones-filter-reset-btn {
+    background: white;
+    color: #3A3F3B;
+    border: 2px solid #E0E0E0;
+}
+
+.milestones-filter-reset-btn:hover {
+    background: #F0F0F0;
+    color: #3A3F3B;
+    border-color: #D0D0D0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.milestones-filter-apply-btn {
+    background: #978EC4;
+    color: white;
+    border: 2px solid #978EC4;
+    box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+}
+
+.milestones-filter-apply-btn:hover {
+    background: #897FB8;
+    border-color: #897FB8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+}
+
+/* Pagination Buttons */
+.milestones-pagination-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.milestones-pagination-btn.btn-secondary {
+    background: #F0F0F0;
+    color: #3A3F3B;
+    border: 2px solid #E0E0E0;
+}
+
+.milestones-pagination-btn.btn-secondary:hover {
+    background: #E0E0E0;
+    color: #3A3F3B;
+    border-color: #D0D0D0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.milestones-pagination-btn.btn-primary {
+    background: #978EC4;
+    color: white;
+    border: 2px solid #978EC4;
+    box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+}
+
+.milestones-pagination-btn.btn-primary:hover {
+    background: #897FB8;
+    border-color: #897FB8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+}
+
+/* Modal Buttons */
+.milestones-modal-cancel-btn,
+.milestones-modal-save-btn {
+    border-radius: 999px;
+    padding: 0.6rem 1.3rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.2s ease;
+}
+
+.milestones-modal-cancel-btn {
+    background: white;
+    color: #3A3F3B;
+    border: 2px solid #E0E0E0;
+}
+
+.milestones-modal-cancel-btn:hover {
+    background: #F0F0F0;
+    color: #3A3F3B;
+    border-color: #D0D0D0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.milestones-modal-save-btn {
+    background: #978EC4;
+    color: white;
+    border: 2px solid #978EC4;
+    box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+}
+
+.milestones-modal-save-btn:hover {
+    background: #897FB8;
+    border-color: #897FB8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
+}
+
+@media (max-width: 767px) {
+    .milestones-filter-section {
+        padding: 1rem;
+    }
+
+    .milestones-filter-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+/* ====================================================== */
+/*               REGISTRATION PAGE STYLING                */
+/*        (Extracted from views/registration.ejs)         */
+/* ====================================================== */
+
+.registration-card {
+}
+
+.registration-back {
+    max-width: 1400px;
+    margin: 0 auto 1rem;
+    padding: 0 0.5rem;
+}
+
+.registration-back .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #978EC4;
+    color: white;
+    border: none;
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
+}
+
+.registration-back .btn-back:hover {
+    background: #897FB8;
+    color: white;
+}
+
+.reg-modal {
+    max-width: 640px;
+    width: 92%;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.reg-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+}
+
+.reg-modal-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75rem;
+}
+
+.reg-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #4B4F4B;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+}
+
+.reg-meta-item i {
+    color: #978EC4;
+}
+
+.reg-participants-card {
+    background: #F9F5EA;
+    border: 1px solid #E6E0D4;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.reg-participant-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.reg-participants-list {
+    max-height: 260px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.reg-participant-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 0.9rem;
+    background: white;
+    border: 1px solid #E6E0D4;
+    border-radius: 10px;
+    min-height: 86px;
+}
+
+.reg-participant-left,
+.reg-participant-main,
+.reg-participant-right {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.reg-participant-left {
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+}
+
+.reg-participant-main {
+    flex: 1 1 auto;
+}
+
+.reg-participant-right {
+    flex: 0 0 auto;
+    align-items: flex-end;
+    gap: 0.5rem;
+    min-height: 70px;
+    justify-content: flex-start;
+}
+
+.reg-participant-right.no-survey {
+    justify-content: center;
+}
+
+.reg-participant-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.reg-participant-name {
+    font-weight: 700;
+    color: #3A3F3B;
+}
+
+.reg-participant-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.reg-participant-email {
+    font-size: 0.9rem;
+    color: #5A5E5A;
+    word-break: break-all;
+}
+
+.reg-participant-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+    position: relative;
+}
+
+.reg-empty {
+    margin: 0;
+    font-style: italic;
+    color: #6B6F6B;
+}
+
+.reg-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.reg-form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+
+.reg-form-group label {
+    font-weight: 600;
+    color: #3A3F3B;
+    margin-bottom: 0.35rem;
+    display: block;
+}
+
+.reg-form-group .form-control,
+.reg-form-group select {
+    width: 100%;
+}
+
+.reg-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.reg-edit-region .reg-editable {
+    display: none;
+}
+
+.reg-edit-region.reg-editing .reg-editable {
+    display: block;
+}
+
+.reg-edit-buttons,
+.reg-edit-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.reg-edit-buttons {
+    margin-left: auto;
+}
+
+.btn-lavender {
+    background: #978EC4;
+    border: 1px solid #978EC4;
+    color: white;
+}
+
+.btn-lavender:hover {
+    background: #897FB8;
+    border-color: #897FB8;
+    color: white;
+}
+
+.reg-toast {
+    display: none;
+    align-items: center;
+    gap: 0.4rem;
+    background: #9AB59D;
+    color: white;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    min-height: 36px;
+}
+
+.reg-toast.active {
+    display: inline-flex;
+}
+
+.reg-edit-region.reg-editing #regModalEditBtn {
+    display: none;
+}
+
+.reg-edit-region .reg-form {
+    margin-bottom: 0.75rem;
+}
+
+.reg-edit-region .reg-form-group:last-child {
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 640px) {
+    .reg-modal {
+        max-height: 92vh;
+    }
+    .reg-modal-body {
+        max-height: calc(92vh - 80px);
+    }
+    .reg-participant-actions {
+        flex-wrap: wrap;
+    }
+    .reg-participant-search {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+    .reg-participant-actions .btn {
+        width: 100%;
+    }
+    .reg-participant-email {
+        display: none;
+    }
+}
+
+.reg-remove-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #E6E0D4;
+    background: #FDF2F2;
+    color: #D14343;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.reg-remove-icon:hover {
+    background: #FBE3E3;
+    transform: translateY(-1px);
+}
+
+.reg-status-trigger {
+    min-width: 140px;
+    border-radius: 999px;
+    border: 1px solid #D0D0D0;
+    background: #F7F7F7;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.8rem;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s ease, transform 0.15s ease;
+    font-weight: 700;
+}
+
+.reg-status-trigger:hover {
+    background: #EFEFEF;
+    transform: translateY(-1px);
+}
+
+.reg-status-trigger.status-pill--good {
+    border-color: #9AB59D;
+    background: #F2F7F3;
+    color: #3D6643;
+}
+
+.reg-status-trigger.status-pill--neutral {
+    border-color: #D0D0D0;
+    background: #F7F7F7;
+    color: #4B4F4B;
+}
+
+.reg-status-trigger.status-pill--bad {
+    border-color: #CE325B;
+    background: #FDF2F6;
+    color: #8F1D3C;
+}
+
+.reg-status-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 180px;
+    background: white;
+    border: 1px solid #E6E0D4;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+    z-index: 20;
+    padding: 0.35rem;
+}
+
+.reg-status-menu.active {
+    display: block;
+}
+
+.reg-status-option {
+    width: 100%;
+    border: none;
+    background: transparent;
+    padding: 0.45rem 0.6rem;
+    border-radius: 8px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: #3A3F3B;
+}
+
+.reg-status-option:hover {
+    background: #F2F2F2;
+}
+
+.create-event-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #F0F0F0;
+}
+
+.create-event-header h4 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    color: #3A3F3B;
+    margin-bottom: 0.75rem;
+}
+
+.create-event-header .event-labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+/* ====================================================== */
+/*                    AUTH PAGE STYLING                   */
+/*           (Extracted from views/login.ejs)             */
+/* ====================================================== */
+
+.auth-page {
+    padding: 2rem 0 4rem;
+    min-height: calc(100vh - 200px);
+}
+
+.auth-toggle-container {
+    margin-bottom: 1.5rem;
+}
+
+.auth-toggle-buttons {
+    display: flex;
+    background: #FFFFFF;
+    border-radius: 50px;
+    padding: 0.4rem;
+    box-shadow: 0 8px 25px rgba(58, 63, 59, 0.12);
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.auth-toggle-btn {
+    flex: 1;
+    padding: 0.75rem 2rem;
+    border: none;
+    background: transparent;
+    color: #3A3F3B;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.auth-toggle-btn.active {
+    background: #9AB59D;
+    color: #FFFFFF;
+    box-shadow: 0 4px 15px rgba(154, 181, 157, 0.3);
+}
+
+.auth-toggle-btn:hover:not(.active) {
+    background: #F9F5EA;
+    color: #3A3F3B;
+}
+
+.auth-card {
+    background: #FFFFFF;
+    border-radius: 28px;
+    box-shadow: 0 12px 40px rgba(58, 63, 59, 0.12);
+    overflow: hidden;
+    animation: fadeInScale 0.6s ease both;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.auth-card.hidden {
+    display: none;
+}
+
+.auth-card.visible {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.auth-card.fade-out {
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+}
+
+.auth-card.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.auth-card-inner {
+    display: flex;
+    min-height: 600px;
+    align-items: stretch;
+}
+
+.auth-image-side {
+    flex: 0 0 40%;
+    background: linear-gradient(135deg, #FFD8D1 0%, #F9AFB1 100%);
+    position: relative;
+    overflow: hidden;
+    order: 2;
+    min-height: 600px;
+    align-self: stretch;
+}
+
+.auth-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.auth-form-side {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem;
+    order: 1;
+    min-height: 600px;
+}
+
+.auth-card-body {
+    width: 100%;
+    max-width: 500px;
+    padding: 0;
+}
+
+.auth-register-body {
+    max-width: 550px;
+}
+
+.auth-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.5rem;
+    color: #3A3F3B;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-alert {
+    background: #FFD8D1;
+    color: #9AB59D;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    border-left: 4px solid #9AB59D;
+}
+
+.auth-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.auth-label {
+    display: block;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #3A3F3B;
+    margin-bottom: 0.5rem;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    border: 2px solid #E5E5E5;
+    border-radius: 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    color: #3A3F3B;
+    background: #FFFFFF;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.auth-input:focus {
+    outline: none;
+    border-color: #9AB59D;
+    box-shadow: 0 0 0 3px rgba(154, 181, 157, 0.1);
+}
+
+.auth-input::placeholder {
+    color: #9A9A9A;
+}
+
+.auth-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.auth-radio-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.auth-radio {
+    width: 20px;
+    height: 20px;
+    accent-color: #9AB59D;
+    cursor: pointer;
+}
+
+.auth-radio-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    color: #3A3F3B;
+    cursor: pointer;
+    margin: 0;
+}
+
+.auth-button-group {
+    margin-top: 2rem;
+}
+
+.auth-btn-primary {
+    width: 100%;
+    padding: 1rem 2rem;
+    background: #9AB59D;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(154, 181, 157, 0.3);
+}
+
+.auth-btn-primary:hover {
+    background: #7fa082;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(154, 181, 157, 0.4);
+}
+
+.auth-btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Register form specific styling */
+.auth-register-body {
+    padding: 0.5rem 0;
+}
+
+.auth-register-body .auth-form-group {
+    margin-bottom: 1.25rem;
+}
+
+.auth-register-body .auth-title {
+    margin-bottom: 1.5rem;
+}
+
+/* Two column layout for register form on larger screens */
+@media (min-width: 992px) {
+    .auth-register-body form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 1.5rem;
+    }
+    
+    /* First Name and Last Name side by side */
+    .auth-register-body .auth-form-group:nth-of-type(1),
+    .auth-register-body .auth-form-group:nth-of-type(2) {
+        grid-column: span 1;
+    }
+    
+    /* Email and Password side by side */
+    .auth-register-body .auth-form-group:nth-of-type(3),
+    .auth-register-body .auth-form-group:nth-of-type(4) {
+        grid-column: span 1;
+    }
+    
+    /* DOB and Phone side by side */
+    .auth-register-body .auth-form-group:nth-of-type(5),
+    .auth-register-body .auth-form-group:nth-of-type(6) {
+        grid-column: span 1;
+    }
+    
+    /* City, State, ZIP - City and State in 2 columns, ZIP full width below */
+    .auth-register-body .auth-form-group:nth-of-type(7),
+    .auth-register-body .auth-form-group:nth-of-type(8) {
+        grid-column: span 1;
+    }
+    
+    .auth-register-body .auth-form-group:nth-of-type(9) {
+        grid-column: span 2;
+    }
+    
+    /* School/Employer and Field of Interest full width */
+    .auth-register-body .auth-form-group:nth-of-type(10),
+    .auth-register-body .auth-form-group:nth-of-type(11) {
+        grid-column: span 2;
+    }
+    
+    .auth-register-body .auth-button-group {
+        grid-column: span 2;
+        margin-top: 1.5rem;
+    }
+}
+
+/* Auth Page Responsive */
+@media (max-width: 992px) {
+    .auth-card-inner {
+        flex-direction: column;
+        min-height: auto;
+        align-items: stretch;
+    }
+    
+    .auth-image-side {
+        flex: 0 0 auto;
+        min-height: 250px;
+        max-height: 300px;
+        order: 1;
+        position: relative;
+    }
+    
+    .auth-image {
+        object-fit: cover;
+        object-position: center;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .auth-form-side {
+        padding: 2rem 1.5rem;
+        order: 2;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .auth-card-body {
+        padding: 0;
+    }
+    
+    .auth-title {
+        font-size: 2rem;
+    }
+    
+    .auth-toggle-buttons {
+        max-width: 100%;
+    }
+    
+    .auth-toggle-btn {
+        padding: 0.65rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .auth-image-side {
+        min-height: 200px;
+        max-height: 250px;
+    }
+    
+    .auth-form-side {
+        padding: 1.5rem 1rem;
+    }
+}
+
+/* ====================================================== */
+/*             INLINE STYLE CLASSES                       */
+/*   (Extracted from inline style="" attributes in EJS)   */
+/* ====================================================== */
+
+/* --- Common Utility Classes --- */
+
+/* Search form max-width constraint */
+.search-form-inline {
+    max-width: 500px;
+}
+
+/* Success button styling (green) */
+.btn-success-custom {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+/* Clickable cursor for interactive elements */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Chart/graph container positioning */
+.chart-container-relative {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+.chart-container-small {
+    position: relative;
+    height: 180px;
+    width: 100%;
+}
+
+/* --- KPI Card Typography --- */
+
+/* KPI card label styling */
+.kpi-label {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* KPI card value styling - large */
+.kpi-value {
+    font-family: 'DM Serif Display', serif;
+    color: #3A3F3B;
+    font-size: 2rem;
+}
+
+/* KPI card value styling - display size */
+.kpi-value-display {
+    font-family: 'DM Serif Display', serif;
+    color: #3A3F3B;
+    margin: 0;
+}
+
+/* --- Profile Card Styles --- */
+
+.profile-kpi-card {
+    border-radius: 16px;
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.profile-kpi-card-body {
+    padding: 2rem;
+}
+
+.profile-kpi-label {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 0.75rem;
+}
+
+.profile-milestone-title {
+    font-family: 'DM Serif Display', serif;
+    color: #3A3F3B;
+}
+
+.profile-milestone-date {
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* --- Modal and Form Styles --- */
+
+/* Confirm modal header/message with no margin */
+.modal-confirm-title {
+    margin: 0;
+}
+
+.modal-confirm-message {
+    margin: 0;
+}
+
+/* Survey modal container */
+.survey-modal-container {
+    max-width: 600px;
+    width: 90%;
+}
+
+/* Survey modal header layout */
+.survey-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+/* Survey modal title styling */
+.survey-modal-title {
+    margin: 0;
+    font-family: 'DM Serif Display', serif;
+}
+
+/* Survey modal close button */
+.survey-modal-close-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #4B4F4B;
+}
+
+/* Survey modal event info section */
+.survey-modal-event-info {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #F0F0F0;
+}
+
+/* Survey modal grid layout for rating fields */
+.survey-rating-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Survey form label styling */
+.survey-form-label {
+    font-weight: 600;
+    color: #3A3F3B;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* Survey rating input container */
+.survey-rating-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Survey range input */
+.survey-range-input {
+    flex: 1;
+}
+
+/* Survey rating value display */
+.survey-rating-value {
+    min-width: 30px;
+    text-align: center;
+    font-weight: 700;
+    color: #978EC4;
+}
+
+/* Survey comments section */
+.survey-comments-section {
+    margin-bottom: 1.5rem;
+}
+
+/* Survey modal button container */
+.survey-modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+/* Survey event card info */
+.survey-event-card-title {
+    margin: 0 0 0.5rem 0;
+    font-family: 'DM Serif Display', serif;
+    color: #3A3F3B;
+}
+
+.survey-event-card-date {
+    margin: 0;
+    color: #4B4F4B;
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* --- Registration Page Inline Styles --- */
+
+/* Registration status wrapper */
+.reg-status-wrapper-relative {
+    position: relative;
+}
+
+/* Registration event title */
+.reg-event-title {
+    margin: 0 0 0.75rem 0;
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    color: #3A3F3B;
+}
+
+/* Registration modal participants header */
+.reg-modal-participants-header {
+    margin: 0;
+}
+
+/* Registration empty message */
+.reg-empty-hidden {
+    display: none;
+}
+
+/* Registration modal button container */
+.reg-modal-button-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+/* --- Dashboard Display Toggles --- */
+
+.dashboard-hidden {
+    display: none;
+}
+
+.dashboard-tableau-spacer {
+    margin-bottom: 4rem;
+}
+
+/* --- Milestones/Surveys Filter Position --- */
+
+.filter-input-relative {
+    position: relative;
+}
+
+/* --- Pagination Info --- */
+
+.pagination-info {
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* --- Events Page Styles --- */
+
+/* Event card image styling */
+.event-image-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Hidden radio input for custom pill styling */
+.hidden-radio {
+    display: none;
+}
+
+/* Admin section spacing */
+.admin-section-spacer {
+    margin-top: 4rem;
+}
+
+/* Survey badge faded state */
+.survey-badge-pending {
+    opacity: 0.6;
+}
+
+/* --- Landing Page Impact Icons --- */
+
+.impact-icon-arts {
+    color: #978EC4;
+}
+
+.impact-icon-users {
+    color: #CE325B;
+}
+
+.impact-icon-events {
+    color: #F4B092;
+}
+
+.impact-icon-stem {
+    color: #9AB59D;
+}
+
+.impact-icon-education {
+    color: #99B7C6;
 }

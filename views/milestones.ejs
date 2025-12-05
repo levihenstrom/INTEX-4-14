@@ -37,7 +37,7 @@
     <% if (isAdmin) { %>
         <div class="row mb-4">
             <div class="col-12">
-                <div style="position: relative; height: 180px; width: 100%;">
+                <div class="chart-container-small">
                     <canvas id="milestonesByCategoryChart"
                         data-search="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>"
                         data-filter-title="<%= filterValues.filterTitle || '' %>"
@@ -58,24 +58,24 @@
         <div class="col-md-4">
             <div class="card text-center shadow-sm h-100 milestone-kpi-card">
                 <div class="card-body">
-                    <p class="text-muted text-uppercase small mb-1" style="font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 1px;">Total Milestones Achieved</p>
-                    <h3 class="mb-0" style="font-family: 'DM Serif Display', serif; color: #3A3F3B; font-size: 2rem;"><%= totalKpi %></h3>
+                    <p class="text-muted text-uppercase small mb-1 kpi-label">Total Milestones Achieved</p>
+                    <h3 class="mb-0 kpi-value"><%= totalKpi %></h3>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card text-center shadow-sm h-100 milestone-kpi-card">
                 <div class="card-body">
-                    <p class="text-muted text-uppercase small mb-1" style="font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 1px;">Milestones Achieved This Month</p>
-                    <h3 class="mb-0" style="font-family: 'DM Serif Display', serif; color: #3A3F3B; font-size: 2rem;"><%= monthKpi %></h3>
+                    <p class="text-muted text-uppercase small mb-1 kpi-label">Milestones Achieved This Month</p>
+                    <h3 class="mb-0 kpi-value"><%= monthKpi %></h3>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card text-center shadow-sm h-100 milestone-kpi-card">
                 <div class="card-body">
-                    <p class="text-muted text-uppercase small mb-1" style="font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 1px;">Future Milestones</p>
-                    <h3 class="mb-0" style="font-family: 'DM Serif Display', serif; color: #3A3F3B; font-size: 2rem;"><%= futureKpi %></h3>
+                    <p class="text-muted text-uppercase small mb-1 kpi-label">Future Milestones</p>
+                    <h3 class="mb-0 kpi-value"><%= futureKpi %></h3>
                 </div>
             </div>
         </div>
@@ -146,13 +146,13 @@
                                         <label class="milestones-filter-group-label">Location</label>
                                         <div class="milestones-range-controls">
                                             <div class="milestones-range-slider-row">
-                                                <div class="milestones-range-input-group" style="position: relative;">
+                                                <div class="milestones-range-input-group filter-input-relative">
                                                     <label class="milestones-range-label">City</label>
                                                     <input type="text" class="form-control reg-participant-search milestones-range-input" id="milestonesFilterCitySearch" placeholder="Search city..." value="<%= filterValues.filterCity || '' %>" autocomplete="off">
                                                     <div class="reg-search-results" id="milestonesFilterCityResults"></div>
                                                     <input type="hidden" name="filterCity" id="milestonesFilterCityInput" value="<%= filterValues.filterCity || '' %>">
                                                 </div>
-                                                <div class="milestones-range-input-group" style="position: relative;">
+                                                <div class="milestones-range-input-group filter-input-relative">
                                                     <label class="milestones-range-label">State</label>
                                                     <input type="text" class="form-control reg-participant-search milestones-range-input" id="milestonesFilterStateSearch" placeholder="Search state..." value="<%= filterValues.filterState || '' %>" autocomplete="off">
                                                     <div class="reg-search-results" id="milestonesFilterStateResults"></div>
@@ -184,7 +184,7 @@
                                     </div>
 
                                     <!-- Milestone Title -->
-                                    <div class="milestones-filter-group" style="position: relative;">
+                                    <div class="milestones-filter-group filter-input-relative">
                                         <label class="milestones-filter-group-label">Milestone Title</label>
                                         <input type="text" class="form-control reg-participant-search milestones-range-input" id="milestonesFilterTitleSearch" placeholder="Search title..." value="<%= filterValues.filterTitle || '' %>" autocomplete="off">
                                         <div class="reg-search-results" id="milestonesFilterTitleResults"></div>
@@ -232,6 +232,12 @@
                                             </span>
                                             <span class="event-label event-label-type-stem filter-pill milestone-role-pill <%= filterValues.filterRole === 'p' ? 'filter-selected' : '' %>" data-role-value="p">
                                                 <i class="fa-solid fa-user"></i>Participant
+                                            </span>
+                                            <span class="event-label event-label-type-leadership filter-pill milestone-role-pill <%= filterValues.filterRole === 'v' ? 'filter-selected' : '' %>" data-role-value="v">
+                                                <i class="fa-solid fa-users"></i>Volunteer
+                                            </span>
+                                            <span class="event-label event-label-type-arts filter-pill milestone-role-pill <%= filterValues.filterRole === 'd' ? 'filter-selected' : '' %>" data-role-value="d">
+                                                <i class="fa-solid fa-hand-holding-dollar"></i>Donor
                                             </span>
                                         </div>
                                         <input type="hidden" name="filterRole" id="filterRoleInput" value="<%= filterValues.filterRole || '' %>">
@@ -409,7 +415,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Participant *</label>
-                            <div style="position: relative;">
+                            <div class="filter-input-relative">
                                 <input type="text" class="form-control reg-participant-search" id="addMilestoneParticipantSearch" placeholder="Search participants..." autocomplete="off">
                                 <div class="reg-search-results" id="addMilestoneParticipantResults"></div>
                             </div>
@@ -455,7 +461,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Participant *</label>
-                            <div style="position: relative;">
+                            <div class="filter-input-relative">
                                 <input type="text" class="form-control reg-participant-search" id="editMilestoneParticipantSearch" placeholder="Search participants..." autocomplete="off">
                                 <div class="reg-search-results" id="editMilestoneParticipantResults"></div>
                             </div>
@@ -474,8 +480,8 @@
         <!-- Delete Milestone Confirmation Modal -->
         <div class="reg-confirm-backdrop" id="deleteMilestoneConfirmBackdrop" aria-modal="true" role="dialog">
             <div class="reg-confirm-modal">
-                <h4 style="margin: 0;">Confirm Delete</h4>
-                <p id="deleteMilestoneConfirmMessage" style="margin: 0;">Are you sure?</p>
+                <h4 class="modal-confirm-title">Confirm Delete</h4>
+                <p id="deleteMilestoneConfirmMessage" class="modal-confirm-message">Are you sure?</p>
                 <div class="reg-confirm-actions">
                     <button type="button" class="btn btn-outline-secondary" id="deleteMilestoneConfirmNo">Cancel</button>
                     <button type="button" class="btn btn-danger" id="deleteMilestoneConfirmYes">Delete</button>
@@ -865,610 +871,3 @@ document.addEventListener('DOMContentLoaded', function() {
     <script src="/js/milestones-by-category-chart.js"></script>
 <% } %>
 
-<style>
-    /* Milestones KPI Cards */
-    .milestone-kpi-card {
-        border-radius: 16px;
-        border: none;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        background: white;
-    }
-
-    .milestone-kpi-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    }
-
-    .milestone-kpi-card .card-body {
-        padding: 2rem;
-    }
-
-    /* Milestones Top Bar */
-    .milestones-top-bar {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    @media (min-width: 768px) {
-        .milestones-top-bar {
-            flex-direction: row;
-            align-items: center;
-            gap: 1rem;
-        }
-    }
-
-    .milestones-search-form {
-        flex: 1;
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-    }
-
-    .milestones-search-input-wrapper {
-        flex: 1;
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
-
-    .milestones-search-icon {
-        position: absolute;
-        left: 1rem;
-        color: #5A5E5A;
-        z-index: 1;
-        pointer-events: none;
-    }
-
-    .milestones-search-input {
-        flex: 1;
-        border-radius: 999px;
-        padding: 0.6rem 1.3rem 0.6rem 2.75rem;
-        height: auto;
-        border: 2px solid #E0E0E0;
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.95rem;
-        transition: all 0.2s ease;
-    }
-
-    .milestones-search-input:focus {
-        outline: none;
-        border-color: #978EC4;
-        box-shadow: 0 0 0 3px rgba(151, 142, 196, 0.1);
-    }
-
-    .milestones-clear-btn {
-        white-space: nowrap;
-    }
-
-    .milestones-search-clear-btn {
-        border-radius: 999px;
-        padding: 0.6rem 1.3rem;
-        font-weight: 700;
-        font-family: 'Montserrat', sans-serif;
-        transition: all 0.2s ease;
-        background: white;
-        color: #3A3F3B;
-        border: 2px solid #E0E0E0;
-        text-decoration: none;
-    }
-
-    .milestones-search-clear-btn:hover {
-        background: #F0F0F0;
-        color: #3A3F3B;
-        border-color: #D0D0D0;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .milestones-actions {
-        display: flex;
-        gap: 0.75rem;
-        align-items: center;
-    }
-
-    /* Filter and Add Milestone Buttons */
-    .milestones-filter-btn,
-    .milestones-add-btn {
-        border-radius: 999px;
-        padding: 0.6rem 1.3rem;
-        font-weight: 700;
-        font-family: 'Montserrat', sans-serif;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s ease;
-        border: none;
-    }
-
-    .milestones-filter-btn {
-        background: #F0F0F0;
-        color: #3A3F3B;
-        border: 2px solid #E0E0E0;
-    }
-
-    .milestones-filter-btn:hover {
-        background: #E0E0E0;
-        color: #3A3F3B;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .milestones-add-btn {
-        background: #978EC4;
-        color: white;
-        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
-    }
-
-    .milestones-add-btn:hover {
-        background: #897FB8;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
-    }
-
-    /* Milestone Cards */
-    .milestone-card {
-        border-radius: 16px;
-        border: none;
-        background: white;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        overflow: hidden;
-    }
-
-    .milestone-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    }
-
-    .milestone-card .card-body {
-        padding: 1.5rem;
-    }
-
-    .milestone-title-section {
-        flex: 1;
-    }
-
-    .milestone-title {
-        font-family: 'DM Serif Display', serif;
-        font-size: 1.5rem;
-        color: #3A3F3B;
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .milestone-category {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.85rem;
-        color: #5A5E5A;
-        display: block;
-        margin-top: 0.25rem;
-    }
-
-    .milestone-actions-group {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-    }
-
-    .milestone-edit-btn,
-    .milestone-delete-btn {
-        border-radius: 8px;
-        padding: 0.5rem 0.75rem;
-        font-weight: 600;
-        font-family: 'Montserrat', sans-serif;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        border: 2px solid;
-        min-width: 36px;
-        height: 36px;
-    }
-
-    .milestone-edit-btn {
-        background: white;
-        color: #978EC4;
-        border-color: #978EC4;
-    }
-
-    .milestone-edit-btn:hover {
-        background: #978EC4;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(151, 142, 196, 0.3);
-    }
-
-    .milestone-delete-btn {
-        background: white;
-        color: #CE325B;
-        border-color: #CE325B;
-    }
-
-    .milestone-delete-btn:hover {
-        background: #CE325B;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(206, 50, 91, 0.3);
-    }
-
-    .milestone-participant-info {
-        flex: 1;
-    }
-
-    .milestone-participant-label {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.85rem;
-        color: #5A5E5A;
-        margin: 0;
-    }
-
-    .milestone-participant-name {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 1rem;
-        color: #3A3F3B;
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .milestone-date {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.85rem;
-        color: #7A7E7A;
-        margin: 0;
-    }
-
-    /* Milestones Filter Section (same as donations) */
-    .milestones-filter-section {
-        padding: 1.5rem;
-    }
-
-    .milestones-filter-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-        margin-bottom: 2rem;
-    }
-
-    @media (min-width: 992px) {
-        .milestones-filter-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    .milestones-filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .milestones-filter-group-label {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 600;
-        font-size: 0.95rem;
-        color: #3A3F3B;
-        margin: 0;
-    }
-
-    .milestones-range-controls {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .milestones-range-slider-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-    }
-
-    .milestones-range-input-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        flex: 1;
-    }
-
-    .milestones-range-label {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #4B4F4B;
-    }
-
-    .milestones-range-input {
-        padding: 0.5rem 0.75rem;
-        border: 2px solid #E0E0E0;
-        border-radius: 8px;
-        font-size: 0.95rem;
-        transition: border-color 0.2s;
-    }
-
-    .milestones-range-input:focus {
-        outline: none;
-        border-color: #978EC4;
-    }
-
-    .milestones-range-with-inputs {
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        column-gap: 0.75rem;
-        align-items: center;
-    }
-
-    .milestones-range-input-group-min,
-    .milestones-range-input-group-max {
-        min-width: 60px;
-        max-width: 70px;
-    }
-
-    .milestones-range-input-group-min .milestones-range-input,
-    .milestones-range-input-group-max .milestones-range-input {
-        padding-inline: 0.4rem;
-        padding-block: 0.4rem;
-        text-align: center;
-        font-size: 0.9rem;
-    }
-
-    .milestones-dual-range-wrapper {
-        position: relative;
-        width: 100%;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .milestones-dual-range {
-        position: absolute;
-        width: 100%;
-        height: 8px;
-        -webkit-appearance: none;
-        appearance: none;
-        background: transparent;
-        outline: none;
-        pointer-events: none;
-    }
-
-    .milestones-dual-range::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #978EC4;
-        cursor: pointer;
-        pointer-events: all;
-        position: relative;
-        z-index: 2;
-        transition: background 0.2s, transform 0.2s;
-    }
-
-    .milestones-dual-range::-webkit-slider-thumb:hover {
-        background: #7A6FA3;
-        transform: scale(1.1);
-    }
-
-    .milestones-dual-range::-moz-range-thumb {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #978EC4;
-        cursor: pointer;
-        border: none;
-        pointer-events: all;
-        position: relative;
-        z-index: 2;
-        transition: background 0.2s, transform 0.2s;
-    }
-
-    .milestones-dual-range-wrapper::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: 8px;
-        background: #E0E0E0;
-        border-radius: 4px;
-        z-index: 0;
-    }
-
-    .milestones-filter-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
-        padding-top: 1.5rem;
-        border-top: 2px solid #E0E0E0;
-    }
-
-    .milestones-filter-reset-btn,
-    .milestones-filter-apply-btn {
-        border-radius: 999px;
-        padding: 0.6rem 1.3rem;
-        font-weight: 700;
-        font-family: 'Montserrat', sans-serif;
-        transition: all 0.2s ease;
-    }
-
-    .milestones-filter-reset-btn {
-        background: white;
-        color: #3A3F3B;
-        border: 2px solid #E0E0E0;
-    }
-
-    .milestones-filter-reset-btn:hover {
-        background: #F0F0F0;
-        color: #3A3F3B;
-        border-color: #D0D0D0;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .milestones-filter-apply-btn {
-        background: #978EC4;
-        color: white;
-        border: 2px solid #978EC4;
-        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
-    }
-
-    .milestones-filter-apply-btn:hover {
-        background: #897FB8;
-        border-color: #897FB8;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
-    }
-
-    /* Pagination Buttons */
-    .milestones-pagination-btn {
-        border-radius: 999px;
-        padding: 0.6rem 1.3rem;
-        font-weight: 700;
-        font-family: 'Montserrat', sans-serif;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .milestones-pagination-btn.btn-secondary {
-        background: #F0F0F0;
-        color: #3A3F3B;
-        border: 2px solid #E0E0E0;
-    }
-
-    .milestones-pagination-btn.btn-secondary:hover {
-        background: #E0E0E0;
-        color: #3A3F3B;
-        border-color: #D0D0D0;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .milestones-pagination-btn.btn-primary {
-        background: #978EC4;
-        color: white;
-        border: 2px solid #978EC4;
-        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
-    }
-
-    .milestones-pagination-btn.btn-primary:hover {
-        background: #897FB8;
-        border-color: #897FB8;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
-    }
-
-    /* Modal Buttons */
-    .milestones-modal-cancel-btn,
-    .milestones-modal-save-btn {
-        border-radius: 999px;
-        padding: 0.6rem 1.3rem;
-        font-weight: 700;
-        font-family: 'Montserrat', sans-serif;
-        transition: all 0.2s ease;
-    }
-
-    .milestones-modal-cancel-btn {
-        background: white;
-        color: #3A3F3B;
-        border: 2px solid #E0E0E0;
-    }
-
-    .milestones-modal-cancel-btn:hover {
-        background: #F0F0F0;
-        color: #3A3F3B;
-        border-color: #D0D0D0;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .milestones-modal-save-btn {
-        background: #978EC4;
-        color: white;
-        border: 2px solid #978EC4;
-        box-shadow: 0 6px 16px rgba(151, 142, 196, 0.35);
-    }
-
-    .milestones-modal-save-btn:hover {
-        background: #897FB8;
-        border-color: #897FB8;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(151, 142, 196, 0.4);
-    }
-
-    /* Delete Confirmation Modal (same as donations) */
-    .reg-confirm-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.3);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 2000;
-    }
-
-    .reg-confirm-backdrop.active {
-        display: flex;
-    }
-
-    .reg-confirm-modal {
-        background: white;
-        border-radius: 12px;
-        padding: 1.2rem 1.4rem;
-        box-shadow: 0 16px 40px rgba(0,0,0,0.18);
-        max-width: 420px;
-        width: 90%;
-        display: flex;
-        flex-direction: column;
-        gap: 0.9rem;
-    }
-
-    .reg-confirm-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.6rem;
-    }
-
-    /* Participant Search (same as donations) */
-    .reg-participant-search {
-        min-width: 220px;
-    }
-
-    .reg-search-results {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: white;
-        border: 1px solid #E6E0D4;
-        border-radius: 8px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-        z-index: 10;
-        display: none;
-        max-height: 220px;
-        overflow-y: auto;
-    }
-
-    .reg-search-results .result-item {
-        padding: 0.5rem 0.75rem;
-        cursor: pointer;
-    }
-
-    .reg-search-results .result-item:hover {
-        background: #F0F0F0;
-    }
-
-    @media (max-width: 767px) {
-        .milestones-filter-section {
-            padding: 1rem;
-        }
-
-        .milestones-filter-grid {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-    }
-</style>

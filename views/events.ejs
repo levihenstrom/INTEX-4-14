@@ -144,7 +144,7 @@
                         %>
                         <img src="<%- imageSrc %>" 
                              alt="<%= event.EventName %>" 
-                             style="width: 100%; height: 100%; object-fit: cover;"
+                             class="event-image-cover"
                              onerror="this.src='/images/events/event_0_real.png'">
                     </div>
                     <div class="event-content">
@@ -270,19 +270,19 @@
                         <label class="form-label">Event Type *</label>
                         <div class="event-labels filter-labels" id="modal-event-type-pills">
                             <label class="event-label event-label-type-leadership filter-pill modal-radio-pill">
-                                <input type="radio" name="EventType" value="Leadership" required style="display: none;">
+                                <input type="radio" name="EventType" value="Leadership" required class="hidden-radio">
                                 <i class="fa-solid fa-users"></i>Leadership
                             </label>
                             <label class="event-label event-label-type-stem filter-pill modal-radio-pill">
-                                <input type="radio" name="EventType" value="STEM" required style="display: none;">
+                                <input type="radio" name="EventType" value="STEM" required class="hidden-radio">
                                 <i class="fa-solid fa-gear"></i>STEM
                             </label>
                             <label class="event-label event-label-type-arts filter-pill modal-radio-pill">
-                                <input type="radio" name="EventType" value="Arts" required style="display: none;">
+                                <input type="radio" name="EventType" value="Arts" required class="hidden-radio">
                                 <i class="fa-solid fa-paintbrush"></i>Arts
                             </label>
                             <label class="event-label event-label-type-annual-conference filter-pill modal-radio-pill">
-                                <input type="radio" name="EventType" value="Annual Conference" required style="display: none;">
+                                <input type="radio" name="EventType" value="Annual Conference" required class="hidden-radio">
                                 <i class="fa-solid fa-calendar-star"></i>Annual Conference
                             </label>
                         </div>
@@ -293,15 +293,15 @@
                         <label class="form-label">Recurrence Pattern *</label>
                         <div class="event-labels filter-labels" id="modal-event-recurrence-pills">
                             <label class="event-label event-label-recurrence-weekly filter-pill modal-radio-pill">
-                                <input type="radio" name="EventRecurrencePattern" value="Weekly" required style="display: none;">
+                                <input type="radio" name="EventRecurrencePattern" value="Weekly" required class="hidden-radio">
                                 <i class="fa-solid fa-calendar-week"></i>Weekly
                             </label>
                             <label class="event-label event-label-recurrence-monthly filter-pill modal-radio-pill">
-                                <input type="radio" name="EventRecurrencePattern" value="Monthly" required style="display: none;">
+                                <input type="radio" name="EventRecurrencePattern" value="Monthly" required class="hidden-radio">
                                 <i class="fa-solid fa-calendar-days"></i>Monthly
                             </label>
                             <label class="event-label event-label-recurrence-annual filter-pill modal-radio-pill">
-                                <input type="radio" name="EventRecurrencePattern" value="Annual" required style="display: none;">
+                                <input type="radio" name="EventRecurrencePattern" value="Annual" required class="hidden-radio">
                                 <i class="fa-solid fa-calendar-check"></i>Annual
                             </label>
                         </div>
@@ -360,7 +360,7 @@
 
 <!-- Admin User Events Section -->
 <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
-<div class="admin-user-events-section mb-5" style="margin-top: 4rem;">
+<div class="admin-user-events-section mb-5 admin-section-spacer">
     <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-3">
         <h2 class="mb-2 mb-md-0">User Events</h2>
         <div class="occurrence-toggle" id="admin-events-toggle">
@@ -506,7 +506,7 @@
                                     Survey Complete
                                 </a>
                             <% } else { %>
-                                <span class="survey-badge" style="opacity: 0.6;">
+                                <span class="survey-badge survey-badge-pending">
                                     <i class="fa-solid fa-circle-check"></i>
                                     Survey Pending
                                 </span>
