@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const knex = require('knex')(require('../knexfile').development);
+const knexConfig = require('../knexfile');
+const environment = process.env.NODE_ENV || 'development';
+const knex = require('knex')(knexConfig[environment]);
 
 // Participants data endpoints
 router.get('/participants-by-program', async (req, res) => {

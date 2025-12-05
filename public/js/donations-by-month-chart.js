@@ -73,8 +73,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Fetch donations by month and create chart
     fetch('/api/donations-by-month' + queryString)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`API returned ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
         .then(data => {
+            if (!data || data.length === 0) {
+                canvas.parentElement.innerHTML = '<p class="text-muted text-center" style="padding: 2rem;">No donation data available</p>';
+                return;
+            }
             fullData = data;
             const ctx = canvas.getContext('2d');
 
@@ -205,5 +214,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('Chart load error:', error);
+            if (canvas && canvas.parentElement) {
+                canvas.parentElement.innerHTML = '<p class="text-muted text-center" style="padding: 2rem;">Unable to load chart data. Please refresh the page.</p>';
+            }
+        });
 });
