@@ -101,6 +101,14 @@ app.use(session({
 }));
 
 // CSRF Protection - placed after session middleware
+// Middleware to extract CSRF token from headers for AJAX requests
+app.use((req, res, next) => {
+    if (req.method === 'POST' && req.headers['x-csrf-token']) {
+        req.body._csrf = req.headers['x-csrf-token'];
+    }
+    next();
+});
+
 const csrfProtection = csurf({ cookie: false });
 app.use(csrfProtection);
 
@@ -144,13 +152,20 @@ app.use((req, res, next) => {
     }
 
     // Not logged in → show login (ONE response, then stop)
+    let csrfToken = '';
+    try {
+        csrfToken = req.csrfToken ? req.csrfToken() : '';
+    } catch (e) {
+        // If we can't generate a token, continue without it
+    }
     return res.status(418).render("login", {
         layout: 'public',
         pageTitle: 'Login',
         defaultView: 'login',
         isVolunteer: false,
         hasHero: false,
-        error: "Please log in to access this page"
+        error: "Please log in to access this page",
+        csrfToken: csrfToken
     });
 });
 
@@ -250,11 +265,23 @@ app.get('/', async (req, res) => {
 
 // GET /login: Show login form
 app.get('/login', (req, res) => {
-    res.render('login', { layout: 'public', pageTitle: 'Login', defaultView: 'login', isVolunteer: false });
+    res.render('login', { 
+        layout: 'public', 
+        pageTitle: 'Login', 
+        defaultView: 'login', 
+        isVolunteer: false,
+        csrfToken: req.csrfToken ? req.csrfToken() : ''
+    });
 });
 
 app.get('/volunteer', (req, res) => {
-    res.render('login', { layout: 'public', pageTitle: 'Login', defaultView: 'register', isVolunteer: true });
+    res.render('login', { 
+        layout: 'public', 
+        pageTitle: 'Login', 
+        defaultView: 'register', 
+        isVolunteer: true,
+        csrfToken: req.csrfToken ? req.csrfToken() : ''
+    });
 });
 
 app.post('/login', async (req, res) => {
@@ -272,7 +299,8 @@ app.post('/login', async (req, res) => {
             pageTitle: 'Login',
             defaultView: 'login',
             isVolunteer: false,
-            error: 'Invalid login' 
+            error: 'Invalid login',
+            csrfToken: req.csrfToken ? req.csrfToken() : ''
             });
         }
     
@@ -290,7 +318,8 @@ app.post('/login', async (req, res) => {
             pageTitle: 'Login',
             defaultView: 'login',
             isVolunteer: false,
-            error: 'Something went wrong. Please try again.' 
+            error: 'Something went wrong. Please try again.',
+            csrfToken: req.csrfToken ? req.csrfToken() : ''
         });
         }
 });
@@ -302,7 +331,8 @@ app.get('/register', (req, res) => {
     pageTitle: 'Register',
     defaultView: 'register',
     isVolunteer: false,
-    error: null
+    error: null,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
 });
 
@@ -336,7 +366,8 @@ try {
         pageTitle: 'Register',
         defaultView: 'register',
         isVolunteer: false,
-        error: 'An account with that email already exists. Please log in.'
+        error: 'An account with that email already exists. Please log in.',
+        csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
     }
 
@@ -392,7 +423,8 @@ try {
     pageTitle: 'Register',
     defaultView: 'register',
     isVolunteer: false,
-    error: 'Something went wrong. Please try again.'
+    error: 'Something went wrong. Please try again.',
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
 }
 });
@@ -3400,12 +3432,20 @@ app.use((err, req, res, next) => {
     if (err.code === 'EBADCSRFTOKEN') {
         // Handle CSRF token errors
         console.error('CSRF token validation failed');
+        // Generate a new CSRF token for the error page
+        let csrfToken = '';
+        try {
+            csrfToken = req.csrfToken ? req.csrfToken() : '';
+        } catch (e) {
+            // If we can't generate a token, continue without it
+        }
         return res.status(403).render('login', {
             layout: 'public',
             pageTitle: 'Error',
             defaultView: 'login',
             isVolunteer: false,
-            error: 'Form has expired. Please try again.'
+            error: 'Form has expired. Please try again.',
+            csrfToken: csrfToken
         });
     }
     next(err);
